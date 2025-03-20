@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  DOCTOR
+  STAFF
+  PATIENT
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  passwordHash   String
+  name           String
+  role           UserRole  @default(PATIENT)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Patient profile relation
+  patientProfile Patient?
+
+  // Doctor profile relation
+  doctorProfile  Doctor?
+
+  // Appointments where user is a patient
+  patientAppointments Appointment[] @relation("PatientAppointments")
+
+  // Appointments where user is a doctor
+  doctorAppointments  Appointment[] @relation("DoctorAppointments")
+}
+
+model Patient {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateOfBirth   DateTime?
+  phone         String?
+  address       String?
+  insuranceInfo String?
+  medicalHistory String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  healthMetrics HealthMetric[]
+  medicalRecords MedicalRecord[]
+}
+
+model Doctor {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialty     String
+  licenseNumber String
+  bio           String?
+  availability  Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Appointment {
+  id          String            @id @default(uuid())
+  patientId   String
+  doctorId    String
+  title       String
+  description String?
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  status      AppointmentStatus @default(SCHEDULED)
+  type        String?           // appointment type for categorization
+  location    Json?             // Will store the location object
+  notes       String?
+  reminders   Json?             // Will store the reminders array
+  documents   Json?             // Will store the documents array
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  patient     User              @relation("PatientAppointments", fields: [patientId], references: [id])
+  doctor      User              @relation("DoctorAppointments", fields: [doctorId], references: [id])
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([startTime])
+  @@index([status])
+}
+
+model HealthMetric {
+  id          String    @id @default(uuid())
+  patientId   String
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  type        String    // blood_pressure, heart_rate, weight, etc.
+  value       Float
+  unit        String
+  timestamp   DateTime  @default(now())
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model MedicalRecord {
+  id          String    @id @default(uuid())
+  patientId   String
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  title       String
+  description String
+  date        DateTime
+  provider    String?
+  attachments Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Claim {
+  id              String    @id @default(uuid())
+  appointmentId   String?
+  patientName     String
+  providerName    String
+  serviceDate     DateTime
+  claimAmount     Float
+  insuranceInfo   String
+  status          String    @default("pending") // pending, approved, denied
+  submissionDate  DateTime  @default(now())
+  processedDate   DateTime?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Subscription {
+  id          String    @id @default(uuid())
+  userId      String
+  plan        String
+  amount      Float
+  status      String    @default("active") // active, cancelled, expired
+  startDate   DateTime  @default(now())
+  endDate     DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

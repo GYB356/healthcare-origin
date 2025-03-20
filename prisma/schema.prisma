@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String    @default("USER")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Messages
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+
+  // Conversations
+  patientConversations Conversation[] @relation("PatientConversations")
+  doctorConversations  Conversation[] @relation("DoctorConversations")
+}
+
+model Message {
+  id            String   @id @default(cuid())
+  content       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  read          Boolean  @default(false)
+
+  senderId      String
+  sender        User     @relation("SentMessages", fields: [senderId], references: [id])
+  
+  receiverId    String
+  receiver      User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([conversationId])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages  Message[]
+
+  patientId String
+  patient   User     @relation("PatientConversations", fields: [patientId], references: [id])
+  
+  doctorId  String
+  doctor    User     @relation("DoctorConversations", fields: [doctorId], references: [id])
+
+  @@unique([patientId, doctorId])
+  @@index([patientId])
+  @@index([doctorId])
+} 
