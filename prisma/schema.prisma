@@ -7,24 +7,115 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Enum for user roles
+enum UserRole {
+  PATIENT
+  DOCTOR
+  NURSE
+  STAFF
+  ADMIN
+}
+
+// Enum for appointment status
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+// Enum for payment status
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIALLY_PAID
+  REFUNDED
+  CANCELLED
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-  password      String?
-  role          String    @default("USER")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Messages
+  password      String
+  role          UserRole  @default(PATIENT)
+  department    String?   // For staff/doctor/nurse
+  specialty     String?   // For doctors
+  licenseNumber String?   // For doctors/nurses
+  dateOfBirth   DateTime?
+  gender        String?
+  phone         String?
+  address       String?
+  emergencyContact String?
+  bloodType     String?
+  isActive      Boolean   @default(true)
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Message relationships
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
-
-  // Conversations
+  
+  // Conversation relationships
   patientConversations Conversation[] @relation("PatientConversations")
   doctorConversations  Conversation[] @relation("DoctorConversations")
+  
+  // Appointment relationships
+  patientAppointments Appointment[] @relation("PatientAppointments")
+  doctorAppointments  Appointment[] @relation("DoctorAppointments")
+  
+  // Medical record relationships
+  patientRecords    MedicalRecord[] @relation("PatientRecords")
+  doctorRecords     MedicalRecord[] @relation("DoctorRecords")
+  nurseRecords      MedicalRecord[] @relation("NurseRecords")
+  
+  // Billing relationships
+  patientInvoices Invoice[] @relation("PatientInvoices")
+  staffInvoices   Invoice[] @relation("StaffInvoices")
+  
+  // Schedule for staff, doctors and nurses
+  schedules Schedule[]
+  
+  // Log entries created by this user
+  logEntries LogEntry[]
+
+  // Device data entries
+  deviceData DeviceData[]
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([role])
 }
 
 model Message {
@@ -52,6 +143,7 @@ model Conversation {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  archived  Boolean  @default(false)
 
   messages  Message[]
 
@@ -64,4 +156,170 @@ model Conversation {
   @@unique([patientId, doctorId])
   @@index([patientId])
   @@index([doctorId])
+}
+
+model Appointment {
+  id          String   @id @default(cuid())
+  title       String
+  notes       String?
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  isVirtual   Boolean  @default(false)
+  virtualLink String?
+  status      String   @default("SCHEDULED")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  patient     User     @relation("PatientAppointments", fields: [patientId], references: [id])
+  patientId   String
+  doctor      User     @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  doctorId    String
+  invoice     Invoice? @relation(fields: [invoiceId], references: [id])
+  invoiceId   String?
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([date])
+  @@index([status])
+  @@index([invoiceId])
+}
+
+model MedicalRecord {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  diagnosis       String?
+  prescription    String?
+  notes           String?
+  attachments     String?  // URLs to stored files
+  
+  patientId       String
+  patient         User     @relation("PatientRecords", fields: [patientId], references: [id])
+  
+  doctorId        String
+  doctor          User     @relation("DoctorRecords", fields: [doctorId], references: [id])
+  
+  nurseId         String?
+  nurse           User?    @relation("NurseRecords", fields: [nurseId], references: [id])
+  
+  // Vitals
+  bloodPressure   String?
+  heartRate       String?
+  temperature     String?
+  respiratoryRate String?
+  oxygenSaturation String?
+  height          String?
+  weight          String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([nurseId])
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  invoiceNumber   String        @unique
+  amount          Float
+  tax             Float         @default(0)
+  discount        Float         @default(0)
+  totalAmount     Float
+  description     String?
+  dueDate         DateTime
+  status          PaymentStatus @default(PENDING)
+  
+  patientId       String
+  patient         User          @relation("PatientInvoices", fields: [patientId], references: [id])
+  
+  staffId         String
+  staff           User          @relation("StaffInvoices", fields: [staffId], references: [id])
+  
+  appointments    Appointment[]
+  
+  payments        Payment[]
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([patientId])
+  @@index([staffId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  amount        Float
+  method        String    // e.g., "CREDIT_CARD", "CASH", "INSURANCE"
+  reference     String?   // payment reference number
+  notes         String?
+  
+  invoiceId     String
+  invoice       Invoice   @relation(fields: [invoiceId], references: [id])
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([invoiceId])
+}
+
+model Schedule {
+  id          String    @id @default(cuid())
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  department  String
+  notes       String?
+  
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([date])
+  @@index([department])
+}
+
+model LogEntry {
+  id        String   @id @default(cuid())
+  action    String   // e.g., "VIEW", "EDIT", "DELETE"
+  resource  String   // e.g., "MEDICAL_RECORD", "APPOINTMENT"
+  resourceId String
+  details   String?
+  ipAddress String?
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+}
+
+model DeviceData {
+  id            String   @id @default(cuid())
+  deviceType    String   // e.g., "BLOOD_PRESSURE", "GLUCOSE_MONITOR"
+  deviceId      String
+  readings      Json     // Flexible schema for different device readings
+  notes         String?
+  
+  patientId     String
+  patient       User     @relation(fields: [patientId], references: [id])
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([deviceType])
+  @@index([deviceId])
+  @@index([createdAt])
 } 

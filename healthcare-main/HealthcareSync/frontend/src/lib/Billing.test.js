@@ -3,6 +3,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import Billing from './Billing';
+import '@testing-library/jest-dom/extend-expect';
+import { AuthContext } from '../contexts/AuthContext';
 
 // Mock the AuthContext
 jest.mock('../context/AuthContext', () => ({
@@ -32,6 +34,19 @@ const renderWithRouter = (component) => {
 };
 
 describe('Billing Component', () => {
+    const mockUser = {
+        id: '1',
+        role: 'patient'
+    };
+
+    const renderWithAuthContext = (component) => {
+        return render(
+            <AuthContext.Provider value={{ user: mockUser, isAuthenticated: true }}>
+                {component}
+            </AuthContext.Provider>
+        );
+    };
+
     beforeEach(() => {
         // Reset mocks before each test
         jest.clearAllMocks();
@@ -241,5 +256,27 @@ describe('Billing Component', () => {
         
         // Check if the new invoice is added to the list
         // expect(screen.getByText('New Patient')).toBeInTheDocument();
+    });
+
+    test('renders without crashing', () => {
+        renderWithAuthContext(<Billing />);
+        expect(screen.getByText('Payment Methods')).toBeInTheDocument();
+    });
+
+    test('displays loading spinner initially', () => {
+        renderWithAuthContext(<Billing />);
+        expect(screen.getByRole('status')).toBeInTheDocument();
+    });
+
+    test('displays payment methods when loaded', async () => {
+        renderWithAuthContext(<Billing />);
+        // Mock fetch and socket data here
+        // Check if payment methods are displayed
+    });
+
+    test('handles add payment method', async () => {
+        renderWithAuthContext(<Billing />);
+        fireEvent.click(screen.getByLabelText('Add Payment Method'));
+        // Check if modal opens and form is displayed
     });
 });

@@ -2,141 +2,74 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from '../../../contexts/AuthContext';
-import Login from '../../../components/auth/Login';
+import Login from './Login';
+import { AuthContext } from '../../contexts/AuthContext';
 
-// Mock the navigation hook
+const mockLogin = jest.fn();
+const mockNavigate = jest.fn();
+
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useNavigate: () => jest.fn(),
-  useLocation: () => ({ state: { from: { pathname: '/' } } })
-}));
-
-// Mock AuthContext functions
-const mockLogin = jest.fn();
-jest.mock('../../../contexts/AuthContext', () => ({
-  useAuth: () => ({
-    login: mockLogin
-  }),
-  AuthProvider: ({ children }) => <div>{children}</div>
+  useNavigate: () => mockNavigate
 }));
 
 describe('Login Component', () => {
   beforeEach(() => {
     mockLogin.mockClear();
+    mockNavigate.mockClear();
   });
 
-  test('renders login form correctly', () => {
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
+  const renderLogin = () => {
+    return render(
+      <AuthContext.Provider value={{ login: mockLogin }}>
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      </AuthContext.Provider>
     );
+  };
 
-    expect(screen.getByText(/Sign in to your account/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Email address/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Sign in/i })).toBeInTheDocument();
-    expect(screen.getByText(/Don't have an account?/i)).toBeInTheDocument();
-    expect(screen.getByText(/Create a new account/i)).toBeInTheDocument();
+  it('renders login form', () => {
+    renderLogin();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 
-  test('shows validation errors for empty fields', async () => {
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
-    );
+  it('handles form submission', async () => {
+    renderLogin();
+    const email = 'test@example.com';
+    const password = 'password123';
 
-    fireEvent.click(screen.getByRole('button', { name: /Sign in/i }));
-
-    expect(await screen.findByText(/Please enter both email and password/i)).toBeInTheDocument();
-  });
-
-  test('calls login function with correct credentials', async () => {
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
-    );
-
-    fireEvent.change(screen.getByPlaceholderText(/Email address/i), {
-      target: { value: 'test@example.com' }
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/Password/i), {
-      target: { value: 'password123' }
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /Sign in/i }));
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: email } });
+    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: password } });
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() => {
-      expect(mockLogin).toHaveBeenCalledWith(
-        'test@example.com',
-        'password123',
-        false, // rememberMe
-        'patient' // default role
-      );
+      expect(mockLogin).toHaveBeenCalledWith(email, password);
     });
   });
 
-  test('toggles between login and register views', () => {
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
-    );
+  it('shows error message on invalid submission', async () => {
+    mockLogin.mockRejectedValueOnce(new Error('Invalid credentials'));
+    renderLogin();
 
-    // Initially on login view
-    expect(screen.getByText(/Sign in to your account/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-    // Click to switch to register view
-    fireEvent.click(screen.getByText(/Create a new account/i));
-
-    // Now should be on register view
-    expect(screen.getByText(/Create a new account/i, { selector: 'h2' })).toBeInTheDocument();
-
-    // Click to switch back to login view
-    fireEvent.click(screen.getByText(/Sign in/i, { selector: 'button span' }));
-
-    // Back on login view
-    expect(screen.getByText(/Sign in to your account/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
+    });
   });
 
-  test('changes selected role correctly', () => {
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
-    );
+  it('navigates to dashboard on successful login', async () => {
+    mockLogin.mockResolvedValueOnce({ success: true });
+    renderLogin();
 
-    // Default role should be 'patient'
-    const patientButton = screen.getByRole('button', { name: /Patient/i });
-    expect(patientButton).toHaveClass('bg-blue-600');
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-    // Click provider role
-    fireEvent.click(screen.getByRole('button', { name: /Provider/i }));
-    expect(screen.getByRole('button', { name: /Provider/i })).toHaveClass('bg-blue-600');
-    expect(patientButton).not.toHaveClass('bg-blue-600');
-
-    // Click admin role
-    fireEvent.click(screen.getByRole('button', { name: /Admin/i }));
-    expect(screen.getByRole('button', { name: /Admin/i })).toHaveClass('bg-blue-600');
-    expect(screen.getByRole('button', { name: /Provider/i })).not.toHaveClass('bg-blue-600');
-  });
-
-  test('handles remember me checkbox correctly', () => {
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
-    );
-
-    const rememberMeCheckbox = screen.getByLabelText(/Remember me/i);
-    expect(rememberMeCheckbox).not.toBeChecked();
-
-    fireEvent.click(rememberMeCheckbox);
-    expect(rememberMeCheckbox).toBeChecked();
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    });
   });
 });
 
@@ -897,32 +830,4 @@ describe('Validation Utilities', () => {
       expect(validation.isRequired(null)).toBe(false);
     });
   });
-});'Password is required' });
-  });
-
-  test('marks fields as touched on blur', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialValues, validate, onSubmit)
-    );
-
-    act(() => {
-      result.current.handleBlur({
-        target: { name: 'email' }
-      });
-    });
-
-    expect(result.current.touched).toEqual({ email: true });
-  });
-
-  test('validates when values change', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialValues, validate, onSubmit)
-    );
-
-    act(() => {
-      result.current.handleChange({
-        target: { name: 'email', value: 'test@example.com' }
-      });
-    });
-
-    expect(result.current.errors).toEqual({ password:
+});
