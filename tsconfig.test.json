@@ -2,32 +2,24 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "jsx": "react-jsx",
+    "types": ["jest", "node"],
     "esModuleInterop": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"],
-      "@/app/*": ["./app/*"],
-      "@/components/*": ["./components/*"],
-      "@/lib/*": ["./lib/*"],
-      "@/pages/*": ["./pages/*"],
-      "@/api/*": ["./app/api/*"]
-    },
-    "types": ["jest", "node", "@testing-library/jest-dom"],
     "allowJs": true,
-    "resolveJsonModule": true,
-    "isolatedModules": false
+    "checkJs": false,
+    "noEmit": true,
+    "isolatedModules": true
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.js",
-    "**/*.jsx",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.test.js",
+    "**/*.test.jsx",
     "jest.setup.js",
-    "jest.config.js"
+    "**/__tests__/**/*"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next",
+    "coverage"
   ]
 } 

@@ -1,18 +1,36 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import '../../suppress-act-warnings';
 import AppointmentReports from '../../pages/AppointmentReports';
-import { api } from '../../services/api';
+import axios from 'axios';
 
-jest.mock('../../services/api');
-const mockedApi = api as jest.Mocked<typeof api>;
+// Mock axios
+jest.mock('axios');
 
 describe('AppointmentReports', () => {
+  const mockAxiosInstance = {
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+    interceptors: {
+      request: { use: jest.fn() },
+      response: { use: jest.fn() }
+    }
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
+    (axios.create as jest.Mock).mockReturnValue(mockAxiosInstance);
   });
 
-  it('renders appointment reports page', async () => {
+  it('renders loading state initially', () => {
+    render(<AppointmentReports />);
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+
+  it('renders appointment reports after loading', async () => {
     const mockAppointments = [
       {
         id: 1,
@@ -23,27 +41,30 @@ describe('AppointmentReports', () => {
       }
     ];
 
-    mockedApi.get.mockResolvedValueOnce({ data: mockAppointments });
+    mockAxiosInstance.get.mockResolvedValueOnce({ data: mockAppointments });
 
     render(<AppointmentReports />);
 
-    expect(screen.getByText(/Appointment Reports/i)).toBeInTheDocument();
-    
+    // Wait for loading to finish
     await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument();
-      expect(screen.getByText('2024-03-20')).toBeInTheDocument();
-      expect(screen.getByText('10:00')).toBeInTheDocument();
-      expect(screen.getByText('completed')).toBeInTheDocument();
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
     });
+
+    // Check that the content is rendered
+    expect(screen.getByText('Appointment Reports')).toBeInTheDocument();
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    expect(screen.getByText(/2024-03-20/)).toBeInTheDocument();
+    expect(screen.getByText('10:00')).toBeInTheDocument();
+    expect(screen.getByText('completed')).toBeInTheDocument();
   });
 
   it('handles error when fetching appointments', async () => {
-    mockedApi.get.mockRejectedValueOnce(new Error('Failed to fetch'));
+    mockAxiosInstance.get.mockRejectedValueOnce(new Error('Failed to fetch'));
 
     render(<AppointmentReports />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Error loading appointments/i)).toBeInTheDocument();
+      expect(screen.getByText('Error loading appointments')).toBeInTheDocument();
     });
   });
 
@@ -58,15 +79,18 @@ describe('AppointmentReports', () => {
       }
     ];
 
-    mockedApi.get.mockResolvedValueOnce({ data: mockAppointments });
+    mockAxiosInstance.get.mockResolvedValueOnce({ data: mockAppointments });
 
     render(<AppointmentReports />);
+
+    // Wait for loading to finish
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    });
 
     const dateInput = screen.getByLabelText(/Filter by date/i);
     fireEvent.change(dateInput, { target: { value: '2024-03-20' } });
 
-    await waitFor(() => {
-      expect(screen.getByText('John Doe')).toBeInTheDocument();
-    });
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
   });
 }); 

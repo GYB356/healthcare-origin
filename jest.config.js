@@ -1,62 +1,53 @@
-/** @type {import('jest').Config} */
-const config = {
-  testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  moduleNameMapper: {
-    '^@/lib/prisma$': '<rootDir>/src/lib/prisma',
-    '^@/components/(.*)$': '<rootDir>/components/$1',
-    '^@/pages/(.*)$': '<rootDir>/pages/$1',
-    '^@/app/(.*)$': '<rootDir>/app/$1',
-    '^@/lib/(.*)$': '<rootDir>/lib/$1',
-    '^@/styles/(.*)$': '<rootDir>/styles/$1',
-    '^@/utils/(.*)$': '<rootDir>/utils/$1',
-    '^@/hooks/(.*)$': '<rootDir>/hooks/$1',
-    '^@/context/(.*)$': '<rootDir>/context/$1',
-    '^@/types/(.*)$': '<rootDir>/types/$1',
-    '^@/services/(.*)$': '<rootDir>/services/$1',
-    '^@/api/(.*)$': '<rootDir>/app/api/$1',
-    '\\.(css|less|sass|scss)$': 'identity-obj-proxy',
-    '\\.(gif|ttf|eot|svg|png|jpg|jpeg)$': '<rootDir>/__mocks__/fileMock.js'
-  },
-  transform: {
-    '^.+\\.(js|jsx|ts|tsx|mjs)$': ['babel-jest', {
-      presets: [
-        ['@babel/preset-env', { targets: { node: 'current' }, modules: 'commonjs' }],
-        '@babel/preset-typescript',
-        ['@babel/preset-react', { runtime: 'automatic' }]
-      ],
-      plugins: [
-        '@babel/plugin-transform-modules-commonjs',
-        ['@babel/plugin-transform-runtime', { regenerator: true }]
-      ]
-    }]
-  },
+export default {
+  testEnvironment: 'node',
   testMatch: [
-    '**/__tests__/**/*.[jt]s?(x)',
+    '**/__tests__/**/*.test.[jt]s?(x)',
     '**/?(*.)+(spec|test).[jt]s?(x)'
   ],
-  moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx', 'json', 'node'],
-  transformIgnorePatterns: [
-    '/node_modules/(?!(uuid|@prisma|@auth|next-auth|@babel|@radix-ui|socket.io-client|jose|openid-client)/)'
-  ],
-  testPathIgnorePatterns: [
-    '<rootDir>/node_modules/',
-    '<rootDir>/.next/'
-  ],
-  globals: {
-    'ts-jest': {
-      tsconfig: '<rootDir>/tsconfig.test.json'
+  collectCoverage: true,
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80
     }
   },
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+      '<rootDir>/__mocks__/fileMock.js',
+    '^react-router-dom$': '<rootDir>/__mocks__/react-router-dom.js',
+    '^recharts$': '<rootDir>/__mocks__/recharts.js',
+    '^react-big-calendar$': '<rootDir>/__mocks__/react-big-calendar.js',
+    '@testing-library/jest-dom/extend-expect': '<rootDir>/__mocks__/@testing-library/jest-dom/extend-expect.js'
+  },
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }]
+  },
+  setupFilesAfterEnv: [
+    './jest.setup.js',
+    './__tests__/helpers/mongodb.setup.js'
+  ],
   testEnvironmentOptions: {
     url: 'http://localhost'
   },
-  rootDir: '.',
-  roots: ['<rootDir>'],
-  modulePaths: ['<rootDir>'],
-  moduleDirectories: ['node_modules', '<rootDir>'],
-  testTimeout: 30000,
-  verbose: true
-}
-
-module.exports = config 
+  transformIgnorePatterns: [
+    '/node_modules/(?!(mongodb-memory-server|mongodb-memory-server-core|express|socket.io|@playwright/test)/)'
+  ],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.json'
+    }
+  },
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/.next/',
+    '/e2e/',
+    '/__tests__/(api|components|lib)/',
+    '/vitest/'
+  ],
+  testTimeout: 60000
+};
