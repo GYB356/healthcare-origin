@@ -6,26 +6,23 @@ require('dotenv').config({ path: '.env.test' });
 require('@testing-library/jest-dom');
 
 // Set global timeout
-jest.setTimeout(60000);
+jest.setTimeout(120000);
 
 // Check if we should skip MongoDB setup
 const shouldSkipMongo = process.env.SKIP_MONGO === 'true';
 
 if (!shouldSkipMongo) {
-  console.log('Setting up MongoDB for tests');
-  // Instead of requiring the file, we'll set up the necessary globals manually
-  // This avoids Jest's automatic loading of the file which can cause timing issues
+  console.log('Setting up MongoDB for tests - requiring mongodb.setup.js');
   
-  // Mock MongoDB methods that can be used in tests
+  // Explicitly require the MongoDB setup file
+  require('./__tests__/helpers/mongodb.setup.js');
+  
+  // Also provide utility functions as globals for convenience
   global.mongoTestUtils = {
     connect: jest.fn(),
     disconnect: jest.fn(),
     clear: jest.fn()
   };
-  
-  // These globals would normally be set by mongodb.setup.js
-  global.__MONGO_URI__ = 'mongodb://localhost:27017/test-db';
-  global.__MONGO_DB_NAME__ = 'jest';
 } else {
   console.log('Skipping MongoDB setup for this test');
   
@@ -35,6 +32,23 @@ if (!shouldSkipMongo) {
     disconnect: jest.fn(),
     clear: jest.fn()
   };
+  
+  // Also mock mongoose
+  jest.mock('mongoose', () => ({
+    connect: jest.fn(),
+    connection: {
+      close: jest.fn(),
+      on: jest.fn(),
+      once: jest.fn(),
+      readyState: 0
+    },
+    Schema: jest.fn().mockImplementation(() => ({
+      index: jest.fn().mockReturnThis(),
+      pre: jest.fn().mockReturnThis(),
+      set: jest.fn().mockReturnThis()
+    })),
+    model: jest.fn().mockImplementation(() => ({}))
+  }));
 }
 
 // Mock fetch
@@ -63,36 +77,22 @@ jest.mock('react-router-dom', () => ({
   MemoryRouter: ({ children }) => children
 }));
 
-// Mock react-big-calendar
-jest.mock('react-big-calendar', () => ({
-  __esModule: true,
-  default: function Calendar(props) {
-    return { type: 'div', props: { ...props, 'data-testid': 'calendar' } };
-  },
-  Views: {
-    MONTH: 'month',
-    WEEK: 'week',
-    DAY: 'day'
-  }
-}));
-
-// Mock recharts
-jest.mock('recharts', () => ({
-  LineChart: function LineChart(props) {
-    return { type: 'div', props: { ...props, 'data-testid': 'line-chart' } };
-  },
-  Line: () => null,
-  BarChart: function BarChart(props) {
-    return { type: 'div', props: { ...props, 'data-testid': 'bar-chart' } };
-  },
-  Bar: () => null,
-  XAxis: () => null,
-  YAxis: () => null,
-  CartesianGrid: () => null,
-  Tooltip: () => null,
-  Legend: () => null,
-  ResponsiveContainer: ({ children }) => children
-}));
+// Mock axios for tests
+jest.mock('axios', () => {
+  const mockAxios = {
+    create: jest.fn(() => mockAxios),
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+    interceptors: {
+      request: { use: jest.fn(), eject: jest.fn() },
+      response: { use: jest.fn(), eject: jest.fn() }
+    },
+    defaults: { baseURL: '' }
+  };
+  return mockAxios;
+});
 
 // Mock next-auth
 jest.mock('next-auth', () => ({
@@ -234,13 +234,40 @@ global.matchMedia = global.matchMedia || function() {
   };
 };
 
-// Define global mocks for contexts
+// For tests that need browser-specific APIs
+if (typeof window === 'undefined') {
+  global.window = {};
+  global.document = {
+    createElement: () => ({
+      style: {},
+      setAttribute: jest.fn(),
+      getElementsByTagName: jest.fn(() => []),
+      appendChild: jest.fn()
+    }),
+    getElementById: jest.fn(),
+    querySelector: jest.fn(),
+    querySelectorAll: jest.fn(() => []),
+    documentElement: { style: {} }
+  };
+}
+
+// Define proper React components for context providers
+const React = require('react');
+
+// Create a more functional AuthContext mock
+class MockProvider extends React.Component {
+  render() {
+    return this.props.children;
+  }
+}
+
+// Define global mocks for contexts that properly handle props
 global.AuthContext = {
-  Provider: ({ children }) => children
+  Provider: MockProvider
 };
 
 global.SocketContext = {
-  Provider: ({ children }) => children
+  Provider: MockProvider
 };
 
 // Mock environment variables

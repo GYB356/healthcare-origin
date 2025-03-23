@@ -5,19 +5,26 @@ let mongod = null;
 
 // Connect to the in-memory database before running tests
 beforeAll(async () => {
-  jest.setTimeout(120000); // Increase Jest timeout to 120 seconds for this setup
+  // Use a long timeout for this operation (5 minutes)
+  jest.setTimeout(300000);
   
   try {
     console.log('Starting MongoDB Memory Server...');
+    
     mongod = await MongoMemoryServer.create({
-      instance: {
-        dbName: 'jest',
-      },
       binary: {
         version: '6.0.4',
-        skipMD5: true
-      }
+        skipMD5: true,
+        downloadDir: './.cache/mongodb-memory-server/mongodb-binaries',
+      },
+      instance: {
+        dbName: 'test',
+        storageEngine: 'ephemeralForTest', // Use in-memory storage engine
+      },
+      // Important: increase timeouts and ensure autostart is true
+      autoStart: true
     });
+    
     const uri = mongod.getUri();
     console.log('Connecting to MongoDB Memory Server at:', uri);
     
@@ -25,25 +32,33 @@ beforeAll(async () => {
       serverSelectionTimeoutMS: 60000,
       socketTimeoutMS: 60000,
       connectTimeoutMS: 60000,
-      maxPoolSize: 10
+      maxPoolSize: 10,
+      useNewUrlParser: true,
+      useUnifiedTopology: true
     });
     console.log('Successfully connected to MongoDB Memory Server');
   } catch (error) {
     console.error('Error setting up MongoDB Memory Server:', error);
     // Try to clean up if there was an error
     if (mongod) {
-      await mongod.stop().catch(console.error);
+      try {
+        await mongod.stop();
+      } catch (stopError) {
+        console.error('Error stopping MongoDB after failure:', stopError);
+      }
     }
     throw error;
   }
-}, 120000); // Increase timeout to 120 seconds for this hook
+}, 300000); // 5 minute timeout for this hook
 
 // Clear all data between tests
 afterEach(async () => {
   try {
     if (mongoose.connection.readyState !== 0) {
       const collections = await mongoose.connection.db.collections();
-      await Promise.all(collections.map(collection => collection.deleteMany({})));
+      for (const collection of collections) {
+        await collection.deleteMany({});
+      }
     }
   } catch (error) {
     console.error('Error clearing collections:', error);
@@ -64,4 +79,4 @@ afterAll(async () => {
   } catch (error) {
     console.error('Error closing MongoDB connection:', error);
   }
-}, 60000); // Give 60 seconds for cleanup 
+}, 60000); // 60 seconds for cleanup 

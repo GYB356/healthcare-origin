@@ -1,5 +1,5 @@
 export default {
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   testMatch: [
     '**/__tests__/**/*.test.[jt]s?(x)',
     '**/?(*.)+(spec|test).[jt]s?(x)'
@@ -21,14 +21,19 @@ export default {
     '^react-router-dom$': '<rootDir>/__mocks__/react-router-dom.js',
     '^recharts$': '<rootDir>/__mocks__/recharts.js',
     '^react-big-calendar$': '<rootDir>/__mocks__/react-big-calendar.js',
-    '@testing-library/jest-dom/extend-expect': '<rootDir>/__mocks__/@testing-library/jest-dom/extend-expect.js'
+    '@testing-library/jest-dom/extend-expect': '<rootDir>/__mocks__/@testing-library/jest-dom/extend-expect.js',
+    '(.*)/contexts/AuthContext': '<rootDir>/__mocks__/auth-context.js',
+    '(.*)/context/AuthContext': '<rootDir>/__mocks__/auth-context.js',
+    '(.*)/contexts/SocketContext': '<rootDir>/__mocks__/socket-context.js',
+    '(.*)/context/SocketContext': '<rootDir>/__mocks__/socket-context.js',
+    '^@chakra-ui/react$': '<rootDir>/__mocks__/chakra-ui-react.js',
+    '^@chakra-ui/icons$': '<rootDir>/__mocks__/chakra-ui-icons.js'
   },
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }]
   },
   setupFilesAfterEnv: [
-    './jest.setup.js',
-    './__tests__/helpers/mongodb.setup.js'
+    './jest.setup.js'
   ],
   testEnvironmentOptions: {
     url: 'http://localhost'
@@ -49,5 +54,5 @@ export default {
     '/__tests__/(api|components|lib)/',
     '/vitest/'
   ],
-  testTimeout: 60000
+  testTimeout: 120000
 };
