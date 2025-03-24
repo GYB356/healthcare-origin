@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { format } from 'date-fns';
-import { 
-  DocumentTextIcon, 
-  DownloadIcon, 
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { format } from "date-fns";
+import {
+  DocumentTextIcon,
+  DownloadIcon,
   ArrowLeftIcon,
   ExclamationCircleIcon,
   DocumentDuplicateIcon,
   PaperClipIcon,
-} from '@heroicons/react/outline';
-import { medicalRecordsAPI } from '../../utils/api';
+} from "@heroicons/react/outline";
+import { medicalRecordsAPI } from "../../utils/api";
 
 const MedicalRecordViewer = () => {
   const { recordId } = useParams();
   const [record, setRecord] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('overview');
-  
+  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("overview");
+
   useEffect(() => {
     const fetchMedicalRecord = async () => {
       try {
@@ -26,52 +26,51 @@ const MedicalRecordViewer = () => {
         setRecord(response.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching medical record:', err);
+        console.error("Error fetching medical record:", err);
         setError(
-          err.response?.data?.message || 
-          'Failed to load medical record. Please try again later.'
+          err.response?.data?.message || "Failed to load medical record. Please try again later.",
         );
         setLoading(false);
       }
     };
-    
+
     fetchMedicalRecord();
   }, [recordId]);
-  
+
   // Format date for display
   const formatDate = (date) => {
-    if (!date) return 'N/A';
-    return format(new Date(date), 'MMMM d, yyyy');
+    if (!date) return "N/A";
+    return format(new Date(date), "MMMM d, yyyy");
   };
-  
+
   // Format date with time for display
   const formatDateTime = (date) => {
-    if (!date) return 'N/A';
-    return format(new Date(date), 'MMMM d, yyyy, h:mm a');
+    if (!date) return "N/A";
+    return format(new Date(date), "MMMM d, yyyy, h:mm a");
   };
-  
+
   // Handle downloading attachments
   const handleDownloadAttachment = async (attachmentId, fileName) => {
     try {
       const response = await medicalRecordsAPI.downloadAttachment(recordId, attachmentId);
-      
+
       // Create a blob from the response data
       const blob = new Blob([response.data]);
-      
+
       // Create a download link and trigger the download
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', fileName);
+      link.setAttribute("download", fileName);
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (err) {
-      console.error('Error downloading attachment:', err);
-      alert('Failed to download attachment. Please try again later.');
+      console.error("Error downloading attachment:", err);
+      alert("Failed to download attachment. Please try again later.");
     }
   };
-  
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -79,7 +78,7 @@ const MedicalRecordViewer = () => {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="rounded-md bg-red-50 p-4">
@@ -103,7 +102,7 @@ const MedicalRecordViewer = () => {
       </div>
     );
   }
-  
+
   if (!record) {
     return (
       <div className="text-center py-8">
@@ -118,18 +117,14 @@ const MedicalRecordViewer = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <div>
-          <h2 className="text-lg font-medium text-gray-800">
-            Medical Record: {record.recordType}
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            {formatDateTime(record.recordDate)}
-          </p>
+          <h2 className="text-lg font-medium text-gray-800">Medical Record: {record.recordType}</h2>
+          <p className="text-sm text-gray-500 mt-1">{formatDateTime(record.recordDate)}</p>
         </div>
         <div>
           <Link
@@ -141,28 +136,28 @@ const MedicalRecordViewer = () => {
           </Link>
         </div>
       </div>
-      
+
       {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="flex -mb-px">
           <button
             className={`py-4 px-6 text-sm font-medium ${
-              activeTab === 'overview'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              activeTab === "overview"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
-            onClick={() => setActiveTab('overview')}
+            onClick={() => setActiveTab("overview")}
           >
             Overview
           </button>
           {record.vitalSigns && Object.keys(record.vitalSigns).length > 0 && (
             <button
               className={`py-4 px-6 text-sm font-medium ${
-                activeTab === 'vitals'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                activeTab === "vitals"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
-              onClick={() => setActiveTab('vitals')}
+              onClick={() => setActiveTab("vitals")}
             >
               Vital Signs
             </button>
@@ -170,11 +165,11 @@ const MedicalRecordViewer = () => {
           {record.labResults && record.labResults.length > 0 && (
             <button
               className={`py-4 px-6 text-sm font-medium ${
-                activeTab === 'labs'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                activeTab === "labs"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
-              onClick={() => setActiveTab('labs')}
+              onClick={() => setActiveTab("labs")}
             >
               Lab Results
             </button>
@@ -182,11 +177,11 @@ const MedicalRecordViewer = () => {
           {record.imaging && record.imaging.length > 0 && (
             <button
               className={`py-4 px-6 text-sm font-medium ${
-                activeTab === 'imaging'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                activeTab === "imaging"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
-              onClick={() => setActiveTab('imaging')}
+              onClick={() => setActiveTab("imaging")}
             >
               Imaging
             </button>
@@ -194,64 +189,65 @@ const MedicalRecordViewer = () => {
           {record.attachments && record.attachments.length > 0 && (
             <button
               className={`py-4 px-6 text-sm font-medium ${
-                activeTab === 'attachments'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                activeTab === "attachments"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
-              onClick={() => setActiveTab('attachments')}
+              onClick={() => setActiveTab("attachments")}
             >
               Attachments
             </button>
           )}
         </nav>
       </div>
-      
+
       {/* Content */}
       <div className="p-6">
-        {activeTab === 'overview' && (
+        {activeTab === "overview" && (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <h3 className="text-md font-medium text-gray-700 mb-3">Patient Information</h3>
                 <div className="bg-gray-50 rounded-md p-4">
                   <p className="text-sm">
-                    <span className="font-medium">Name:</span>{' '}
-                    {record.patientId?.userId?.fullName || 'N/A'}
+                    <span className="font-medium">Name:</span>{" "}
+                    {record.patientId?.userId?.fullName || "N/A"}
                   </p>
                   <p className="text-sm mt-2">
-                    <span className="font-medium">Provider:</span>{' '}
-                    {record.provider?.fullName || 'N/A'}
+                    <span className="font-medium">Provider:</span>{" "}
+                    {record.provider?.fullName || "N/A"}
                   </p>
                   <p className="text-sm mt-2">
-                    <span className="font-medium">Record Date:</span>{' '}
+                    <span className="font-medium">Record Date:</span>{" "}
                     {formatDate(record.recordDate)}
                   </p>
                   <p className="text-sm mt-2">
-                    <span className="font-medium">Record Type:</span>{' '}
-                    {record.recordType}
+                    <span className="font-medium">Record Type:</span> {record.recordType}
                   </p>
                 </div>
               </div>
-              
+
               {record.appointmentId && (
                 <div>
                   <h3 className="text-md font-medium text-gray-700 mb-3">Appointment Details</h3>
                   <div className="bg-gray-50 rounded-md p-4">
                     <p className="text-sm">
-                      <span className="font-medium">Date:</span>{' '}
+                      <span className="font-medium">Date:</span>{" "}
                       {formatDateTime(record.appointmentId.scheduledDate)}
                     </p>
                     <p className="text-sm mt-2">
-                      <span className="font-medium">Type:</span>{' '}
+                      <span className="font-medium">Type:</span>{" "}
                       {record.appointmentId.appointmentType}
                     </p>
                     <p className="text-sm mt-2">
-                      <span className="font-medium">Status:</span>{' '}
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        record.appointmentId.status === 'Completed' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
+                      <span className="font-medium">Status:</span>{" "}
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          record.appointmentId.status === "Completed"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-blue-100 text-blue-800"
+                        }`}
+                      >
                         {record.appointmentId.status}
                       </span>
                     </p>
@@ -265,7 +261,7 @@ const MedicalRecordViewer = () => {
                 </div>
               )}
             </div>
-            
+
             {record.chiefComplaint && (
               <div className="mb-6">
                 <h3 className="text-md font-medium text-gray-700 mb-3">Chief Complaint</h3>
@@ -274,7 +270,7 @@ const MedicalRecordViewer = () => {
                 </div>
               </div>
             )}
-            
+
             {record.diagnosis && record.diagnosis.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-md font-medium text-gray-700 mb-3">Diagnosis</h3>
@@ -282,7 +278,7 @@ const MedicalRecordViewer = () => {
                   <ul className="space-y-2">
                     {record.diagnosis.map((diagnosis, index) => (
                       <li key={index} className="text-sm">
-                        <span className="font-medium">{diagnosis.code}:</span>{' '}
+                        <span className="font-medium">{diagnosis.code}:</span>{" "}
                         {diagnosis.description} ({diagnosis.type})
                       </li>
                     ))}
@@ -290,7 +286,7 @@ const MedicalRecordViewer = () => {
                 </div>
               </div>
             )}
-            
+
             {record.assessmentNotes && (
               <div className="mb-6">
                 <h3 className="text-md font-medium text-gray-700 mb-3">Assessment</h3>
@@ -299,7 +295,7 @@ const MedicalRecordViewer = () => {
                 </div>
               </div>
             )}
-            
+
             {record.planNotes && (
               <div className="mb-6">
                 <h3 className="text-md font-medium text-gray-700 mb-3">Plan</h3>
@@ -310,8 +306,8 @@ const MedicalRecordViewer = () => {
             )}
           </div>
         )}
-        
-        {activeTab === 'vitals' && record.vitalSigns && (
+
+        {activeTab === "vitals" && record.vitalSigns && (
           <div>
             <h3 className="text-md font-medium text-gray-700 mb-3">Vital Signs</h3>
             <div className="bg-gray-50 rounded-md p-4">
@@ -322,51 +318,55 @@ const MedicalRecordViewer = () => {
                     <p className="text-lg font-medium">{record.vitalSigns.temperature} °C</p>
                   </div>
                 )}
-                
+
                 {record.vitalSigns.heartRate && (
                   <div>
                     <p className="text-xs text-gray-500">Heart Rate</p>
                     <p className="text-lg font-medium">{record.vitalSigns.heartRate} bpm</p>
                   </div>
                 )}
-                
+
                 {record.vitalSigns.respiratoryRate && (
                   <div>
                     <p className="text-xs text-gray-500">Respiratory Rate</p>
-                    <p className="text-lg font-medium">{record.vitalSigns.respiratoryRate} breaths/min</p>
-                  </div>
-                )}
-                
-                {(record.vitalSigns.bloodPressureSystolic && record.vitalSigns.bloodPressureDiastolic) && (
-                  <div>
-                    <p className="text-xs text-gray-500">Blood Pressure</p>
                     <p className="text-lg font-medium">
-                      {record.vitalSigns.bloodPressureSystolic}/{record.vitalSigns.bloodPressureDiastolic} mmHg
+                      {record.vitalSigns.respiratoryRate} breaths/min
                     </p>
                   </div>
                 )}
-                
+
+                {record.vitalSigns.bloodPressureSystolic &&
+                  record.vitalSigns.bloodPressureDiastolic && (
+                    <div>
+                      <p className="text-xs text-gray-500">Blood Pressure</p>
+                      <p className="text-lg font-medium">
+                        {record.vitalSigns.bloodPressureSystolic}/
+                        {record.vitalSigns.bloodPressureDiastolic} mmHg
+                      </p>
+                    </div>
+                  )}
+
                 {record.vitalSigns.oxygenSaturation && (
                   <div>
                     <p className="text-xs text-gray-500">Oxygen Saturation</p>
                     <p className="text-lg font-medium">{record.vitalSigns.oxygenSaturation}%</p>
                   </div>
                 )}
-                
+
                 {record.vitalSigns.height && (
                   <div>
                     <p className="text-xs text-gray-500">Height</p>
                     <p className="text-lg font-medium">{record.vitalSigns.height} cm</p>
                   </div>
                 )}
-                
+
                 {record.vitalSigns.weight && (
                   <div>
                     <p className="text-xs text-gray-500">Weight</p>
                     <p className="text-lg font-medium">{record.vitalSigns.weight} kg</p>
                   </div>
                 )}
-                
+
                 {record.vitalSigns.bmi && (
                   <div>
                     <p className="text-xs text-gray-500">BMI</p>
@@ -377,8 +377,8 @@ const MedicalRecordViewer = () => {
             </div>
           </div>
         )}
-        
-        {activeTab === 'labs' && record.labResults && record.labResults.length > 0 && (
+
+        {activeTab === "labs" && record.labResults && record.labResults.length > 0 && (
           <div>
             <h3 className="text-md font-medium text-gray-700 mb-3">Laboratory Results</h3>
             <div className="overflow-x-auto">
@@ -418,15 +418,17 @@ const MedicalRecordViewer = () => {
                         {lab.units}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          lab.interpretation === 'Normal' 
-                            ? 'bg-green-100 text-green-800' 
-                            : lab.interpretation === 'Abnormal'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : lab.interpretation === 'Critical'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            lab.interpretation === "Normal"
+                              ? "bg-green-100 text-green-800"
+                              : lab.interpretation === "Abnormal"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : lab.interpretation === "Critical"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
                           {lab.interpretation}
                         </span>
                       </td>
@@ -437,8 +439,8 @@ const MedicalRecordViewer = () => {
             </div>
           </div>
         )}
-        
-        {activeTab === 'imaging' && record.imaging && record.imaging.length > 0 && (
+
+        {activeTab === "imaging" && record.imaging && record.imaging.length > 0 && (
           <div>
             <h3 className="text-md font-medium text-gray-700 mb-3">Imaging Studies</h3>
             <div className="space-y-6">
@@ -454,13 +456,15 @@ const MedicalRecordViewer = () => {
                     {image.imageUrls && image.imageUrls.length > 0 && (
                       <button
                         className="text-xs text-blue-600 hover:text-blue-700"
-                        onClick={() => {/* Handle viewing images */}}
+                        onClick={() => {
+                          /* Handle viewing images */
+                        }}
                       >
                         View Images
                       </button>
                     )}
                   </div>
-                  
+
                   <div className="mt-4">
                     <p className="text-sm text-gray-700">
                       <span className="font-medium">Findings:</span> {image.findings}
@@ -477,8 +481,8 @@ const MedicalRecordViewer = () => {
             </div>
           </div>
         )}
-        
-        {activeTab === 'attachments' && record.attachments && record.attachments.length > 0 && (
+
+        {activeTab === "attachments" && record.attachments && record.attachments.length > 0 && (
           <div>
             <h3 className="text-md font-medium text-gray-700 mb-3">Attachments</h3>
             <div className="bg-gray-50 rounded-md p-4">
@@ -511,4 +515,4 @@ const MedicalRecordViewer = () => {
   );
 };
 
-export default MedicalRecordViewer; 
+export default MedicalRecordViewer;

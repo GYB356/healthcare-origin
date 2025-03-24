@@ -1,5 +1,5 @@
-import React from 'react';
-import LoadingSpinner from '../LoadingSpinner';
+import React from "react";
+import LoadingSpinner from "../LoadingSpinner";
 
 const InsuranceModal = ({ show, onClose, onSubmit, editingInsurance, loading }) => {
   if (!show) return null;
@@ -9,20 +9,22 @@ const InsuranceModal = ({ show, onClose, onSubmit, editingInsurance, loading }) 
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">
-            {editingInsurance ? 'Edit Insurance' : 'Add Insurance'}
+            {editingInsurance ? "Edit Insurance" : "Add Insurance"}
           </h3>
         </div>
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          const formData = new FormData(e.target);
-          const insuranceData = {
-            provider: formData.get('provider'),
-            policyNumber: formData.get('policyNumber'),
-            coverageType: formData.get('coverageType'),
-            expiryDate: formData.get('expiryDate')
-          };
-          onSubmit(insuranceData);
-        }}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const insuranceData = {
+              provider: formData.get("provider"),
+              policyNumber: formData.get("policyNumber"),
+              coverageType: formData.get("coverageType"),
+              expiryDate: formData.get("expiryDate"),
+            };
+            onSubmit(insuranceData);
+          }}
+        >
           <div className="px-6 py-4 space-y-4">
             <div>
               <label htmlFor="provider" className="block text-sm font-medium text-gray-700">
@@ -32,7 +34,7 @@ const InsuranceModal = ({ show, onClose, onSubmit, editingInsurance, loading }) 
                 type="text"
                 id="provider"
                 name="provider"
-                defaultValue={editingInsurance?.provider || ''}
+                defaultValue={editingInsurance?.provider || ""}
                 className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                 required
               />
@@ -45,7 +47,7 @@ const InsuranceModal = ({ show, onClose, onSubmit, editingInsurance, loading }) 
                 type="text"
                 id="policyNumber"
                 name="policyNumber"
-                defaultValue={editingInsurance?.policyNumber || ''}
+                defaultValue={editingInsurance?.policyNumber || ""}
                 className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                 required
               />
@@ -58,7 +60,7 @@ const InsuranceModal = ({ show, onClose, onSubmit, editingInsurance, loading }) 
                 type="text"
                 id="coverageType"
                 name="coverageType"
-                defaultValue={editingInsurance?.coverageType || ''}
+                defaultValue={editingInsurance?.coverageType || ""}
                 className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                 required
               />
@@ -71,7 +73,7 @@ const InsuranceModal = ({ show, onClose, onSubmit, editingInsurance, loading }) 
                 type="date"
                 id="expiryDate"
                 name="expiryDate"
-                defaultValue={editingInsurance?.expiryDate || ''}
+                defaultValue={editingInsurance?.expiryDate || ""}
                 className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                 required
               />
@@ -96,7 +98,7 @@ const InsuranceModal = ({ show, onClose, onSubmit, editingInsurance, loading }) 
                   Saving...
                 </>
               ) : (
-                'Save'
+                "Save"
               )}
             </button>
           </div>
@@ -105,5 +107,3 @@ const InsuranceModal = ({ show, onClose, onSubmit, editingInsurance, loading }) 
     </div>
   );
 };
-
- 

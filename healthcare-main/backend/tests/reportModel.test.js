@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const Report = require('../models/Report');
+const mongoose = require("mongoose");
+const { MongoMemoryServer } = require("mongodb-memory-server");
+const Report = require("../models/Report");
 
 let mongoServer;
 
@@ -14,20 +14,20 @@ afterAll(async () => {
   await mongoServer.stop();
 });
 
-describe('Report Model', () => {
-  it('should create and save a report successfully', async () => {
+describe("Report Model", () => {
+  it("should create and save a report successfully", async () => {
     const reportData = {
       appointmentId: new mongoose.Types.ObjectId(),
       doctor: new mongoose.Types.ObjectId(),
-      report: 'Test report content',
+      report: "Test report content",
       medicalInfo: {
-        symptoms: ['Headache', 'Fever'],
-        diagnosis: 'Common cold',
-        recommendations: ['Rest', 'Fluids'],
-        medications: ['Paracetamol'],
-        followUpNeeded: false
+        symptoms: ["Headache", "Fever"],
+        diagnosis: "Common cold",
+        recommendations: ["Rest", "Fluids"],
+        medications: ["Paracetamol"],
+        followUpNeeded: false,
       },
-      followUpQuestions: 'Follow up questions'
+      followUpQuestions: "Follow up questions",
     };
 
     const report = new Report(reportData);
@@ -45,7 +45,7 @@ describe('Report Model', () => {
     expect(savedReport.followUpQuestions).toBe(reportData.followUpQuestions);
   });
 
-  it('should fail to create a report without required fields', async () => {
+  it("should fail to create a report without required fields", async () => {
     const report = new Report({});
 
     let err;

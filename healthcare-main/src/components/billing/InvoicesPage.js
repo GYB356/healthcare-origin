@@ -1,14 +1,14 @@
-import React from 'react';
-import { FiFileText, FiDownload, FiFilter } from 'react-icons/fi';
+import React from "react";
+import { FiFileText, FiDownload, FiFilter } from "react-icons/fi";
 
 // Inline PageLayout component
-const PageLayout = ({ 
-  title, 
-  description, 
-  bgColor = "bg-blue-600", 
-  textColor = "text-blue-100", 
+const PageLayout = ({
+  title,
+  description,
+  bgColor = "bg-blue-600",
+  textColor = "text-blue-100",
   children,
-  actions
+  actions,
 }) => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-screen-xl">
@@ -19,18 +19,12 @@ const PageLayout = ({
               <h1 className="text-2xl font-bold">{title}</h1>
               <p className={`mt-2 ${textColor}`}>{description}</p>
             </div>
-            {actions && (
-              <div className="ml-4">
-                {actions}
-              </div>
-            )}
+            {actions && <div className="ml-4">{actions}</div>}
           </div>
         </div>
       </div>
-      
-      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">
-        {children}
-      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">{children}</div>
     </div>
   );
 };
@@ -51,9 +45,9 @@ const InvoicesPage = () => {
 
   // Sample invoices data
   const invoices = [
-    { id: 'INV-2023-001', date: '2023-12-15', amount: '$150.00', status: 'Paid' },
-    { id: 'INV-2023-002', date: '2023-12-28', amount: '$75.50', status: 'Pending' },
-    { id: 'INV-2024-001', date: '2024-01-10', amount: '$200.00', status: 'Paid' },
+    { id: "INV-2023-001", date: "2023-12-15", amount: "$150.00", status: "Paid" },
+    { id: "INV-2023-002", date: "2023-12-28", amount: "$75.50", status: "Pending" },
+    { id: "INV-2024-001", date: "2024-01-10", amount: "$200.00", status: "Paid" },
   ];
 
   return (
@@ -69,16 +63,29 @@ const InvoicesPage = () => {
           <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                <th className="py-3 px-4 text-left text-gray-700 dark:text-gray-300 font-semibold">Invoice #</th>
-                <th className="py-3 px-4 text-left text-gray-700 dark:text-gray-300 font-semibold">Date</th>
-                <th className="py-3 px-4 text-left text-gray-700 dark:text-gray-300 font-semibold">Amount</th>
-                <th className="py-3 px-4 text-left text-gray-700 dark:text-gray-300 font-semibold">Status</th>
-                <th className="py-3 px-4 text-left text-gray-700 dark:text-gray-300 font-semibold">Actions</th>
+                <th className="py-3 px-4 text-left text-gray-700 dark:text-gray-300 font-semibold">
+                  Invoice #
+                </th>
+                <th className="py-3 px-4 text-left text-gray-700 dark:text-gray-300 font-semibold">
+                  Date
+                </th>
+                <th className="py-3 px-4 text-left text-gray-700 dark:text-gray-300 font-semibold">
+                  Amount
+                </th>
+                <th className="py-3 px-4 text-left text-gray-700 dark:text-gray-300 font-semibold">
+                  Status
+                </th>
+                <th className="py-3 px-4 text-left text-gray-700 dark:text-gray-300 font-semibold">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {invoices.map((invoice, index) => (
-                <tr key={index} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <tr
+                  key={index}
+                  className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
                   <td className="py-3 px-4 text-gray-800 dark:text-gray-200">
                     <div className="flex items-center">
                       <FiFileText className="text-yellow-500 mr-2" />
@@ -88,11 +95,13 @@ const InvoicesPage = () => {
                   <td className="py-3 px-4 text-gray-800 dark:text-gray-200">{invoice.date}</td>
                   <td className="py-3 px-4 text-gray-800 dark:text-gray-200">{invoice.amount}</td>
                   <td className="py-3 px-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      invoice.status === 'Paid' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
-                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                    }`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        invoice.status === "Paid"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                      }`}
+                    >
                       {invoice.status}
                     </span>
                   </td>
@@ -118,7 +127,7 @@ const InvoicesPage = () => {
           </p>
         </div>
       )}
-      
+
       <div className="mt-8 bg-gray-50 dark:bg-gray-700 rounded-lg p-6 text-center">
         <p className="text-gray-600 dark:text-gray-300">
           This page is under development. Check back soon for more invoice management features.

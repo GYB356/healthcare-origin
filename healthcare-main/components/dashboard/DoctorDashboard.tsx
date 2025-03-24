@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Appointment, MedicalRecord, DeviceData } from '@/types';
+import { useEffect, useState } from "react";
+import { Appointment, MedicalRecord, DeviceData } from "@/types";
 import {
   CalendarIcon,
   UserGroupIcon,
   DocumentTextIcon,
   DevicePhoneMobileIcon,
   ChartBarIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 export default function DoctorDashboard() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -20,9 +20,9 @@ export default function DoctorDashboard() {
     const fetchDashboardData = async () => {
       try {
         const [appointmentsRes, medicalRecordsRes, deviceDataRes] = await Promise.all([
-          fetch('/api/doctor/appointments'),
-          fetch('/api/doctor/medical-records'),
-          fetch('/api/doctor/device-data'),
+          fetch("/api/doctor/appointments"),
+          fetch("/api/doctor/medical-records"),
+          fetch("/api/doctor/device-data"),
         ]);
 
         if (appointmentsRes.ok) {
@@ -40,7 +40,7 @@ export default function DoctorDashboard() {
           setDeviceData(data.deviceData);
         }
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error("Error fetching dashboard data:", error);
       } finally {
         setLoading(false);
       }
@@ -66,12 +66,17 @@ export default function DoctorDashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Today's Appointments</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Today's Appointments
+                  </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {appointments.filter(a => 
-                      a.status === 'scheduled' && 
-                      new Date(a.date).toDateString() === new Date().toDateString()
-                    ).length}
+                    {
+                      appointments.filter(
+                        (a) =>
+                          a.status === "scheduled" &&
+                          new Date(a.date).toDateString() === new Date().toDateString(),
+                      ).length
+                    }
                   </dd>
                 </dl>
               </div>
@@ -89,7 +94,7 @@ export default function DoctorDashboard() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Active Patients</dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {new Set(medicalRecords.map(r => r.patientId)).size}
+                    {new Set(medicalRecords.map((r) => r.patientId)).size}
                   </dd>
                 </dl>
               </div>
@@ -107,9 +112,12 @@ export default function DoctorDashboard() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Recent Records</dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {medicalRecords.filter(r => 
-                      new Date(r.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-                    ).length}
+                    {
+                      medicalRecords.filter(
+                        (r) =>
+                          new Date(r.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                      ).length
+                    }
                   </dd>
                 </dl>
               </div>
@@ -127,9 +135,11 @@ export default function DoctorDashboard() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Device Alerts</dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {deviceData.filter(d => 
-                      new Date(d.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000)
-                    ).length}
+                    {
+                      deviceData.filter(
+                        (d) => new Date(d.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000),
+                      ).length
+                    }
                   </dd>
                 </dl>
               </div>
@@ -143,28 +153,28 @@ export default function DoctorDashboard() {
           <div className="px-4 py-5 sm:p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900">Today's Schedule</h3>
             <div className="mt-5">
-              {appointments.filter(a => 
-                a.status === 'scheduled' && 
-                new Date(a.date).toDateString() === new Date().toDateString()
+              {appointments.filter(
+                (a) =>
+                  a.status === "scheduled" &&
+                  new Date(a.date).toDateString() === new Date().toDateString(),
               ).length > 0 ? (
                 <ul className="divide-y divide-gray-200">
                   {appointments
-                    .filter(a => 
-                      a.status === 'scheduled' && 
-                      new Date(a.date).toDateString() === new Date().toDateString()
+                    .filter(
+                      (a) =>
+                        a.status === "scheduled" &&
+                        new Date(a.date).toDateString() === new Date().toDateString(),
                     )
                     .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
                     .slice(0, 5)
-                    .map(appointment => (
+                    .map((appointment) => (
                       <li key={appointment.id} className="py-4">
                         <div className="flex items-center space-x-4">
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">
                               {appointment.type}
                             </p>
-                            <p className="text-sm text-gray-500">
-                              {appointment.time}
-                            </p>
+                            <p className="text-sm text-gray-500">{appointment.time}</p>
                           </div>
                         </div>
                       </li>
@@ -184,9 +194,11 @@ export default function DoctorDashboard() {
               {deviceData.length > 0 ? (
                 <ul className="divide-y divide-gray-200">
                   {deviceData
-                    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                    .sort(
+                      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+                    )
                     .slice(0, 5)
-                    .map(data => (
+                    .map((data) => (
                       <li key={data.id} className="py-4">
                         <div className="flex items-center space-x-4">
                           <div className="flex-1 min-w-0">
@@ -210,4 +222,4 @@ export default function DoctorDashboard() {
       </div>
     </div>
   );
-} 
+}

@@ -1,0 +1,18 @@
+bc796b005ea2ef83ca26fb4c25c97fe0
+/**
+ * @jest-environment node
+ * @jest-skip-mongodb true
+ */
+
+// No longer need to mock MongoDB setup since we're handling it in jest.setup.js
+// jest.mock('./__tests__/helpers/mongodb.setup.js', () => {});
+
+describe("Basic test", () => {
+  it("adds numbers correctly", () => {
+    expect(1 + 2).toBe(3);
+  });
+  it("concatenates strings", () => {
+    expect("hello" + " " + "world").toBe("hello world");
+  });
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJkZXNjcmliZSIsIml0IiwiZXhwZWN0IiwidG9CZSJdLCJzb3VyY2VzIjpbImV4YW1wbGUudGVzdC5qcyJdLCJzb3VyY2VzQ29udGVudCI6WyIvKipcclxuICogQGplc3QtZW52aXJvbm1lbnQgbm9kZVxyXG4gKiBAamVzdC1za2lwLW1vbmdvZGIgdHJ1ZVxyXG4gKi9cclxuXHJcbi8vIE5vIGxvbmdlciBuZWVkIHRvIG1vY2sgTW9uZ29EQiBzZXR1cCBzaW5jZSB3ZSdyZSBoYW5kbGluZyBpdCBpbiBqZXN0LnNldHVwLmpzXHJcbi8vIGplc3QubW9jaygnLi9fX3Rlc3RzX18vaGVscGVycy9tb25nb2RiLnNldHVwLmpzJywgKCkgPT4ge30pO1xyXG5cclxuZGVzY3JpYmUoXCJCYXNpYyB0ZXN0XCIsICgpID0+IHtcclxuICBpdChcImFkZHMgbnVtYmVycyBjb3JyZWN0bHlcIiwgKCkgPT4ge1xyXG4gICAgZXhwZWN0KDEgKyAyKS50b0JlKDMpO1xyXG4gIH0pO1xyXG5cclxuICBpdChcImNvbmNhdGVuYXRlcyBzdHJpbmdzXCIsICgpID0+IHtcclxuICAgIGV4cGVjdChcImhlbGxvXCIgKyBcIiBcIiArIFwid29ybGRcIikudG9CZShcImhlbGxvIHdvcmxkXCIpO1xyXG4gIH0pO1xyXG59KTtcclxuIl0sIm1hcHBpbmdzIjoiQUFBQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBOztBQUVBQSxRQUFRLENBQUMsWUFBWSxFQUFFLE1BQU07RUFDM0JDLEVBQUUsQ0FBQyx3QkFBd0IsRUFBRSxNQUFNO0lBQ2pDQyxNQUFNLENBQUMsQ0FBQyxHQUFHLENBQUMsQ0FBQyxDQUFDQyxJQUFJLENBQUMsQ0FBQyxDQUFDO0VBQ3ZCLENBQUMsQ0FBQztFQUVGRixFQUFFLENBQUMsc0JBQXNCLEVBQUUsTUFBTTtJQUMvQkMsTUFBTSxDQUFDLE9BQU8sR0FBRyxHQUFHLEdBQUcsT0FBTyxDQUFDLENBQUNDLElBQUksQ0FBQyxhQUFhLENBQUM7RUFDckQsQ0FBQyxDQUFDO0FBQ0osQ0FBQyxDQUFDIiwiaWdub3JlTGlzdCI6W119

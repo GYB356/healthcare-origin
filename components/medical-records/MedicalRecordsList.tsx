@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { toast } from 'react-hot-toast';
-import MedicalRecordForm from './MedicalRecordForm';
+import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { toast } from "react-hot-toast";
+import MedicalRecordForm from "./MedicalRecordForm";
 
 interface MedicalRecord {
   id: string;
@@ -33,11 +33,13 @@ export default function MedicalRecordsList({ patientId }: MedicalRecordsListProp
 
   const fetchRecords = async () => {
     try {
-      const response = await fetch(`/api/medical-records${patientId ? `?patientId=${patientId}` : ''}`);
+      const response = await fetch(
+        `/api/medical-records${patientId ? `?patientId=${patientId}` : ""}`,
+      );
       const data = await response.json();
       setRecords(data.records);
     } catch (error) {
-      toast.error('Failed to fetch medical records');
+      toast.error("Failed to fetch medical records");
     } finally {
       setLoading(false);
     }
@@ -48,21 +50,21 @@ export default function MedicalRecordsList({ patientId }: MedicalRecordsListProp
   }, [patientId]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this record?')) return;
+    if (!confirm("Are you sure you want to delete this record?")) return;
 
     try {
       const response = await fetch(`/api/medical-records/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (response.ok) {
-        toast.success('Medical record deleted successfully');
+        toast.success("Medical record deleted successfully");
         fetchRecords();
       } else {
-        toast.error('Failed to delete medical record');
+        toast.error("Failed to delete medical record");
       }
     } catch (error) {
-      toast.error('Error deleting medical record');
+      toast.error("Error deleting medical record");
     }
   };
 
@@ -81,7 +83,7 @@ export default function MedicalRecordsList({ patientId }: MedicalRecordsListProp
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-medium">
-              {selectedRecord ? 'Edit Medical Record' : 'New Medical Record'}
+              {selectedRecord ? "Edit Medical Record" : "New Medical Record"}
             </h3>
             <button
               onClick={() => {
@@ -94,7 +96,7 @@ export default function MedicalRecordsList({ patientId }: MedicalRecordsListProp
             </button>
           </div>
           <MedicalRecordForm
-            patientId={patientId || ''}
+            patientId={patientId || ""}
             initialData={selectedRecord}
             onSuccess={() => {
               setShowForm(false);
@@ -105,7 +107,7 @@ export default function MedicalRecordsList({ patientId }: MedicalRecordsListProp
         </div>
       ) : (
         <>
-          {session?.user?.role === 'DOCTOR' && patientId && (
+          {session?.user?.role === "DOCTOR" && patientId && (
             <button
               onClick={() => setShowForm(true)}
               className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
@@ -135,12 +137,12 @@ export default function MedicalRecordsList({ patientId }: MedicalRecordsListProp
                       <div className="mt-2 text-xs text-gray-500">
                         <p>Created by Dr. {record.doctor.name}</p>
                         <p>
-                          {new Date(record.createdAt).toLocaleDateString()} at{' '}
+                          {new Date(record.createdAt).toLocaleDateString()} at{" "}
                           {new Date(record.createdAt).toLocaleTimeString()}
                         </p>
                       </div>
                     </div>
-                    {session?.user?.role === 'DOCTOR' && (
+                    {session?.user?.role === "DOCTOR" && (
                       <div className="flex space-x-3">
                         <button
                           onClick={() => handleEdit(record)}
@@ -160,9 +162,7 @@ export default function MedicalRecordsList({ patientId }: MedicalRecordsListProp
                 </li>
               ))}
               {records.length === 0 && (
-                <li className="px-6 py-4 text-center text-gray-500">
-                  No medical records found.
-                </li>
+                <li className="px-6 py-4 text-center text-gray-500">No medical records found.</li>
               )}
             </ul>
           </div>
@@ -170,4 +170,4 @@ export default function MedicalRecordsList({ patientId }: MedicalRecordsListProp
       )}
     </div>
   );
-} 
+}

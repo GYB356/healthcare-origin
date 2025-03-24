@@ -19,13 +19,15 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? false : 'http://localhost:5173',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.NODE_ENV === "production" ? false : "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 // Logging middleware
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 
 // Body parsing middleware
 app.use(express.json());
@@ -39,10 +41,10 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    }
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    },
   }),
 );
 
@@ -50,7 +52,7 @@ app.use(
 setupAuth(app);
 
 // API routes
-app.use('/api', apiRoutes);
+app.use("/api", apiRoutes);
 
 // Serve static files from the React app
 app.use(express.static(path.resolve(__dirname, "../client/dist")));

@@ -6,7 +6,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // Validation schemas
 export const healthPredictionInputSchema = z.object({
   age: z.number().min(0).max(150),
-  gender: z.enum(['male', 'female', 'other']),
+  gender: z.enum(["male", "female", "other"]),
   symptoms: z.array(z.string()),
   medicalHistory: z.array(z.string()),
   currentMedications: z.array(z.string()),
@@ -21,7 +21,7 @@ export const healthPredictionInputSchema = z.object({
 export type HealthPredictionInput = z.infer<typeof healthPredictionInputSchema>;
 
 export interface HealthPrediction {
-  riskLevel: 'low' | 'moderate' | 'high';
+  riskLevel: "low" | "moderate" | "high";
   predictions: string[];
   recommendations: string[];
   followUpNeeded: boolean;
@@ -38,7 +38,7 @@ export class AIHealthService {
   private static async retryWithExponentialBackoff<T>(
     operation: () => Promise<T>,
     maxRetries: number = 3,
-    baseDelay: number = 1000
+    baseDelay: number = 1000,
   ): Promise<T> {
     let lastError: Error | null = null;
 
@@ -49,7 +49,7 @@ export class AIHealthService {
         lastError = error;
         if (error?.response?.status === 429) {
           const delay = baseDelay * Math.pow(2, attempt);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
           continue;
         }
         throw error;
@@ -95,14 +95,14 @@ export class AIHealthService {
                 "confidence": number (0-1),
                 "analysisDate": ISO date string,
                 "nextCheckupDate": ISO date string (optional)
-              }`
+              }`,
             },
             {
               role: "user",
-              content: JSON.stringify(validatedInput)
-            }
+              content: JSON.stringify(validatedInput),
+            },
           ],
-          response_format: { type: "json_object" }
+          response_format: { type: "json_object" },
         });
       });
 
@@ -124,22 +124,22 @@ export class AIHealthService {
         followUpNeeded: result.followUpNeeded || false,
         confidence: result.confidence || 0.8,
         analysisDate: result.analysisDate || new Date().toISOString(),
-        nextCheckupDate: result.nextCheckupDate
+        nextCheckupDate: result.nextCheckupDate,
       };
     } catch (error) {
-      console.error('AI Health Prediction error:', error);
+      console.error("AI Health Prediction error:", error);
 
       // Return a safe fallback response
       return {
-        riskLevel: 'low',
-        predictions: ['Unable to generate predictions at this time'],
+        riskLevel: "low",
+        predictions: ["Unable to generate predictions at this time"],
         recommendations: [
-          'Please consult with your healthcare provider for personalized recommendations',
-          'Schedule a follow-up appointment to discuss your health concerns'
+          "Please consult with your healthcare provider for personalized recommendations",
+          "Schedule a follow-up appointment to discuss your health concerns",
         ],
         followUpNeeded: true,
         confidence: 0,
-        analysisDate: new Date().toISOString()
+        analysisDate: new Date().toISOString(),
       };
     }
   }
@@ -152,13 +152,13 @@ export class AIHealthService {
         value: number | string;
         timestamp: string;
         unit: string;
-      }>,
+      }>;
       history: Array<{
         condition: string;
         diagnosis: string;
         date: string;
-      }>
-    }
+      }>;
+    },
   ): Promise<{
     insights: string[];
     urgentActions: string[];
@@ -186,18 +186,18 @@ export class AIHealthService {
               - Lifestyle impact
 
               Format: JSON with insights[], urgentActions[], riskFactors[], recommendedTests[],
-              and lastAnalyzed (ISO date)`
+              and lastAnalyzed (ISO date)`,
             },
             {
               role: "user",
               content: JSON.stringify({
                 patientId,
                 healthData,
-                currentDate: new Date().toISOString()
-              })
-            }
+                currentDate: new Date().toISOString(),
+              }),
+            },
           ],
-          response_format: { type: "json_object" }
+          response_format: { type: "json_object" },
         });
       });
 
@@ -212,17 +212,17 @@ export class AIHealthService {
         urgentActions: result.urgentActions || [],
         lastAnalyzed: result.lastAnalyzed || new Date().toISOString(),
         riskFactors: result.riskFactors || [],
-        recommendedTests: result.recommendedTests || []
+        recommendedTests: result.recommendedTests || [],
       };
     } catch (error) {
-      console.error('Health Insights error:', error);
+      console.error("Health Insights error:", error);
 
       return {
-        insights: ['Health insights are temporarily unavailable'],
+        insights: ["Health insights are temporarily unavailable"],
         urgentActions: [],
         lastAnalyzed: new Date().toISOString(),
         riskFactors: [],
-        recommendedTests: []
+        recommendedTests: [],
       };
     }
   }

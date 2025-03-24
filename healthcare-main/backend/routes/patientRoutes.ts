@@ -1,6 +1,12 @@
 import express from "express";
 import { verifyToken, authorizeRoles } from "../middleware/authMiddleware";
-import { getAllPatients, getPatientById, getDoctorPatients, updatePatient, createPatient } from "../controllers/patientController";
+import {
+  getAllPatients,
+  getPatientById,
+  getDoctorPatients,
+  updatePatient,
+  createPatient,
+} from "../controllers/patientController";
 
 const router = express.Router();
 

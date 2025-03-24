@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useSession } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { signOut } from 'next-auth/react';
+import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 interface NavItem {
   name: string;
@@ -12,24 +12,20 @@ interface NavItem {
 }
 
 const navigation: NavItem[] = [
-  { name: 'Dashboard', href: '/dashboard', roles: ['admin', 'manager', 'estimator', 'user'] },
-  { name: 'Projects', href: '/projects', roles: ['admin', 'manager', 'estimator', 'user'] },
-  { name: 'Estimates', href: '/estimates', roles: ['admin', 'manager', 'estimator'] },
-  { name: 'Clients', href: '/clients', roles: ['admin', 'manager', 'estimator'] },
-  { name: 'Users', href: '/admin/users', roles: ['admin'] },
-  { name: 'Settings', href: '/admin/settings', roles: ['admin'] },
+  { name: "Dashboard", href: "/dashboard", roles: ["admin", "manager", "estimator", "user"] },
+  { name: "Projects", href: "/projects", roles: ["admin", "manager", "estimator", "user"] },
+  { name: "Estimates", href: "/estimates", roles: ["admin", "manager", "estimator"] },
+  { name: "Clients", href: "/clients", roles: ["admin", "manager", "estimator"] },
+  { name: "Users", href: "/admin/users", roles: ["admin"] },
+  { name: "Settings", href: "/admin/settings", roles: ["admin"] },
 ];
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const pathname = usePathname();
 
-  const filteredNav = navigation.filter(
-    (item) => item.roles.includes(session?.user?.role as string)
+  const filteredNav = navigation.filter((item) =>
+    item.roles.includes(session?.user?.role as string),
   );
 
   return (
@@ -48,8 +44,8 @@ export default function DashboardLayout({
                     href={item.href}
                     className={`${
                       pathname === item.href
-                        ? 'border-indigo-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                        ? "border-indigo-500 text-gray-900"
+                        : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
                     {item.name}
@@ -78,11 +74,9 @@ export default function DashboardLayout({
 
       <div className="py-10">
         <main>
-          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            {children}
-          </div>
+          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">{children}</div>
         </main>
       </div>
     </div>
   );
-} 
+}

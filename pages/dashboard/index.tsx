@@ -1,9 +1,9 @@
-import { NextPage } from 'next';
-import { useSession } from 'next-auth/react';
-import Head from 'next/head';
-import Layout from '../../components/Layout';
-import DashboardRouter from '../../components/dashboard/DashboardRouter';
-import ProtectedRoute from '../../components/ProtectedRoute';
+import { NextPage } from "next";
+import { useSession } from "next-auth/react";
+import Head from "next/head";
+import Layout from "../../components/Layout";
+import DashboardRouter from "../../components/dashboard/DashboardRouter";
+import ProtectedRoute from "../../components/ProtectedRoute";
 
 const Dashboard: NextPage = () => {
   const { data: session } = useSession();
@@ -23,4 +23,4 @@ const Dashboard: NextPage = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

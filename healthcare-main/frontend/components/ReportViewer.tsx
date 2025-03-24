@@ -1,8 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
-import { Box, Heading, Text, Spinner, Alert, AlertIcon, Badge, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon, List, ListItem, ListIcon } from '@chakra-ui/react';
-import { CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+import {
+  Box,
+  Heading,
+  Text,
+  Spinner,
+  Alert,
+  AlertIcon,
+  Badge,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  List,
+  ListItem,
+  ListIcon,
+} from "@chakra-ui/react";
+import { CheckCircleIcon, WarningIcon } from "@chakra-ui/icons";
 
 interface MedicalInfo {
   symptoms: string[];
@@ -38,14 +54,14 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ appointmentId }) => {
         setLoading(true);
         const response = await axios.get(`/api/reports/${appointmentId}`, {
           headers: {
-            'x-auth-token': token
-          }
+            "x-auth-token": token,
+          },
         });
         setReports(response.data);
         setError(null);
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to fetch reports');
-        console.error('Error fetching reports:', err);
+        setError(err.response?.data?.message || "Failed to fetch reports");
+        console.error("Error fetching reports:", err);
       } finally {
         setLoading(false);
       }
@@ -84,28 +100,25 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ appointmentId }) => {
   }
 
   // Sort reports by date (newest first)
-  const sortedReports = [...reports].sort((a, b) => 
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  const sortedReports = [...reports].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
   return (
     <Box>
-      <Heading size="lg" mb={4}>Medical Reports</Heading>
+      <Heading size="lg" mb={4}>
+        Medical Reports
+      </Heading>
       <Text mb={4}>
-        {sortedReports.length} report{sortedReports.length !== 1 ? 's' : ''} available
+        {sortedReports.length} report{sortedReports.length !== 1 ? "s" : ""} available
       </Text>
 
       {sortedReports.map((report) => (
-        <Box 
-          key={report._id} 
-          borderWidth="1px" 
-          borderRadius="lg" 
-          p={5} 
-          mb={5}
-          boxShadow="md"
-        >
+        <Box key={report._id} borderWidth="1px" borderRadius="lg" p={5} mb={5} boxShadow="md">
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-            <Heading size="md">Report from {new Date(report.createdAt).toLocaleDateString()}</Heading>
+            <Heading size="md">
+              Report from {new Date(report.createdAt).toLocaleDateString()}
+            </Heading>
             <Badge colorScheme={report.medicalInfo.followUpNeeded ? "red" : "green"}>
               {report.medicalInfo.followUpNeeded ? "Follow-up Needed" : "No Follow-up Required"}
             </Badge>
@@ -201,4 +214,4 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ appointmentId }) => {
   );
 };
 
-export default ReportViewer; 
+export default ReportViewer;

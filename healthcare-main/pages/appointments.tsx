@@ -9,7 +9,9 @@ export default function Appointments() {
 
   useEffect(() => {
     axios
-      .get("/api/appointments", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } })
+      .get("/api/appointments", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
       .then((res) => setAppointments(res.data))
       .catch((err) => console.error(err));
   }, []);
@@ -18,21 +20,28 @@ export default function Appointments() {
     await axios.post(
       "/api/appointments",
       { doctorId, date, time },
-      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } },
     );
   };
 
   return (
     <div>
       <h1>Appointments</h1>
-      <input type="text" placeholder="Doctor ID" value={doctorId} onChange={(e) => setDoctorId(e.target.value)} />
+      <input
+        type="text"
+        placeholder="Doctor ID"
+        value={doctorId}
+        onChange={(e) => setDoctorId(e.target.value)}
+      />
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
       <button onClick={bookAppointment}>Book Appointment</button>
 
       <h2>Your Appointments</h2>
       {appointments.map((appt) => (
-        <p key={appt.id}>{appt.date} {appt.time}</p>
+        <p key={appt.id}>
+          {appt.date} {appt.time}
+        </p>
       ))}
     </div>
   );

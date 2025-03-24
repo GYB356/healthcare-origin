@@ -1,18 +1,18 @@
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import DoctorSchedule from '@/components/scheduling/DoctorSchedule';
-import { Toaster } from 'react-hot-toast';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import DoctorSchedule from "@/components/scheduling/DoctorSchedule";
+import { Toaster } from "react-hot-toast";
 
 export default function DoctorSchedulePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return <div>Loading...</div>;
   }
 
-  if (!session || session.user.role !== 'DOCTOR') {
-    router.push('/auth/signin');
+  if (!session || session.user.role !== "DOCTOR") {
+    router.push("/auth/signin");
     return null;
   }
 
@@ -25,4 +25,4 @@ export default function DoctorSchedulePage() {
       </div>
     </div>
   );
-} 
+}

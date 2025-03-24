@@ -1,5 +1,5 @@
 // src/utils/apiTest.js
-import api from '../services/api';
+import api from "../services/api";
 
 /**
  * Tests the connection to the API server
@@ -7,19 +7,19 @@ import api from '../services/api';
  */
 export const testApiConnection = async () => {
   try {
-    const response = await api.get('/health-check');
-    console.log('API Connection Test:', response.data);
+    const response = await api.get("/health-check");
+    console.log("API Connection Test:", response.data);
     return {
       success: true,
-      message: 'Connected to API successfully',
-      data: response.data
+      message: "Connected to API successfully",
+      data: response.data,
     };
   } catch (error) {
-    console.error('API Connection Test Failed:', error);
+    console.error("API Connection Test Failed:", error);
     return {
       success: false,
-      message: error.response?.data?.message || 'Failed to connect to API',
-      error
+      message: error.response?.data?.message || "Failed to connect to API",
+      error,
     };
   }
 };
@@ -31,23 +31,23 @@ export const testApiConnection = async () => {
  */
 export const testAuthConnection = async (token) => {
   try {
-    const response = await api.get('/auth/verify', {
+    const response = await api.get("/auth/verify", {
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
-    console.log('Auth Connection Test:', response.data);
+    console.log("Auth Connection Test:", response.data);
     return {
       success: true,
-      message: 'Authentication verified successfully',
-      data: response.data
+      message: "Authentication verified successfully",
+      data: response.data,
     };
   } catch (error) {
-    console.error('Auth Connection Test Failed:', error);
+    console.error("Auth Connection Test Failed:", error);
     return {
       success: false,
-      message: error.response?.data?.message || 'Authentication verification failed',
-      error
+      message: error.response?.data?.message || "Authentication verification failed",
+      error,
     };
   }
 };
@@ -58,20 +58,20 @@ export const testAuthConnection = async (token) => {
  */
 export const checkApiVersion = async () => {
   try {
-    const response = await api.get('/version');
-    console.log('API Version:', response.data);
+    const response = await api.get("/version");
+    console.log("API Version:", response.data);
     return {
       success: true,
       version: response.data.version,
       compatible: response.data.compatible !== false,
-      message: response.data.message || 'API version check successful'
+      message: response.data.message || "API version check successful",
     };
   } catch (error) {
-    console.error('API Version Check Failed:', error);
+    console.error("API Version Check Failed:", error);
     return {
       success: false,
-      message: 'Failed to check API version',
-      error
+      message: "Failed to check API version",
+      error,
     };
   }
 };
@@ -79,5 +79,5 @@ export const checkApiVersion = async () => {
 export default {
   testApiConnection,
   testAuthConnection,
-  checkApiVersion
+  checkApiVersion,
 };

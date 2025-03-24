@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import billingService from '../services/billingService';
-import { useAuth } from './AuthContext';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import billingService from "../services/billingService";
+import { useAuth } from "./AuthContext";
 
 const BillingContext = createContext();
 
@@ -16,7 +16,7 @@ export function BillingProvider({ children }) {
       const data = await billingService.getInvoices(currentUser.id);
       setInvoices(data);
     } catch (err) {
-      setError('Failed to load invoices');
+      setError("Failed to load invoices");
     }
   };
 
@@ -26,7 +26,7 @@ export function BillingProvider({ children }) {
       await refreshInvoices();
       return result;
     } catch (err) {
-      setError('Payment processing failed');
+      setError("Payment processing failed");
       throw err;
     }
   };
@@ -38,7 +38,7 @@ export function BillingProvider({ children }) {
         const methods = await billingService.getPaymentHistory(currentUser.id);
         setPaymentMethods(methods);
       } catch (err) {
-        setError('Failed to initialize billing data');
+        setError("Failed to initialize billing data");
       } finally {
         setLoading(false);
       }
@@ -55,7 +55,7 @@ export function BillingProvider({ children }) {
         loading,
         error,
         handlePayment,
-        refreshInvoices
+        refreshInvoices,
       }}
     >
       {children}

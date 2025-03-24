@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Chart } from 'chart.js/auto';
-import { format, subDays } from 'date-fns';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import { useTable } from 'react-table';
+import React, { useState, useEffect } from "react";
+import { Chart } from "chart.js/auto";
+import { format, subDays } from "date-fns";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { useTable } from "react-table";
 
 const AuditDashboard = () => {
   const [auditLogs, setAuditLogs] = useState([]);
   const [startDate, setStartDate] = useState(subDays(new Date(), 7));
   const [endDate, setEndDate] = useState(new Date());
-  const [userIdFilter, setUserIdFilter] = useState('');
-  const [actionTypeFilter, setActionTypeFilter] = useState('');
+  const [userIdFilter, setUserIdFilter] = useState("");
+  const [actionTypeFilter, setActionTypeFilter] = useState("");
   const [chartInstance, setChartInstance] = useState(null);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ const AuditDashboard = () => {
       start: startDate.toISOString(),
       end: endDate.toISOString(),
       userId: userIdFilter,
-      actionType: actionTypeFilter
+      actionType: actionTypeFilter,
     });
 
     try {
@@ -31,65 +31,64 @@ const AuditDashboard = () => {
       setAuditLogs(data.logs);
       initializeChart(data.stats);
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
+      console.error("Error fetching audit logs:", error);
     }
   };
 
   const initializeChart = (stats) => {
     if (chartInstance) chartInstance.destroy();
 
-    const ctx = document.getElementById('auditTimeline');
+    const ctx = document.getElementById("auditTimeline");
     const newChart = new Chart(ctx, {
-      type: 'line',
+      type: "line",
       data: {
         labels: stats.labels,
-        datasets: [{
-          label: 'Access Events',
-          data: stats.data,
-          borderColor: '#3b82f6',
-          tension: 0.1
-        }]
-      }
+        datasets: [
+          {
+            label: "Access Events",
+            data: stats.data,
+            borderColor: "#3b82f6",
+            tension: 0.1,
+          },
+        ],
+      },
     });
     setChartInstance(newChart);
   };
 
   const columns = React.useMemo(
     () => [
-      { Header: 'Timestamp', accessor: 'timestamp' },
-      { Header: 'User ID', accessor: 'userId' },
-      { Header: 'Action', accessor: 'actionType' },
-      { Header: 'Endpoint', accessor: 'endpoint' },
-      { Header: 'Status', accessor: 'statusCode' },
-      { Header: 'Response Time', accessor: 'responseTime' }
+      { Header: "Timestamp", accessor: "timestamp" },
+      { Header: "User ID", accessor: "userId" },
+      { Header: "Action", accessor: "actionType" },
+      { Header: "Endpoint", accessor: "endpoint" },
+      { Header: "Status", accessor: "statusCode" },
+      { Header: "Response Time", accessor: "responseTime" },
     ],
-    []
+    [],
   );
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable({ columns, data: auditLogs });
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
+    columns,
+    data: auditLogs,
+  });
 
   const handleExport = async () => {
     try {
-      const response = await fetch('/api/audit-logs/export', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ startDate, endDate })
+      const response = await fetch("/api/audit-logs/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ startDate, endDate }),
       });
       // Handle file download
     } catch (error) {
-      console.error('Export failed:', error);
+      console.error("Export failed:", error);
     }
   };
 
   const detectAnomalies = () => {
-    const failedLogins = auditLogs.filter(log => 
-      log.actionType === 'login' && log.statusCode === 401
+    const failedLogins = auditLogs.filter(
+      (log) => log.actionType === "login" && log.statusCode === 401,
     );
     // Add anomaly detection logic
   };
@@ -98,7 +97,7 @@ const AuditDashboard = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="mb-8 flex justify-between items-center">
         <h1 className="text-2xl font-bold">Audit Dashboard</h1>
-        <button 
+        <button
           onClick={handleExport}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
@@ -111,7 +110,7 @@ const AuditDashboard = () => {
           <h2 className="text-lg font-semibold mb-4">Timeline Overview</h2>
           <canvas id="auditTimeline" />
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg shadow">
           <h2 className="text-lg font-semibold mb-4">Filters</h2>
           <div className="space-y-4">
@@ -165,33 +164,30 @@ const AuditDashboard = () => {
         <div className="overflow-x-auto">
           <table {...getTableProps()} className="w-full">
             <thead className="bg-gray-50">
-              {headerGroups.map(headerGroup => (
+              {headerGroups.map((headerGroup) => (
                 <tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map(column => (
+                  {headerGroup.headers.map((column) => (
                     <th
                       {...column.getHeaderProps()}
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
-                      {column.render('Header')}
+                      {column.render("Header")}
                     </th>
                   ))}
                 </tr>
               ))}
             </thead>
-            <tbody
-              {...getTableBodyProps()}
-              className="divide-y divide-gray-200"
-            >
-              {rows.map(row => {
+            <tbody {...getTableBodyProps()} className="divide-y divide-gray-200">
+              {rows.map((row) => {
                 prepareRow(row);
                 return (
                   <tr {...row.getRowProps()}>
-                    {row.cells.map(cell => (
+                    {row.cells.map((cell) => (
                       <td
                         {...cell.getCellProps()}
                         className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
                       >
-                        {cell.render('Cell')}
+                        {cell.render("Cell")}
                       </td>
                     ))}
                   </tr>

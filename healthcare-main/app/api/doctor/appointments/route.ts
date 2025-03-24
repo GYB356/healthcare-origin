@@ -1,15 +1,15 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verify } from 'jsonwebtoken';
-import { prisma } from '@/lib/prisma';
-import { Appointment } from '@prisma/client';
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { verify } from "jsonwebtoken";
+import { prisma } from "@/lib/prisma";
+import { Appointment } from "@prisma/client";
 
 export async function GET() {
   try {
     // Get token from cookies
-    const token = cookies().get('token')?.value;
+    const token = cookies().get("token")?.value;
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Verify token and get user ID
@@ -38,25 +38,24 @@ export async function GET() {
         },
       },
       orderBy: {
-        time: 'asc',
+        time: "asc",
       },
     });
 
     // Format appointments for response
-    const formattedAppointments = appointments.map((appointment: Appointment & { patient: { name: string } }) => ({
-      id: appointment.id,
-      patientName: appointment.patient.name,
-      date: appointment.date.toISOString().split('T')[0],
-      time: appointment.time,
-      status: appointment.status,
-    }));
+    const formattedAppointments = appointments.map(
+      (appointment: Appointment & { patient: { name: string } }) => ({
+        id: appointment.id,
+        patientName: appointment.patient.name,
+        date: appointment.date.toISOString().split("T")[0],
+        time: appointment.time,
+        status: appointment.status,
+      }),
+    );
 
     return NextResponse.json({ appointments: formattedAppointments });
   } catch (error) {
-    console.error('Error fetching doctor appointments:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error fetching doctor appointments:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-} 
+}

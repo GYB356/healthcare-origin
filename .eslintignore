@@ -1,0 +1,9 @@
+node_modules/
+.next/
+out/
+coverage/
+build/
+dist/
+.jest-cache/
+*.d.ts
+**/__mocks__/** 

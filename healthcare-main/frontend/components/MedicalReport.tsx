@@ -14,7 +14,7 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
-  Divider
+  Divider,
 } from "@chakra-ui/react";
 
 interface MedicalReportProps {
@@ -52,13 +52,13 @@ const MedicalReport: React.FC<MedicalReportProps> = ({ appointmentId, onReportGe
         {
           headers: {
             "Content-Type": "application/json",
-            "x-auth-token": token
-          }
-        }
+            "x-auth-token": token,
+          },
+        },
       );
 
       setReport(response.data.report.report);
-      
+
       toast({
         title: "Report generated",
         description: "Medical report has been successfully generated.",
@@ -74,7 +74,7 @@ const MedicalReport: React.FC<MedicalReportProps> = ({ appointmentId, onReportGe
     } catch (err: any) {
       console.error("Error generating report:", err);
       setError(err.response?.data?.message || "Failed to generate report");
-      
+
       toast({
         title: "Error",
         description: err.response?.data?.message || "Failed to generate report",
@@ -89,11 +89,15 @@ const MedicalReport: React.FC<MedicalReportProps> = ({ appointmentId, onReportGe
 
   return (
     <Box borderWidth="1px" borderRadius="lg" p={6} boxShadow="md" bg="white">
-      <Heading size="md" mb={4}>Generate Medical Report</Heading>
-      
+      <Heading size="md" mb={4}>
+        Generate Medical Report
+      </Heading>
+
       <VStack spacing={4} align="stretch">
         <Box>
-          <Text mb={2} fontWeight="medium">Consultation Transcript</Text>
+          <Text mb={2} fontWeight="medium">
+            Consultation Transcript
+          </Text>
           <Textarea
             value={transcript}
             onChange={(e) => setTranscript(e.target.value)}
@@ -103,7 +107,7 @@ const MedicalReport: React.FC<MedicalReportProps> = ({ appointmentId, onReportGe
             resize="vertical"
           />
         </Box>
-        
+
         <Button
           colorScheme="blue"
           onClick={generateReport}
@@ -113,7 +117,7 @@ const MedicalReport: React.FC<MedicalReportProps> = ({ appointmentId, onReportGe
         >
           Generate Report
         </Button>
-        
+
         {error && (
           <Alert status="error" borderRadius="md">
             <AlertIcon />
@@ -121,12 +125,14 @@ const MedicalReport: React.FC<MedicalReportProps> = ({ appointmentId, onReportGe
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
+
         {report && (
           <>
             <Divider my={4} />
             <Box>
-              <Heading size="sm" mb={2}>Generated Report</Heading>
+              <Heading size="sm" mb={2}>
+                Generated Report
+              </Heading>
               <Box
                 p={4}
                 bg="gray.50"
@@ -140,12 +146,14 @@ const MedicalReport: React.FC<MedicalReportProps> = ({ appointmentId, onReportGe
             </Box>
           </>
         )}
-        
+
         {loading && (
           <Box textAlign="center" py={4}>
             <Spinner size="xl" />
             <Text mt={2}>Generating medical report using AI...</Text>
-            <Text fontSize="sm" color="gray.500">This may take a moment</Text>
+            <Text fontSize="sm" color="gray.500">
+              This may take a moment
+            </Text>
           </Box>
         )}
       </VStack>
@@ -153,4 +161,4 @@ const MedicalReport: React.FC<MedicalReportProps> = ({ appointmentId, onReportGe
   );
 };
 
-export default MedicalReport; 
+export default MedicalReport;

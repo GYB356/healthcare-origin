@@ -17,9 +17,5 @@
     "jest.setup.js",
     "**/__tests__/**/*"
   ],
-  "exclude": [
-    "node_modules",
-    ".next",
-    "coverage"
-  ]
-} 
+  "exclude": ["node_modules", ".next", "coverage"]
+}

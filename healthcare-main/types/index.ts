@@ -1,5 +1,5 @@
 // User types
-export type UserRole = 'patient' | 'doctor' | 'nurse' | 'staff' | 'administrator';
+export type UserRole = "patient" | "doctor" | "nurse" | "staff" | "administrator";
 
 export interface User {
   id: string;
@@ -18,7 +18,7 @@ export interface Appointment {
   doctorId: string;
   date: string;
   time: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: "scheduled" | "completed" | "cancelled";
   type: string;
   notes?: string;
   createdAt: string;
@@ -43,7 +43,7 @@ export interface BillingRecord {
   id: string;
   patientId: string;
   amount: number;
-  status: 'pending' | 'paid' | 'cancelled';
+  status: "pending" | "paid" | "cancelled";
   dueDate: string;
   description: string;
   insuranceInfo?: {
@@ -59,9 +59,9 @@ export interface StaffSchedule {
   id: string;
   staffId: string;
   department: string;
-  shift: 'morning' | 'afternoon' | 'night';
+  shift: "morning" | "afternoon" | "night";
   date: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: "scheduled" | "completed" | "cancelled";
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -103,10 +103,10 @@ export interface AnalyticsData {
 
 // Accessibility audit types
 export enum A11ySeverity {
-  CRITICAL = 'critical',
-  HIGH = 'serious',
-  MEDIUM = 'moderate',
-  LOW = 'minor'
+  CRITICAL = "critical",
+  HIGH = "serious",
+  MEDIUM = "moderate",
+  LOW = "minor",
 }
 
 export interface A11yViolation {

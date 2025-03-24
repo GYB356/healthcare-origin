@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { toast } from 'react-hot-toast';
-import InvoiceForm from './InvoiceForm';
+import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { toast } from "react-hot-toast";
+import InvoiceForm from "./InvoiceForm";
 
 interface Invoice {
   id: string;
@@ -32,11 +32,11 @@ export default function InvoiceList({ patientId }: InvoiceListProps) {
 
   const fetchInvoices = async () => {
     try {
-      const response = await fetch(`/api/invoices${patientId ? `?patientId=${patientId}` : ''}`);
+      const response = await fetch(`/api/invoices${patientId ? `?patientId=${patientId}` : ""}`);
       const data = await response.json();
       setInvoices(data.invoices);
     } catch (error) {
-      toast.error('Failed to fetch invoices');
+      toast.error("Failed to fetch invoices");
     } finally {
       setLoading(false);
     }
@@ -47,40 +47,40 @@ export default function InvoiceList({ patientId }: InvoiceListProps) {
   }, [patientId]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this invoice?')) return;
+    if (!confirm("Are you sure you want to delete this invoice?")) return;
 
     try {
       const response = await fetch(`/api/invoices/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (response.ok) {
-        toast.success('Invoice deleted successfully');
+        toast.success("Invoice deleted successfully");
         fetchInvoices();
       } else {
-        toast.error('Failed to delete invoice');
+        toast.error("Failed to delete invoice");
       }
     } catch (error) {
-      toast.error('Error deleting invoice');
+      toast.error("Error deleting invoice");
     }
   };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
       const response = await fetch(`/api/invoices/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
 
       if (response.ok) {
-        toast.success('Invoice status updated successfully');
+        toast.success("Invoice status updated successfully");
         fetchInvoices();
       } else {
-        toast.error('Failed to update invoice status');
+        toast.error("Failed to update invoice status");
       }
     } catch (error) {
-      toast.error('Error updating invoice status');
+      toast.error("Error updating invoice status");
     }
   };
 
@@ -99,7 +99,7 @@ export default function InvoiceList({ patientId }: InvoiceListProps) {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-medium">
-              {selectedInvoice ? 'Edit Invoice' : 'New Invoice'}
+              {selectedInvoice ? "Edit Invoice" : "New Invoice"}
             </h3>
             <button
               onClick={() => {
@@ -112,7 +112,7 @@ export default function InvoiceList({ patientId }: InvoiceListProps) {
             </button>
           </div>
           <InvoiceForm
-            patientId={patientId || ''}
+            patientId={patientId || ""}
             initialData={selectedInvoice}
             onSuccess={() => {
               setShowForm(false);
@@ -123,7 +123,7 @@ export default function InvoiceList({ patientId }: InvoiceListProps) {
         </div>
       ) : (
         <>
-          {(session?.user?.role === 'STAFF' || session?.user?.role === 'ADMIN') && patientId && (
+          {(session?.user?.role === "STAFF" || session?.user?.role === "ADMIN") && patientId && (
             <button
               onClick={() => setShowForm(true)}
               className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
@@ -169,7 +169,7 @@ export default function InvoiceList({ patientId }: InvoiceListProps) {
                       ${invoice.totalAmount.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {(session?.user?.role === 'STAFF' || session?.user?.role === 'ADMIN') ? (
+                      {session?.user?.role === "STAFF" || session?.user?.role === "ADMIN" ? (
                         <select
                           value={invoice.status}
                           onChange={(e) => handleStatusChange(invoice.id, e.target.value)}
@@ -181,13 +181,19 @@ export default function InvoiceList({ patientId }: InvoiceListProps) {
                           <option value="CANCELLED">Cancelled</option>
                         </select>
                       ) : (
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                          ${invoice.status === 'PAID' ? 'bg-green-100 text-green-800' :
-                          invoice.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                          invoice.status === 'PARTIALLY_PAID' ? 'bg-blue-100 text-blue-800' :
-                          'bg-red-100 text-red-800'}`}
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                          ${
+                            invoice.status === "PAID"
+                              ? "bg-green-100 text-green-800"
+                              : invoice.status === "PENDING"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : invoice.status === "PARTIALLY_PAID"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-red-100 text-red-800"
+                          }`}
                         >
-                          {invoice.status.replace('_', ' ')}
+                          {invoice.status.replace("_", " ")}
                         </span>
                       )}
                     </td>
@@ -195,7 +201,7 @@ export default function InvoiceList({ patientId }: InvoiceListProps) {
                       {new Date(invoice.dueDate).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {(session?.user?.role === 'STAFF' || session?.user?.role === 'ADMIN') && (
+                      {(session?.user?.role === "STAFF" || session?.user?.role === "ADMIN") && (
                         <div className="flex justify-end space-x-3">
                           <button
                             onClick={() => handleEdit(invoice)}
@@ -228,4 +234,4 @@ export default function InvoiceList({ patientId }: InvoiceListProps) {
       )}
     </div>
   );
-} 
+}

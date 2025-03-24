@@ -1,56 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Calendar, Clock, AlertCircle, CheckCircle, Pill } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Plus, Search, Calendar, Clock, AlertCircle, CheckCircle, Pill } from "lucide-react";
 
 const PrescriptionManager = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('active');
-  const [searchTerm, setSearchTerm] = useState('');
-  
+  const [activeTab, setActiveTab] = useState("active");
+  const [searchTerm, setSearchTerm] = useState("");
+
   useEffect(() => {
     const fetchPrescriptions = async () => {
       try {
         setLoading(true);
-        
+
         // Check for mock data first
-        const mockDataStr = localStorage.getItem('mockPrescriptions');
+        const mockDataStr = localStorage.getItem("mockPrescriptions");
         if (mockDataStr) {
           const mockData = JSON.parse(mockDataStr);
           setPrescriptions(mockData);
           setLoading(false);
           return;
         }
-        
+
         // Real API call
-        const response = await fetch('/api/prescriptions', {
+        const response = await fetch("/api/prescriptions", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
-        
+
         if (!response.ok) {
-          throw new Error('Failed to fetch prescriptions');
+          throw new Error("Failed to fetch prescriptions");
         }
-        
+
         const data = await response.json();
         setPrescriptions(data);
       } catch (err) {
-        console.error('Error fetching prescriptions:', err);
+        console.error("Error fetching prescriptions:", err);
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchPrescriptions();
   }, []);
-  
+
   // Filter prescriptions based on active tab and search term
-  const filteredPrescriptions = prescriptions.filter(prescription => {
+  const filteredPrescriptions = prescriptions.filter((prescription) => {
     // Filter by tab
-    if (activeTab === 'active' && prescription.status !== 'active') return false;
-    if (activeTab === 'pending' && prescription.status !== 'pending') return false;
-    if (activeTab === 'expired' && prescription.status !== 'expired') return false;
-    
+    if (activeTab === "active" && prescription.status !== "active") return false;
+    if (activeTab === "pending" && prescription.status !== "pending") return false;
+    if (activeTab === "expired" && prescription.status !== "expired") return false;
+
     // Filter by search term
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
@@ -60,28 +60,39 @@ const PrescriptionManager = () => {
         prescription.pharmacy?.toLowerCase().includes(searchLower)
       );
     }
-    
+
     return true;
   });
-  
+
   // Status badge component
   const StatusBadge = ({ status }) => {
     const statusConfig = {
-      active: { color: 'bg-green-100 text-green-800', icon: <CheckCircle size={14} className="mr-1" /> },
-      pending: { color: 'bg-yellow-100 text-yellow-800', icon: <Clock size={14} className="mr-1" /> },
-      expired: { color: 'bg-red-100 text-red-800', icon: <AlertCircle size={14} className="mr-1" /> },
+      active: {
+        color: "bg-green-100 text-green-800",
+        icon: <CheckCircle size={14} className="mr-1" />,
+      },
+      pending: {
+        color: "bg-yellow-100 text-yellow-800",
+        icon: <Clock size={14} className="mr-1" />,
+      },
+      expired: {
+        color: "bg-red-100 text-red-800",
+        icon: <AlertCircle size={14} className="mr-1" />,
+      },
     };
-    
+
     const config = statusConfig[status] || statusConfig.active;
-    
+
     return (
-      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
+      <span
+        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${config.color}`}
+      >
         {config.icon}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
   };
-  
+
   return (
     <div className="bg-white rounded-lg shadow-md">
       <div className="p-6 border-b border-gray-200">
@@ -92,7 +103,7 @@ const PrescriptionManager = () => {
             Request Refill
           </button>
         </div>
-        
+
         <div className="mt-4">
           <div className="relative">
             <input
@@ -105,35 +116,35 @@ const PrescriptionManager = () => {
             <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
           </div>
         </div>
-        
+
         <div className="flex mt-6 border-b border-gray-200">
           <button
-            className={`px-4 py-2 font-medium text-sm ${activeTab === 'active' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('active')}
+            className={`px-4 py-2 font-medium text-sm ${activeTab === "active" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500 hover:text-gray-700"}`}
+            onClick={() => setActiveTab("active")}
           >
             Active
           </button>
           <button
-            className={`px-4 py-2 font-medium text-sm ${activeTab === 'pending' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('pending')}
+            className={`px-4 py-2 font-medium text-sm ${activeTab === "pending" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500 hover:text-gray-700"}`}
+            onClick={() => setActiveTab("pending")}
           >
             Pending
           </button>
           <button
-            className={`px-4 py-2 font-medium text-sm ${activeTab === 'expired' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('expired')}
+            className={`px-4 py-2 font-medium text-sm ${activeTab === "expired" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500 hover:text-gray-700"}`}
+            onClick={() => setActiveTab("expired")}
           >
             Expired
           </button>
           <button
-            className={`px-4 py-2 font-medium text-sm ${activeTab === 'all' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('all')}
+            className={`px-4 py-2 font-medium text-sm ${activeTab === "all" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500 hover:text-gray-700"}`}
+            onClick={() => setActiveTab("all")}
           >
             All
           </button>
         </div>
       </div>
-      
+
       <div className="p-6">
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -144,7 +155,9 @@ const PrescriptionManager = () => {
             <Pill className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No prescriptions found</h3>
             <p className="text-gray-500">
-              {searchTerm ? 'Try adjusting your search terms.' : 'You have no prescriptions in this category.'}
+              {searchTerm
+                ? "Try adjusting your search terms."
+                : "You have no prescriptions in this category."}
             </p>
           </div>
         ) : (
@@ -152,22 +165,40 @@ const PrescriptionManager = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Medication
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Prescriber
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Dosage
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Status
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Expires
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Refills
                   </th>
                   <th scope="col" className="relative px-6 py-3">
@@ -184,14 +215,18 @@ const PrescriptionManager = () => {
                           <Pill className="h-5 w-5 text-blue-600" />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{prescription.medication}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {prescription.medication}
+                          </div>
                           <div className="text-sm text-gray-500">{prescription.genericName}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{prescription.prescriber}</div>
-                      <div className="text-sm text-gray-500">{prescription.prescriberSpecialty}</div>
+                      <div className="text-sm text-gray-500">
+                        {prescription.prescriberSpecialty}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{prescription.dosage}</div>
@@ -225,4 +260,4 @@ const PrescriptionManager = () => {
   );
 };
 
-export default PrescriptionManager; 
+export default PrescriptionManager;

@@ -1,34 +1,61 @@
-const React = require('react');
+const React = require("react");
 
-// Create proper React components for router mocks
-const BrowserRouter = ({ children }) => React.createElement('div', { 'data-testid': 'browser-router' }, children);
-const Route = ({ children }) => React.createElement('div', { 'data-testid': 'route' }, children);
-const Routes = ({ children }) => React.createElement('div', { 'data-testid': 'routes' }, children);
-const Link = ({ children, to }) => React.createElement('a', { href: to, 'data-testid': 'link' }, children);
-const NavLink = ({ children, to }) => React.createElement('a', { href: to, 'data-testid': 'nav-link' }, children);
-const Navigate = ({ to }) => React.createElement('div', { 'data-testid': 'navigate', to });
-const MemoryRouter = ({ children }) => React.createElement('div', { 'data-testid': 'memory-router' }, children);
-const Outlet = () => React.createElement('div', { 'data-testid': 'outlet' });
+// Mock Link component
+const Link = ({ to, children, ...props }) => {
+  return React.createElement("a", { href: to, ...props }, children);
+};
 
-// Navigation hooks
-const useNavigate = () => jest.fn();
-const useParams = () => ({});
-const useLocation = () => ({ pathname: '/', search: '', hash: '', state: null });
-const useRouteMatch = () => ({ path: '/', url: '/', isExact: true, params: {} });
-const useSearchParams = () => [new URLSearchParams(), jest.fn()];
+// Mock Router component
+const BrowserRouter = ({ children }) => {
+  return React.createElement("div", { "data-testid": "router" }, children);
+};
 
-module.exports = {
+// Mock Routes component
+const Routes = ({ children }) => {
+  return React.createElement("div", { "data-testid": "routes" }, children);
+};
+
+// Mock Route component
+const Route = ({ path, element, children }) => {
+  return React.createElement("div", { "data-testid": "route", path }, element || children);
+};
+
+// Mock navigate function
+const navigate = jest.fn();
+
+// Mock hooks
+const useNavigate = () => navigate;
+const useParams = jest.fn(() => ({}));
+const useLocation = jest.fn(() => ({ pathname: "/", search: "" }));
+const useRouteMatch = jest.fn(() => ({ url: "/" }));
+
+const exports = {
   BrowserRouter,
-  Route,
   Routes,
+  Route,
   Link,
-  NavLink,
-  Navigate,
-  MemoryRouter,
-  Outlet,
+  NavLink: Link,
+  Navigate: ({ to }) => null,
   useNavigate,
   useParams,
   useLocation,
   useRouteMatch,
-  useSearchParams
-}; 
+  MemoryRouter: BrowserRouter,
+  // Make them available as default export as well
+  default: {
+    BrowserRouter,
+    Routes,
+    Route,
+    Link,
+    NavLink: Link,
+    Navigate: ({ to }) => null,
+    useNavigate,
+    useParams,
+    useLocation,
+    useRouteMatch,
+    MemoryRouter: BrowserRouter,
+  },
+};
+
+exports.__esModule = true;
+module.exports = exports;

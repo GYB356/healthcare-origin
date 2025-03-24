@@ -1,5 +1,5 @@
 // src/services/adminService.js
-import api from './api';
+import api from "./api";
 
 /**
  * Admin service for handling all admin-related API calls
@@ -12,7 +12,7 @@ const adminService = {
    */
   getUsers: async (params = {}) => {
     try {
-      const response = await api.get('/admin/users', { params });
+      const response = await api.get("/admin/users", { params });
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -40,7 +40,7 @@ const adminService = {
    */
   createUser: async (userData) => {
     try {
-      const response = await api.post('/admin/users', userData);
+      const response = await api.post("/admin/users", userData);
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -111,7 +111,7 @@ const adminService = {
    */
   getProviders: async (params = {}) => {
     try {
-      const response = await api.get('/admin/providers', { params });
+      const response = await api.get("/admin/providers", { params });
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -125,7 +125,7 @@ const adminService = {
    */
   getAppointments: async (params = {}) => {
     try {
-      const response = await api.get('/admin/appointments', { params });
+      const response = await api.get("/admin/appointments", { params });
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -139,7 +139,7 @@ const adminService = {
    */
   getLogs: async (params = {}) => {
     try {
-      const response = await api.get('/admin/logs', { params });
+      const response = await api.get("/admin/logs", { params });
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -152,7 +152,7 @@ const adminService = {
    */
   getSettings: async () => {
     try {
-      const response = await api.get('/admin/settings');
+      const response = await api.get("/admin/settings");
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -166,7 +166,7 @@ const adminService = {
    */
   updateSettings: async (settingsData) => {
     try {
-      const response = await api.put('/admin/settings', settingsData);
+      const response = await api.put("/admin/settings", settingsData);
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -180,7 +180,7 @@ const adminService = {
    */
   getHipaaCompliance: async (params = {}) => {
     try {
-      const response = await api.get('/admin/hipaa-compliance', { params });
+      const response = await api.get("/admin/hipaa-compliance", { params });
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -194,7 +194,7 @@ const adminService = {
    */
   getBaaData: async (params = {}) => {
     try {
-      const response = await api.get('/admin/baa', { params });
+      const response = await api.get("/admin/baa", { params });
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -208,7 +208,7 @@ const adminService = {
    */
   addBaa: async (baaData) => {
     try {
-      const response = await api.post('/admin/baa', baaData);
+      const response = await api.post("/admin/baa", baaData);
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -237,7 +237,7 @@ const adminService = {
    */
   getAnalytics: async (params = {}) => {
     try {
-      const response = await api.get('/admin/analytics', { params });
+      const response = await api.get("/admin/analytics", { params });
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -251,7 +251,7 @@ const adminService = {
    */
   getNotifications: async (params = {}) => {
     try {
-      const response = await api.get('/admin/notifications', { params });
+      const response = await api.get("/admin/notifications", { params });
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -265,7 +265,7 @@ const adminService = {
    */
   createNotification: async (notificationData) => {
     try {
-      const response = await api.post('/admin/notifications', notificationData);
+      const response = await api.post("/admin/notifications", notificationData);
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -278,7 +278,7 @@ const adminService = {
    */
   runHealthCheck: async () => {
     try {
-      const response = await api.get('/admin/system-health');
+      const response = await api.get("/admin/system-health");
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
@@ -292,12 +292,12 @@ const adminService = {
    */
   getAuditTrail: async (params = {}) => {
     try {
-      const response = await api.get('/admin/audit-trail', { params });
+      const response = await api.get("/admin/audit-trail", { params });
       return response.data;
     } catch (error) {
       throw handleAdminError(error);
     }
-  }
+  },
 };
 
 /**
@@ -306,46 +306,46 @@ const adminService = {
  * @returns {Error} - Processed error with helpful message
  */
 const handleAdminError = (error) => {
-  let errorMessage = 'An error occurred. Please try again.';
-  
+  let errorMessage = "An error occurred. Please try again.";
+
   if (error.response) {
     // Server responded with error
     const { status, data } = error.response;
-    
+
     switch (status) {
       case 400:
-        errorMessage = data.message || 'Invalid request. Please check your input.';
+        errorMessage = data.message || "Invalid request. Please check your input.";
         break;
       case 401:
-        errorMessage = 'Authentication required. Please log in again.';
+        errorMessage = "Authentication required. Please log in again.";
         break;
       case 403:
-        errorMessage = 'Access denied. You do not have permission to perform this action.';
+        errorMessage = "Access denied. You do not have permission to perform this action.";
         break;
       case 404:
-        errorMessage = 'Resource not found. Please check your request.';
+        errorMessage = "Resource not found. Please check your request.";
         break;
       case 409:
-        errorMessage = data.message || 'Conflict with current state. Please refresh and try again.';
+        errorMessage = data.message || "Conflict with current state. Please refresh and try again.";
         break;
       case 422:
-        errorMessage = data.message || 'Validation failed. Please check your input.';
+        errorMessage = data.message || "Validation failed. Please check your input.";
         break;
       case 429:
-        errorMessage = 'Too many requests. Please try again later.';
+        errorMessage = "Too many requests. Please try again later.";
         break;
       default:
-        errorMessage = data.message || 'Server error. Please try again later.';
+        errorMessage = data.message || "Server error. Please try again later.";
     }
   } else if (error.request) {
     // No response received
-    errorMessage = 'No response from server. Please check your internet connection.';
+    errorMessage = "No response from server. Please check your internet connection.";
   }
-  
+
   const customError = new Error(errorMessage);
   customError.originalError = error;
   customError.statusCode = error.response?.status;
-  
+
   return customError;
 };
 

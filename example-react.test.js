@@ -1,5 +1,5 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
+import React from "react";
+import { render, screen } from "@testing-library/react";
 
 // Simple test component
 const TestComponent = ({ title }) => {
@@ -11,11 +11,11 @@ const TestComponent = ({ title }) => {
   );
 };
 
-describe('React Component Test', () => {
-  it('renders the component with title', () => {
+describe("React Component Test", () => {
+  it("renders the component with title", () => {
     render(<TestComponent title="Hello World" />);
-    
-    expect(screen.getByText('Hello World')).toBeInTheDocument();
-    expect(screen.getByText('This is a test component')).toBeInTheDocument();
+
+    expect(screen.getByText("Hello World")).toBeInTheDocument();
+    expect(screen.getByText("This is a test component")).toBeInTheDocument();
   });
-}); 
+});

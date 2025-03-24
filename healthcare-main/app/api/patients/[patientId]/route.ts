@@ -1,22 +1,19 @@
-import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
-export async function GET(
-  req: Request,
-  { params }: { params: { patientId: string } }
-) {
+export async function GET(req: Request, { params }: { params: { patientId: string } }) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 })
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
     // Patients can only view their own profile
     if (session.user.role === "PATIENT" && session.user.id !== params.patientId) {
-      return new NextResponse("Forbidden", { status: 403 })
+      return new NextResponse("Forbidden", { status: 403 });
     }
 
     const patient = await prisma.user.findUnique({
@@ -65,39 +62,33 @@ export async function GET(
           take: 5,
         },
       },
-    })
+    });
 
     if (!patient) {
-      return new NextResponse("Patient not found", { status: 404 })
+      return new NextResponse("Patient not found", { status: 404 });
     }
 
-    return NextResponse.json(patient)
+    return NextResponse.json(patient);
   } catch (error) {
-    console.error("[PATIENT_GET]", error)
-    return new NextResponse("Internal Error", { status: 500 })
+    console.error("[PATIENT_GET]", error);
+    return new NextResponse("Internal Error", { status: 500 });
   }
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { patientId: string } }
-) {
+export async function PATCH(req: Request, { params }: { params: { patientId: string } }) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 })
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
     // Only doctors or the patient themselves can update the profile
-    if (
-      session.user.role !== "DOCTOR" &&
-      session.user.id !== params.patientId
-    ) {
-      return new NextResponse("Forbidden", { status: 403 })
+    if (session.user.role !== "DOCTOR" && session.user.id !== params.patientId) {
+      return new NextResponse("Forbidden", { status: 403 });
     }
 
-    const body = await req.json()
+    const body = await req.json();
     const {
       name,
       phone,
@@ -110,7 +101,7 @@ export async function PATCH(
       patientProfile,
       emergencyContact,
       insurance,
-    } = body
+    } = body;
 
     const patient = await prisma.user.update({
       where: {
@@ -162,29 +153,26 @@ export async function PATCH(
         emergencyContact: true,
         insurance: true,
       },
-    })
+    });
 
-    return NextResponse.json(patient)
+    return NextResponse.json(patient);
   } catch (error) {
-    console.error("[PATIENT_PATCH]", error)
-    return new NextResponse("Internal Error", { status: 500 })
+    console.error("[PATIENT_PATCH]", error);
+    return new NextResponse("Internal Error", { status: 500 });
   }
 }
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { patientId: string } }
-) {
+export async function DELETE(req: Request, { params }: { params: { patientId: string } }) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 })
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
     // Only doctors can delete patient profiles
     if (session.user.role !== "DOCTOR") {
-      return new NextResponse("Forbidden", { status: 403 })
+      return new NextResponse("Forbidden", { status: 403 });
     }
 
     await prisma.user.delete({
@@ -192,11 +180,11 @@ export async function DELETE(
         id: params.patientId,
         role: "PATIENT",
       },
-    })
+    });
 
-    return new NextResponse(null, { status: 204 })
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error("[PATIENT_DELETE]", error)
-    return new NextResponse("Internal Error", { status: 500 })
+    console.error("[PATIENT_DELETE]", error);
+    return new NextResponse("Internal Error", { status: 500 });
   }
-} 
+}

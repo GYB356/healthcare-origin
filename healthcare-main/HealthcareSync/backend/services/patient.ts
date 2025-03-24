@@ -1,6 +1,5 @@
-
-import { PrismaClient } from '@prisma/client';
-import { Patient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
+import { Patient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +9,7 @@ export class PatientService {
     if (doctorId) {
       query.where = { doctorId };
     }
-    
+
     return await prisma.patient.findMany(query);
   }
 
@@ -23,39 +22,39 @@ export class PatientService {
         healthMetrics: true,
         prescriptions: true,
         claims: true,
-      }
+      },
     });
   }
 
   static async createPatient(data: any): Promise<Patient> {
     return await prisma.patient.create({
-      data
+      data,
     });
   }
 
   static async updatePatient(id: string, data: any): Promise<Patient> {
     return await prisma.patient.update({
       where: { id },
-      data
+      data,
     });
   }
 
   static async deletePatient(id: string): Promise<Patient> {
     return await prisma.patient.delete({
-      where: { id }
+      where: { id },
     });
   }
-  
+
   static async searchPatients(query: string): Promise<Patient[]> {
     return await prisma.patient.findMany({
       where: {
         OR: [
-          { firstName: { contains: query, mode: 'insensitive' } },
-          { lastName: { contains: query, mode: 'insensitive' } },
-          { email: { contains: query, mode: 'insensitive' } },
-          { phoneNumber: { contains: query, mode: 'insensitive' } }
-        ]
-      }
+          { firstName: { contains: query, mode: "insensitive" } },
+          { lastName: { contains: query, mode: "insensitive" } },
+          { email: { contains: query, mode: "insensitive" } },
+          { phoneNumber: { contains: query, mode: "insensitive" } },
+        ],
+      },
     });
   }
 }

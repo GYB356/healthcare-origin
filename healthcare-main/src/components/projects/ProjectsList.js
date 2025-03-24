@@ -1,16 +1,16 @@
 // src/components/projects/ProjectsList.js
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../../services/api';
-import DashboardLayout from '../layout/DashboardLayout';
-import ProjectsTable from './ProjectsTable';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import api from "../../services/api";
+import DashboardLayout from "../layout/DashboardLayout";
+import ProjectsTable from "./ProjectsTable";
 
 const ProjectsList = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [perPage] = useState(10);
@@ -22,21 +22,21 @@ const ProjectsList = () => {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/projects', {
+      const response = await api.get("/projects", {
         params: {
-          status: filter !== 'all' ? filter : undefined,
+          status: filter !== "all" ? filter : undefined,
           search: searchTerm || undefined,
           page: currentPage,
-          limit: perPage
-        }
+          limit: perPage,
+        },
       });
-      
+
       setProjects(response.data.projects);
       setTotalPages(response.data.totalPages);
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching projects:', err);
-      setError('Failed to load projects. Please try again.');
+      console.error("Error fetching projects:", err);
+      setError("Failed to load projects. Please try again.");
       setLoading(false);
     }
   };
@@ -61,7 +61,10 @@ const ProjectsList = () => {
     <DashboardLayout>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">Projects</h1>
-        <Link to="/projects/new" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        <Link
+          to="/projects/new"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
           Add New Project
         </Link>
       </div>
@@ -120,18 +123,22 @@ const ProjectsList = () => {
             {projects.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500 text-lg">No projects found.</p>
-                <p className="text-gray-500">Create a new project or adjust your search criteria.</p>
+                <p className="text-gray-500">
+                  Create a new project or adjust your search criteria.
+                </p>
               </div>
             ) : (
               <>
                 <ProjectsTable projects={projects} />
-                
+
                 {/* Pagination */}
                 <div className="mt-6 flex justify-between items-center">
                   <p className="text-sm text-gray-700">
-                    Showing projects {(currentPage - 1) * perPage + 1} to {Math.min(currentPage * perPage, totalPages * perPage)} of {totalPages * perPage} total
+                    Showing projects {(currentPage - 1) * perPage + 1} to{" "}
+                    {Math.min(currentPage * perPage, totalPages * perPage)} of{" "}
+                    {totalPages * perPage} total
                   </p>
-                  
+
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
@@ -140,21 +147,21 @@ const ProjectsList = () => {
                     >
                       Previous
                     </button>
-                    
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
                         className={`px-3 py-1 border rounded-md ${
                           currentPage === page
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'border-gray-300 hover:bg-gray-50'
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "border-gray-300 hover:bg-gray-50"
                         }`}
                       >
                         {page}
                       </button>
                     ))}
-                    
+
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}

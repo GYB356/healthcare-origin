@@ -1,7 +1,7 @@
-import React, { ReactNode } from 'react';
-import Link from 'next/link';
-import { useAuth } from '../context/AuthContext';
-import Notifications from './Notifications';
+import React, { ReactNode } from "react";
+import Link from "next/link";
+import { useAuth } from "../context/AuthContext";
+import Notifications from "./Notifications";
 
 interface LayoutProps {
   children: ReactNode;
@@ -17,7 +17,7 @@ export default function Layout({ children }: LayoutProps) {
           <Link href="/">
             <a className="text-xl font-bold">Roofing Tracker</a>
           </Link>
-          
+
           <nav className="flex items-center space-x-4">
             {user ? (
               <>
@@ -30,12 +30,12 @@ export default function Layout({ children }: LayoutProps) {
                 <Link href="/messages">
                   <a className="hover:underline">Messages</a>
                 </Link>
-                {user.role === 'customer' && (
+                {user.role === "customer" && (
                   <Link href="/my-prescriptions">
                     <a className="hover:underline">My Prescriptions</a>
                   </Link>
                 )}
-                {user.role === 'contractor' && (
+                {user.role === "contractor" && (
                   <Link href="/projects">
                     <a className="hover:underline">Projects</a>
                   </Link>
@@ -43,7 +43,7 @@ export default function Layout({ children }: LayoutProps) {
                 {user && (
                   <>
                     <Notifications />
-                    {process.env.NODE_ENV === 'development' && (
+                    {process.env.NODE_ENV === "development" && (
                       <>
                         <Link href="/test-notifications">
                           <a className="text-yellow-500 hover:underline">Test Notifications</a>
@@ -55,7 +55,7 @@ export default function Layout({ children }: LayoutProps) {
                     )}
                   </>
                 )}
-                <button 
+                <button
                   onClick={logout}
                   className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm"
                 >
@@ -68,20 +68,16 @@ export default function Layout({ children }: LayoutProps) {
                   <a className="hover:underline">Login</a>
                 </Link>
                 <Link href="/register">
-                  <a className="bg-white text-blue-600 px-3 py-1 rounded text-sm">
-                    Register
-                  </a>
+                  <a className="bg-white text-blue-600 px-3 py-1 rounded text-sm">Register</a>
                 </Link>
               </>
             )}
           </nav>
         </div>
       </header>
-      
-      <main className="flex-grow container mx-auto px-4 py-6">
-        {children}
-      </main>
-      
+
+      <main className="flex-grow container mx-auto px-4 py-6">{children}</main>
+
       <footer className="bg-gray-100 border-t">
         <div className="container mx-auto px-4 py-6">
           <p className="text-center text-gray-600">
@@ -91,4 +87,4 @@ export default function Layout({ children }: LayoutProps) {
       </footer>
     </div>
   );
-} 
+}

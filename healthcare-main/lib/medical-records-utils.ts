@@ -1,5 +1,5 @@
-import { createAuditLog, verifyPatientAccess } from '@/lib/hipaa';
-import { AuditAction, ResourceType, AuditSeverity, AuditStatus } from '@prisma/client';
+import { createAuditLog, verifyPatientAccess } from "@/lib/hipaa";
+import { AuditAction, ResourceType, AuditSeverity, AuditStatus } from "@prisma/client";
 
 export interface MedicalRecordAuditContext {
   userId: string;
@@ -17,22 +17,22 @@ export async function logMedicalRecordAccess(context: MedicalRecordAuditContext)
   try {
     // Verify access
     const hasAccess = await verifyPatientAccess(context.userId, context.patientId);
-    
+
     if (!hasAccess) {
       await createAuditLog({
         userId: context.userId,
         action: AuditAction.ACCESS_ATTEMPT,
         resourceType: ResourceType.MEDICAL_RECORD,
         resourceId: context.recordId || context.patientId,
-        details: 'Unauthorized attempt to access medical records',
+        details: "Unauthorized attempt to access medical records",
         severity: AuditSeverity.HIGH,
         status: AuditStatus.FAILURE,
         sessionId: context.sessionId,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
       });
-      
-      throw new Error('Unauthorized access to medical records');
+
+      throw new Error("Unauthorized access to medical records");
     }
 
     // Log successful access
@@ -41,9 +41,9 @@ export async function logMedicalRecordAccess(context: MedicalRecordAuditContext)
       action: AuditAction.VIEW,
       resourceType: ResourceType.MEDICAL_RECORD,
       resourceId: context.recordId || context.patientId,
-      details: context.recordId 
+      details: context.recordId
         ? `Accessed specific medical record ${context.recordId}`
-        : 'Accessed medical records list',
+        : "Accessed medical records list",
       severity: AuditSeverity.LOW,
       status: AuditStatus.SUCCESS,
       sessionId: context.sessionId,
@@ -51,7 +51,7 @@ export async function logMedicalRecordAccess(context: MedicalRecordAuditContext)
       userAgent: context.userAgent,
     });
   } catch (error) {
-    console.error('Failed to log medical record access:', error);
+    console.error("Failed to log medical record access:", error);
     throw error;
   }
 }
@@ -62,7 +62,7 @@ export async function logMedicalRecordAccess(context: MedicalRecordAuditContext)
 export async function logAttachmentDownload(
   context: MedicalRecordAuditContext,
   attachmentId: string,
-  fileName: string
+  fileName: string,
 ) {
   try {
     await createAuditLog({
@@ -78,7 +78,7 @@ export async function logAttachmentDownload(
       userAgent: context.userAgent,
     });
   } catch (error) {
-    console.error('Failed to log attachment download:', error);
+    console.error("Failed to log attachment download:", error);
     throw error;
   }
 }
@@ -89,7 +89,7 @@ export async function logAttachmentDownload(
 export async function logMedicalRecordSearch(
   context: MedicalRecordAuditContext,
   searchTerm: string,
-  filterType?: string
+  filterType?: string,
 ) {
   try {
     await createAuditLog({
@@ -97,7 +97,7 @@ export async function logMedicalRecordSearch(
       action: AuditAction.SEARCH,
       resourceType: ResourceType.MEDICAL_RECORD,
       resourceId: context.patientId,
-      details: `Searched medical records - Term: "${searchTerm}"${filterType ? ` Filter: ${filterType}` : ''}`,
+      details: `Searched medical records - Term: "${searchTerm}"${filterType ? ` Filter: ${filterType}` : ""}`,
       severity: AuditSeverity.LOW,
       status: AuditStatus.SUCCESS,
       sessionId: context.sessionId,
@@ -105,7 +105,7 @@ export async function logMedicalRecordSearch(
       userAgent: context.userAgent,
     });
   } catch (error) {
-    console.error('Failed to log medical record search:', error);
+    console.error("Failed to log medical record search:", error);
     throw error;
   }
-} 
+}

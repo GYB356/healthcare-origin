@@ -6,12 +6,12 @@ const api = {
   delete: jest.fn(),
   interceptors: {
     request: {
-      use: jest.fn()
+      use: jest.fn(),
     },
     response: {
-      use: jest.fn()
-    }
-  }
+      use: jest.fn(),
+    },
+  },
 };
 
-export default api; 
+export default api;

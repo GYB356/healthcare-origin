@@ -1,5 +1,12 @@
-import { authApi } from '@/utils/apiConfig';
-import { User, AuthResponse, LoginData, RegisterData, TokenResponse, AuthError } from '@/types/auth';
+import { authApi } from "@/utils/apiConfig";
+import {
+  User,
+  AuthResponse,
+  LoginData,
+  RegisterData,
+  TokenResponse,
+  AuthError,
+} from "@/types/auth";
 
 class AuthService {
   /**
@@ -9,7 +16,7 @@ class AuthService {
    */
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {
-      const response = await authApi.post<AuthResponse>('/register', userData);
+      const response = await authApi.post<AuthResponse>("/register", userData);
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -30,13 +37,13 @@ class AuthService {
       if (twoFactorCode) {
         loginData.twoFactorCode = twoFactorCode;
       }
-      
-      const response = await authApi.post<AuthResponse>('/login', loginData);
-      
+
+      const response = await authApi.post<AuthResponse>("/login", loginData);
+
       if (response.data.token) {
         this.setUserData(response.data);
       }
-      
+
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -48,9 +55,9 @@ class AuthService {
    * Log out the current user
    */
   logout(): void {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
   }
 
   /**
@@ -58,7 +65,7 @@ class AuthService {
    * @returns Current user data or null
    */
   getCurrentUser(): User | null {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem("user");
     return userStr ? JSON.parse(userStr) : null;
   }
 
@@ -69,7 +76,7 @@ class AuthService {
    */
   async refreshToken(refreshToken: string): Promise<TokenResponse> {
     try {
-      const response = await authApi.post<TokenResponse>('/refresh-token', { refreshToken });
+      const response = await authApi.post<TokenResponse>("/refresh-token", { refreshToken });
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -82,9 +89,9 @@ class AuthService {
    * @param data - User data and tokens
    */
   private setUserData(data: AuthResponse): void {
-    localStorage.setItem('user', JSON.stringify(data.user));
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('refreshToken', data.refreshToken);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("refreshToken", data.refreshToken);
   }
 
   /**
@@ -96,12 +103,12 @@ class AuthService {
       const authError: AuthError = {
         message: error.message,
         status: (error as any).status,
-        code: (error as any).code
+        code: (error as any).code,
       };
       throw authError;
     }
-    throw new Error('An unexpected error occurred');
+    throw new Error("An unexpected error occurred");
   }
 }
 
-export default new AuthService(); 
+export default new AuthService();

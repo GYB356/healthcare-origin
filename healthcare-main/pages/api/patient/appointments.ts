@@ -1,19 +1,16 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
-import prisma from '../../../lib/prisma';
+import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
+import prisma from "../../../lib/prisma";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession({ req });
 
   if (!session?.user?.email) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   // GET /api/patient/appointments - Get all appointments for the patient
-  if (req.method === 'GET') {
+  if (req.method === "GET") {
     try {
       const user = await prisma.user.findUnique({
         where: { email: session.user.email },
@@ -23,7 +20,7 @@ export default async function handler(
       });
 
       if (!user?.patientProfile) {
-        return res.status(404).json({ error: 'Patient profile not found' });
+        return res.status(404).json({ error: "Patient profile not found" });
       }
 
       const appointments = await prisma.appointment.findMany({
@@ -39,7 +36,7 @@ export default async function handler(
           },
         },
         orderBy: {
-          date: 'desc',
+          date: "desc",
         },
       });
 
@@ -54,18 +51,18 @@ export default async function handler(
 
       return res.status(200).json(formattedAppointments);
     } catch (error) {
-      console.error('Error fetching appointments:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      console.error("Error fetching appointments:", error);
+      return res.status(500).json({ error: "Internal server error" });
     }
   }
 
   // POST /api/patient/appointments - Create a new appointment
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     try {
       const { date, time, doctorId } = req.body;
 
       if (!date || !time || !doctorId) {
-        return res.status(400).json({ error: 'Missing required fields' });
+        return res.status(400).json({ error: "Missing required fields" });
       }
 
       const user = await prisma.user.findUnique({
@@ -76,7 +73,7 @@ export default async function handler(
       });
 
       if (!user?.patientProfile) {
-        return res.status(404).json({ error: 'Patient profile not found' });
+        return res.status(404).json({ error: "Patient profile not found" });
       }
 
       // Check if the time slot is available
@@ -85,19 +82,19 @@ export default async function handler(
           doctorId,
           date,
           time,
-          status: 'scheduled',
+          status: "scheduled",
         },
       });
 
       if (existingAppointment) {
-        return res.status(400).json({ error: 'Time slot is not available' });
+        return res.status(400).json({ error: "Time slot is not available" });
       }
 
       const appointment = await prisma.appointment.create({
         data: {
           date,
           time,
-          status: 'scheduled',
+          status: "scheduled",
           patient: {
             connect: { id: user.patientProfile.id },
           },
@@ -126,19 +123,19 @@ export default async function handler(
 
       return res.status(201).json(formattedAppointment);
     } catch (error) {
-      console.error('Error creating appointment:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      console.error("Error creating appointment:", error);
+      return res.status(500).json({ error: "Internal server error" });
     }
   }
 
   // PUT /api/patient/appointments/:id - Update an appointment status
-  if (req.method === 'PUT') {
+  if (req.method === "PUT") {
     try {
       const { id } = req.query;
       const { status } = req.body;
 
       if (!id || !status) {
-        return res.status(400).json({ error: 'Missing required fields' });
+        return res.status(400).json({ error: "Missing required fields" });
       }
 
       const user = await prisma.user.findUnique({
@@ -149,7 +146,7 @@ export default async function handler(
       });
 
       if (!user?.patientProfile) {
-        return res.status(404).json({ error: 'Patient profile not found' });
+        return res.status(404).json({ error: "Patient profile not found" });
       }
 
       const appointment = await prisma.appointment.update({
@@ -181,10 +178,10 @@ export default async function handler(
 
       return res.status(200).json(formattedAppointment);
     } catch (error) {
-      console.error('Error updating appointment:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      console.error("Error updating appointment:", error);
+      return res.status(500).json({ error: "Internal server error" });
     }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
-} 
+  return res.status(405).json({ error: "Method not allowed" });
+}

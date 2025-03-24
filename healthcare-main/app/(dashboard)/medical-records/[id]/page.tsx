@@ -1,106 +1,106 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter, useParams } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { toast } from "sonner"
-import { format } from "date-fns"
-import { Download } from "lucide-react"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter, useParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { Download } from "lucide-react";
 
 interface MedicalRecord {
-  id: string
-  date: string
-  type: string
-  description: string
-  patientId: string
+  id: string;
+  date: string;
+  type: string;
+  description: string;
+  patientId: string;
   patient: {
-    name: string
-    dateOfBirth: string
-    email: string
-    phone: string
+    name: string;
+    dateOfBirth: string;
+    email: string;
+    phone: string;
     patientProfile: {
-      bloodType: string | null
-      allergies: string | null
-      medications: string | null
-      chronicConditions: string | null
-    } | null
-  }
-  doctorId: string
+      bloodType: string | null;
+      allergies: string | null;
+      medications: string | null;
+      chronicConditions: string | null;
+    } | null;
+  };
+  doctorId: string;
   doctor: {
-    name: string
-    specialization: string
-  }
+    name: string;
+    specialization: string;
+  };
   attachments: Array<{
-    id: string
-    name: string
-    type: string
-    url: string
-  }>
+    id: string;
+    name: string;
+    type: string;
+    url: string;
+  }>;
 }
 
 export default function MedicalRecordPage() {
-  const { data: session } = useSession()
-  const router = useRouter()
-  const params = useParams()
-  const [record, setRecord] = useState<MedicalRecord | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: session } = useSession();
+  const router = useRouter();
+  const params = useParams();
+  const [record, setRecord] = useState<MedicalRecord | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!session?.user) {
-      router.push("/login")
-      return
+      router.push("/login");
+      return;
     }
 
-    fetchRecord()
-  }, [session, router, params.id])
+    fetchRecord();
+  }, [session, router, params.id]);
 
   const fetchRecord = async () => {
     try {
-      const response = await fetch(`/api/medical-records/${params.id}`)
+      const response = await fetch(`/api/medical-records/${params.id}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch medical record")
+        throw new Error("Failed to fetch medical record");
       }
 
-      const data = await response.json()
-      setRecord(data)
+      const data = await response.json();
+      setRecord(data);
     } catch (error) {
-      console.error("Error fetching medical record:", error)
-      toast.error("Failed to load medical record")
+      console.error("Error fetching medical record:", error);
+      toast.error("Failed to load medical record");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDownload = async (attachmentId: string, fileName: string) => {
     try {
-      const response = await fetch(`/api/medical-records/${params.id}/attachments/${attachmentId}`)
+      const response = await fetch(`/api/medical-records/${params.id}/attachments/${attachmentId}`);
       if (!response.ok) {
-        throw new Error("Failed to download attachment")
+        throw new Error("Failed to download attachment");
       }
 
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = fileName
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (error) {
-      console.error("Error downloading attachment:", error)
-      toast.error("Failed to download attachment")
+      console.error("Error downloading attachment:", error);
+      toast.error("Failed to download attachment");
     }
-  }
+  };
 
   if (loading) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   if (!record) {
-    return <div>Medical record not found</div>
+    return <div>Medical record not found</div>;
   }
 
   return (
@@ -202,9 +202,7 @@ export default function MedicalRecordPage() {
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">Chronic Conditions</dt>
-                      <dd>
-                        {record.patient.patientProfile.chronicConditions || "None reported"}
-                      </dd>
+                      <dd>{record.patient.patientProfile.chronicConditions || "None reported"}</dd>
                     </div>
                   </dl>
                 </div>
@@ -245,5 +243,5 @@ export default function MedicalRecordPage() {
         )}
       </div>
     </div>
-  )
-} 
+  );
+}

@@ -1,7 +1,7 @@
 // contexts/MedicalRecordsContext.js - Fixed await syntax
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext.js';
-import { hasPermission, secureStorage } from '../utils/security.js';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "./AuthContext.js";
+import { hasPermission, secureStorage } from "../utils/security.js";
 
 const MedicalRecordsContext = createContext();
 
@@ -37,31 +37,31 @@ export const MedicalRecordsProvider = ({ children }) => {
         // For demo purposes, we'll just use some sample data
         const sampleRecords = [
           {
-            id: '1',
-            patientId: currentUser?.id || 'user123',
-            title: 'Annual Physical',
-            date: '2023-05-15',
-            doctor: 'Dr. Smith',
-            type: 'examination',
-            notes: 'Regular checkup, all vitals normal.',
-            attachments: []
+            id: "1",
+            patientId: currentUser?.id || "user123",
+            title: "Annual Physical",
+            date: "2023-05-15",
+            doctor: "Dr. Smith",
+            type: "examination",
+            notes: "Regular checkup, all vitals normal.",
+            attachments: [],
           },
           {
-            id: '2',
-            patientId: currentUser?.id || 'user123',
-            title: 'Flu Vaccination',
-            date: '2023-10-01',
-            doctor: 'Dr. Johnson',
-            type: 'vaccination',
-            notes: 'Annual flu shot administered.',
-            attachments: []
-          }
+            id: "2",
+            patientId: currentUser?.id || "user123",
+            title: "Flu Vaccination",
+            date: "2023-10-01",
+            doctor: "Dr. Johnson",
+            type: "vaccination",
+            notes: "Annual flu shot administered.",
+            attachments: [],
+          },
         ];
-        
+
         setRecords(sampleRecords);
         setLoading(false);
       } catch (err) {
-        setError('Failed to fetch medical records');
+        setError("Failed to fetch medical records");
         setLoading(false);
       }
     }, 1000);
@@ -75,23 +75,23 @@ export const MedicalRecordsProvider = ({ children }) => {
     return new Promise((resolve, reject) => {
       // In a real app, this would be an API call
       setTimeout(() => {
-        const record = records.find(r => r.id === recordId);
-        
+        const record = records.find((r) => r.id === recordId);
+
         if (record) {
           // Log this access for HIPAA auditing
-          logHIPAAAction('access_medical_record', {
+          logHIPAAAction("access_medical_record", {
             recordId,
             patientId: record.patientId,
-            accessType: 'detail',
-            timestamp: new Date().toISOString()
+            accessType: "detail",
+            timestamp: new Date().toISOString(),
           }).then(() => {
             setLoading(false);
             resolve(record);
           });
         } else {
-          setError('Record not found');
+          setError("Record not found");
           setLoading(false);
-          reject(new Error('Record not found'));
+          reject(new Error("Record not found"));
         }
       }, 500);
     });
@@ -104,10 +104,10 @@ export const MedicalRecordsProvider = ({ children }) => {
 
     return new Promise((resolve, reject) => {
       // Check permissions
-      if (!hasPermission(currentUser, 'create_medical_record')) {
-        setError('You do not have permission to create medical records');
+      if (!hasPermission(currentUser, "create_medical_record")) {
+        setError("You do not have permission to create medical records");
         setLoading(false);
-        reject(new Error('Permission denied'));
+        reject(new Error("Permission denied"));
         return;
       }
 
@@ -119,23 +119,23 @@ export const MedicalRecordsProvider = ({ children }) => {
             id: `rec_${Date.now()}`,
             patientId: currentUser?.id,
             ...recordData,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           };
-          
+
           // Update state
           setRecords([...records, newRecord]);
-          
+
           // Log this for HIPAA auditing
-          logHIPAAAction('create_medical_record', {
+          logHIPAAAction("create_medical_record", {
             recordId: newRecord.id,
             patientId: newRecord.patientId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           }).then(() => {
             setLoading(false);
             resolve(newRecord);
           });
         } catch (err) {
-          setError('Failed to create medical record');
+          setError("Failed to create medical record");
           setLoading(false);
           reject(err);
         }
@@ -150,10 +150,10 @@ export const MedicalRecordsProvider = ({ children }) => {
 
     return new Promise((resolve, reject) => {
       // Check permissions
-      if (!hasPermission(currentUser, 'update_medical_record')) {
-        setError('You do not have permission to update medical records');
+      if (!hasPermission(currentUser, "update_medical_record")) {
+        setError("You do not have permission to update medical records");
         setLoading(false);
-        reject(new Error('Permission denied'));
+        reject(new Error("Permission denied"));
         return;
       }
 
@@ -161,35 +161,35 @@ export const MedicalRecordsProvider = ({ children }) => {
       setTimeout(() => {
         try {
           // Find the record to update
-          const index = records.findIndex(r => r.id === recordId);
-          
+          const index = records.findIndex((r) => r.id === recordId);
+
           if (index === -1) {
-            throw new Error('Record not found');
+            throw new Error("Record not found");
           }
-          
+
           // Create updated record
           const updatedRecord = {
             ...records[index],
             ...recordData,
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
           };
-          
+
           // Update state
           const newRecords = [...records];
           newRecords[index] = updatedRecord;
           setRecords(newRecords);
-          
+
           // Log this for HIPAA auditing
-          logHIPAAAction('update_medical_record', {
+          logHIPAAAction("update_medical_record", {
             recordId,
             patientId: updatedRecord.patientId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           }).then(() => {
             setLoading(false);
             resolve(updatedRecord);
           });
         } catch (err) {
-          setError('Failed to update medical record');
+          setError("Failed to update medical record");
           setLoading(false);
           reject(err);
         }
@@ -204,10 +204,10 @@ export const MedicalRecordsProvider = ({ children }) => {
 
     return new Promise((resolve, reject) => {
       // Check permissions
-      if (!hasPermission(currentUser, 'delete_medical_record')) {
-        setError('You do not have permission to delete medical records');
+      if (!hasPermission(currentUser, "delete_medical_record")) {
+        setError("You do not have permission to delete medical records");
         setLoading(false);
-        reject(new Error('Permission denied'));
+        reject(new Error("Permission denied"));
         return;
       }
 
@@ -215,26 +215,26 @@ export const MedicalRecordsProvider = ({ children }) => {
       setTimeout(() => {
         try {
           // Find the record
-          const record = records.find(r => r.id === recordId);
-          
+          const record = records.find((r) => r.id === recordId);
+
           if (!record) {
-            throw new Error('Record not found');
+            throw new Error("Record not found");
           }
-          
+
           // Update state
-          setRecords(records.filter(r => r.id !== recordId));
-          
+          setRecords(records.filter((r) => r.id !== recordId));
+
           // Log this for HIPAA auditing
-          logHIPAAAction('delete_medical_record', {
+          logHIPAAAction("delete_medical_record", {
             recordId,
             patientId: record.patientId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           }).then(() => {
             setLoading(false);
             resolve({ success: true });
           });
         } catch (err) {
-          setError('Failed to delete medical record');
+          setError("Failed to delete medical record");
           setLoading(false);
           reject(err);
         }
@@ -247,7 +247,7 @@ export const MedicalRecordsProvider = ({ children }) => {
     return new Promise((resolve, reject) => {
       // Simulate document upload
       setTimeout(() => {
-        console.log('Document uploaded:', documentData);
+        console.log("Document uploaded:", documentData);
         resolve({ success: true });
       }, 1000);
     });
@@ -267,14 +267,10 @@ export const MedicalRecordsProvider = ({ children }) => {
     addRecord,
     updateRecord,
     deleteRecord,
-    uploadDocument
+    uploadDocument,
   };
 
-  return (
-    <MedicalRecordsContext.Provider value={value}>
-      {children}
-    </MedicalRecordsContext.Provider>
-  );
+  return <MedicalRecordsContext.Provider value={value}>{children}</MedicalRecordsContext.Provider>;
 };
 
 export default MedicalRecordsContext;

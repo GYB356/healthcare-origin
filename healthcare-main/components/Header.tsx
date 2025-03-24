@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { User } from '@/types';
-import { useRouter } from 'next/navigation';
+import { User } from "@/types";
+import { useRouter } from "next/navigation";
 
 interface HeaderProps {
   user: User;
@@ -13,7 +13,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
 
   const handleLogout = () => {
     onLogout();
-    router.push('/auth/login');
+    router.push("/auth/login");
   };
 
   return (
@@ -23,7 +23,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
           <div className="flex items-center">
             <h1 className="text-xl font-semibold text-gray-900">HealthcareSync</h1>
           </div>
-          
+
           <div className="flex items-center">
             <div className="ml-3 relative">
               <div className="flex items-center space-x-4">
@@ -43,4 +43,4 @@ export default function Header({ user, onLogout }: HeaderProps) {
       </div>
     </header>
   );
-} 
+}

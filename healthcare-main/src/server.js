@@ -1,8 +1,8 @@
-import notificationsRouter from './routes/notifications';
+import notificationsRouter from "./routes/notifications";
 
 // ... existing middleware setup ...
 
 // Add notifications routes
-app.use('/api/notifications', notificationsRouter);
+app.use("/api/notifications", notificationsRouter);
 
-// ... rest of the server code ... 
+// ... rest of the server code ...

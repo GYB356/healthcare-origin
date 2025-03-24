@@ -1,6 +1,6 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
-import { PrismaClient, UserRole } from '@prisma/client';
+import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
+import { PrismaClient, UserRole } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -8,21 +8,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const session = await getSession({ req });
 
   if (!session) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   try {
     switch (req.method) {
-      case 'GET':
+      case "GET":
         return await handleGet(req, res, session);
-      case 'POST':
+      case "POST":
         return await handlePost(req, res, session);
       default:
-        return res.status(405).json({ error: 'Method not allowed' });
+        return res.status(405).json({ error: "Method not allowed" });
     }
   } catch (error) {
-    console.error('Error handling appointment request:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("Error handling appointment request:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 
@@ -61,7 +61,7 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse, session: any
       if (patientId) where.patientId = patientId;
       break;
     default:
-      return res.status(403).json({ error: 'Forbidden' });
+      return res.status(403).json({ error: "Forbidden" });
   }
 
   const appointments = await prisma.appointment.findMany({
@@ -87,7 +87,7 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse, session: any
       },
     },
     orderBy: {
-      date: 'asc',
+      date: "asc",
     },
   });
 
@@ -99,24 +99,15 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, session: an
 
   // Only staff, admin, and doctors can create appointments
   if (![UserRole.STAFF, UserRole.ADMIN, UserRole.DOCTOR].includes(role)) {
-    return res.status(403).json({ error: 'Forbidden' });
+    return res.status(403).json({ error: "Forbidden" });
   }
 
-  const {
-    title,
-    notes,
-    date,
-    startTime,
-    endTime,
-    patientId,
-    doctorId,
-    isVirtual,
-    virtualLink,
-  } = req.body;
+  const { title, notes, date, startTime, endTime, patientId, doctorId, isVirtual, virtualLink } =
+    req.body;
 
   // Validate required fields
   if (!title || !date || !startTime || !endTime || !patientId || !doctorId) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ error: "Missing required fields" });
   }
 
   // Validate date and time format
@@ -124,8 +115,12 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, session: an
   const appointmentStartTime = new Date(startTime);
   const appointmentEndTime = new Date(endTime);
 
-  if (isNaN(appointmentDate.getTime()) || isNaN(appointmentStartTime.getTime()) || isNaN(appointmentEndTime.getTime())) {
-    return res.status(400).json({ error: 'Invalid date or time format' });
+  if (
+    isNaN(appointmentDate.getTime()) ||
+    isNaN(appointmentStartTime.getTime()) ||
+    isNaN(appointmentEndTime.getTime())
+  ) {
+    return res.status(400).json({ error: "Invalid date or time format" });
   }
 
   // Check for scheduling conflicts
@@ -151,7 +146,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, session: an
   });
 
   if (conflictingAppointment) {
-    return res.status(409).json({ error: 'Scheduling conflict detected' });
+    return res.status(409).json({ error: "Scheduling conflict detected" });
   }
 
   // Create the appointment
@@ -166,7 +161,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, session: an
       doctorId,
       isVirtual: isVirtual || false,
       virtualLink,
-      status: 'SCHEDULED',
+      status: "SCHEDULED",
     },
     include: {
       patient: {
@@ -191,4 +186,4 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, session: an
   });
 
   return res.status(201).json(appointment);
-} 
+}

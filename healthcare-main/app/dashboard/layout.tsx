@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useSession } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
+import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import {
   HomeIcon,
   CalendarIcon,
@@ -10,23 +10,27 @@ import {
   CreditCardIcon,
   UserIcon,
   ArrowLeftOnRectangleIcon,
-} from '@heroicons/react/24/outline';
-import { signOut } from 'next-auth/react';
+} from "@heroicons/react/24/outline";
+import { signOut } from "next-auth/react";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const pathname = usePathname();
 
   const navigation = [
-    { name: 'Dashboard', href: `/dashboard/${session?.user?.role}`, icon: HomeIcon },
-    { name: 'Appointments', href: `/dashboard/${session?.user?.role}/appointments`, icon: CalendarIcon },
-    { name: 'Medical Records', href: `/dashboard/${session?.user?.role}/records`, icon: ClipboardDocumentListIcon },
-    { name: 'Billing', href: `/dashboard/${session?.user?.role}/billing`, icon: CreditCardIcon },
-    { name: 'Profile', href: `/dashboard/${session?.user?.role}/profile`, icon: UserIcon },
+    { name: "Dashboard", href: `/dashboard/${session?.user?.role}`, icon: HomeIcon },
+    {
+      name: "Appointments",
+      href: `/dashboard/${session?.user?.role}/appointments`,
+      icon: CalendarIcon,
+    },
+    {
+      name: "Medical Records",
+      href: `/dashboard/${session?.user?.role}/records`,
+      icon: ClipboardDocumentListIcon,
+    },
+    { name: "Billing", href: `/dashboard/${session?.user?.role}/billing`, icon: CreditCardIcon },
+    { name: "Profile", href: `/dashboard/${session?.user?.role}/profile`, icon: UserIcon },
   ];
 
   return (
@@ -48,13 +52,13 @@ export default function DashboardLayout({
                       href={item.href}
                       className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                         isActive
-                          ? 'bg-gray-100 text-gray-900'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          ? "bg-gray-100 text-gray-900"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                       }`}
                     >
                       <item.icon
                         className={`mr-3 flex-shrink-0 h-6 w-6 ${
-                          isActive ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500'
+                          isActive ? "text-gray-500" : "text-gray-400 group-hover:text-gray-500"
                         }`}
                         aria-hidden="true"
                       />
@@ -80,12 +84,10 @@ export default function DashboardLayout({
         {/* Main content */}
         <div className="flex-1">
           <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              {children}
-            </div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">{children}</div>
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}

@@ -1,7 +1,7 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
-import rateLimit from 'express-rate-limit';
-import { z } from 'zod';
+import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
+import rateLimit from "express-rate-limit";
+import { z } from "zod";
 
 // Rate limiting
 const limiter = rateLimit({
@@ -25,17 +25,17 @@ export const applyRateLimit = (req: NextApiRequest, res: NextApiResponse) => {
 export const withAuth = async (
   req: NextApiRequest,
   res: NextApiResponse,
-  requiredRoles?: ('doctor' | 'patient')[]
+  requiredRoles?: ("doctor" | "patient")[],
 ) => {
   const session = await getSession({ req });
 
   if (!session?.user?.id) {
-    res.status(401).json({ error: 'Unauthorized' });
+    res.status(401).json({ error: "Unauthorized" });
     return false;
   }
 
   if (requiredRoles && !requiredRoles.includes(session.user.role)) {
-    res.status(403).json({ error: 'Forbidden' });
+    res.status(403).json({ error: "Forbidden" });
     return false;
   }
 
@@ -60,18 +60,21 @@ export const userSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email(),
   password: z.string().min(8).max(100),
-  role: z.enum(['doctor', 'patient']),
+  role: z.enum(["doctor", "patient"]),
 });
 
 // Generic validation middleware
-export const validateInput = <T>(schema: z.ZodType<T>, data: unknown): { success: boolean; data?: T; error?: string } => {
+export const validateInput = <T>(
+  schema: z.ZodType<T>,
+  data: unknown,
+): { success: boolean; data?: T; error?: string } => {
   try {
     const validData = schema.parse(data);
     return { success: true, data: validData };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors.map(e => e.message).join(', ') };
+      return { success: false, error: error.errors.map((e) => e.message).join(", ") };
     }
-    return { success: false, error: 'Invalid input' };
+    return { success: false, error: "Invalid input" };
   }
-}; 
+};

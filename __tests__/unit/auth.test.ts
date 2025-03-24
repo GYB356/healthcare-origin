@@ -1,18 +1,18 @@
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { createMocks } from 'node-mocks-http';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import { createMocks } from "node-mocks-http";
 
-jest.mock('next-auth/next');
+jest.mock("next-auth/next");
 
-describe('Authentication', () => {
+describe("Authentication", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('Session Management', () => {
-    it('should return unauthorized for unauthenticated users', async () => {
+  describe("Session Management", () => {
+    it("should return unauthorized for unauthenticated users", async () => {
       const { req, res } = createMocks({
-        method: 'GET',
+        method: "GET",
       });
 
       (getServerSession as jest.Mock).mockResolvedValueOnce(null);
@@ -21,16 +21,16 @@ describe('Authentication', () => {
       expect(session).toBeNull();
     });
 
-    it('should return session for authenticated users', async () => {
+    it("should return session for authenticated users", async () => {
       const { req, res } = createMocks({
-        method: 'GET',
+        method: "GET",
       });
 
       const mockSession = {
         user: {
-          id: '1',
-          email: 'doctor@example.com',
-          role: 'doctor',
+          id: "1",
+          email: "doctor@example.com",
+          role: "doctor",
         },
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       };
@@ -42,49 +42,49 @@ describe('Authentication', () => {
     });
   });
 
-  describe('Role-based Access', () => {
-    it('should allow doctor access to protected routes', async () => {
+  describe("Role-based Access", () => {
+    it("should allow doctor access to protected routes", async () => {
       const { req, res } = createMocks({
-        method: 'GET',
+        method: "GET",
         query: {
-          id: '1',
+          id: "1",
         },
       });
 
       const mockSession = {
         user: {
-          id: '1',
-          email: 'doctor@example.com',
-          role: 'doctor',
+          id: "1",
+          email: "doctor@example.com",
+          role: "doctor",
         },
       };
 
       (getServerSession as jest.Mock).mockResolvedValueOnce(mockSession);
 
       const session = await getServerSession(req, res, authOptions);
-      expect(session?.user.role).toBe('doctor');
+      expect(session?.user.role).toBe("doctor");
     });
 
-    it('should allow patient access to protected routes', async () => {
+    it("should allow patient access to protected routes", async () => {
       const { req, res } = createMocks({
-        method: 'GET',
+        method: "GET",
         query: {
-          id: '1',
+          id: "1",
         },
       });
 
       const mockSession = {
         user: {
-          id: '1',
-          email: 'patient@example.com',
-          role: 'patient',
+          id: "1",
+          email: "patient@example.com",
+          role: "patient",
         },
       };
 
       (getServerSession as jest.Mock).mockResolvedValueOnce(mockSession);
 
       const session = await getServerSession(req, res, authOptions);
-      expect(session?.user.role).toBe('patient');
+      expect(session?.user.role).toBe("patient");
     });
   });
-}); 
+});

@@ -16,4 +16,4 @@ export function Providers({ children }: ProvidersProps) {
   );
 }
 
-export default Providers; 
+export default Providers;

@@ -1,39 +1,39 @@
 // Manual Test Script for Login Functionality
 
 // Test Case 1: Admin Login
-console.log('Test Case 1: Admin Login');
+console.log("Test Case 1: Admin Login");
 const adminCredentials = {
-  email: 'admin@test.com',
-  password: 'admin123'
+  email: "admin@test.com",
+  password: "admin123",
 };
 
 // Test Case 2: Provider Login
-console.log('Test Case 2: Provider Login');
+console.log("Test Case 2: Provider Login");
 const providerCredentials = {
-  email: 'provider@test.com',
-  password: 'provider123'
+  email: "provider@test.com",
+  password: "provider123",
 };
 
 // Test Case 3: Patient Login
-console.log('Test Case 3: Patient Login');
+console.log("Test Case 3: Patient Login");
 const patientCredentials = {
-  email: 'patient@test.com',
-  password: 'patient123'
+  email: "patient@test.com",
+  password: "patient123",
 };
 
 // Test Case 4: Invalid Credentials
-console.log('Test Case 4: Invalid Credentials');
+console.log("Test Case 4: Invalid Credentials");
 const invalidCredentials = {
-  email: 'wrong@test.com',
-  password: 'wrongpass'
+  email: "wrong@test.com",
+  password: "wrongpass",
 };
 
 // Test Case 5: 2FA Required
-console.log('Test Case 5: 2FA Required');
+console.log("Test Case 5: 2FA Required");
 const twoFactorCredentials = {
-  email: '2fa@test.com',
-  password: '2fapass',
-  twoFactorCode: '123456'
+  email: "2fa@test.com",
+  password: "2fapass",
+  twoFactorCode: "123456",
 };
 
 // Manual Test Instructions
@@ -93,15 +93,15 @@ Steps to run each test:
 // Helper function to clear storage
 const clearStorage = () => {
   localStorage.clear();
-  console.log('Storage cleared');
+  console.log("Storage cleared");
 };
 
 // Helper function to check storage
 const checkStorage = () => {
-  console.log('Current Storage State:');
-  console.log('Token:', localStorage.getItem('token') ? 'Present' : 'Missing');
-  console.log('Refresh Token:', localStorage.getItem('refreshToken') ? 'Present' : 'Missing');
-  console.log('User Role:', localStorage.getItem('userRole'));
+  console.log("Current Storage State:");
+  console.log("Token:", localStorage.getItem("token") ? "Present" : "Missing");
+  console.log("Refresh Token:", localStorage.getItem("refreshToken") ? "Present" : "Missing");
+  console.log("User Role:", localStorage.getItem("userRole"));
 };
 
 // Export test helpers
@@ -113,6 +113,6 @@ export const testHelpers = {
     provider: providerCredentials,
     patient: patientCredentials,
     invalid: invalidCredentials,
-    twoFactor: twoFactorCredentials
-  }
-}; 
+    twoFactor: twoFactorCredentials,
+  },
+};

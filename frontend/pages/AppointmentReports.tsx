@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { api } from '../services/api';
+import React, { useState, useEffect } from "react";
+import { api } from "../services/api";
+// Import removed or commented as ReportViewer component path needs to be corrected
+// import { ReportViewer } from '../components/ReportViewer';
 
 interface Appointment {
   id: number;
@@ -13,16 +15,16 @@ const AppointmentReports: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filterDate, setFilterDate] = useState<string>('');
+  const [filterDate, setFilterDate] = useState<string>("");
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await api.get('/appointments');
+        const response = await api.get("/appointments");
         setAppointments(response.data);
         setLoading(false);
       } catch (err) {
-        setError('Error loading appointments');
+        setError("Error loading appointments");
         setLoading(false);
       }
     };
@@ -31,7 +33,7 @@ const AppointmentReports: React.FC = () => {
   }, []);
 
   const filteredAppointments = filterDate
-    ? appointments.filter(apt => apt.date === filterDate)
+    ? appointments.filter((apt) => apt.date === filterDate)
     : appointments;
 
   if (loading) {
@@ -45,7 +47,7 @@ const AppointmentReports: React.FC = () => {
   return (
     <div>
       <h1>Appointment Reports</h1>
-      
+
       <div>
         <input
           type="date"
@@ -69,4 +71,4 @@ const AppointmentReports: React.FC = () => {
   );
 };
 
-export default AppointmentReports; 
+export default AppointmentReports;

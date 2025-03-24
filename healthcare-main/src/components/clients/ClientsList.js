@@ -1,14 +1,14 @@
 // src/components/clients/ClientsList.js
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../../services/api';
-import DashboardLayout from '../layout/DashboardLayout';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import api from "../../services/api";
+import DashboardLayout from "../layout/DashboardLayout";
 
 const ClientsList = () => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [perPage] = useState(10);
@@ -20,20 +20,20 @@ const ClientsList = () => {
   const fetchClients = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/clients', {
+      const response = await api.get("/clients", {
         params: {
           search: searchTerm || undefined,
           page: currentPage,
-          limit: perPage
-        }
+          limit: perPage,
+        },
       });
-      
+
       setClients(response.data.clients);
       setTotalPages(response.data.totalPages);
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching clients:', err);
-      setError('Failed to load clients. Please try again.');
+      console.error("Error fetching clients:", err);
+      setError("Failed to load clients. Please try again.");
       setLoading(false);
     }
   };
@@ -53,8 +53,8 @@ const ClientsList = () => {
     <DashboardLayout>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">Clients</h1>
-        <Link 
-          to="/clients/new" 
+        <Link
+          to="/clients/new"
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           Add New Client
@@ -146,13 +146,13 @@ const ClientsList = () => {
                             {client.projectCount} projects
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <Link 
+                            <Link
                               to={`/clients/${client.id}`}
                               className="text-blue-600 hover:text-blue-900 mr-4"
                             >
                               View
                             </Link>
-                            <Link 
+                            <Link
                               to={`/clients/${client.id}/edit`}
                               className="text-indigo-600 hover:text-indigo-900"
                             >
@@ -168,9 +168,11 @@ const ClientsList = () => {
                 {/* Pagination */}
                 <div className="mt-6 flex justify-between items-center">
                   <p className="text-sm text-gray-700">
-                    Showing clients {(currentPage - 1) * perPage + 1} to {Math.min(currentPage * perPage, totalPages * perPage)} of {totalPages * perPage} total
+                    Showing clients {(currentPage - 1) * perPage + 1} to{" "}
+                    {Math.min(currentPage * perPage, totalPages * perPage)} of{" "}
+                    {totalPages * perPage} total
                   </p>
-                  
+
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
@@ -179,21 +181,21 @@ const ClientsList = () => {
                     >
                       Previous
                     </button>
-                    
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
                         className={`px-3 py-1 border rounded-md ${
                           currentPage === page
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'border-gray-300 hover:bg-gray-50'
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "border-gray-300 hover:bg-gray-50"
                         }`}
                       >
                         {page}
                       </button>
                     ))}
-                    
+
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}

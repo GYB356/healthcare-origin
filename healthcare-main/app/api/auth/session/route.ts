@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession()
-  
+  const session = await getServerSession();
+
   if (!session) {
-    return NextResponse.json(null)
+    return NextResponse.json(null);
   }
 
   return NextResponse.json({
@@ -14,5 +14,5 @@ export async function GET(request: NextRequest) {
       email: session.user.email,
       role: session.user.role,
     },
-  })
-} 
+  });
+}

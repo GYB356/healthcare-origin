@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import appointmentService from '../services/appointmentService.js';
+import React, { createContext, useContext, useReducer, useEffect } from "react";
+import appointmentService from "../services/appointmentService.js";
 
 const AppointmentsContext = createContext();
 
@@ -8,15 +8,15 @@ const initialState = {
   loading: false,
   error: null,
   selectedAppointment: null,
-  availability: []
+  availability: [],
 };
 
 const actions = {
-  SET_LOADING: 'SET_LOADING',
-  SET_ERROR: 'SET_ERROR',
-  SET_APPOINTMENTS: 'SET_APPOINTMENTS',
-  SET_AVAILABILITY: 'SET_AVAILABILITY',
-  SELECT_APPOINTMENT: 'SELECT_APPOINTMENT'
+  SET_LOADING: "SET_LOADING",
+  SET_ERROR: "SET_ERROR",
+  SET_APPOINTMENTS: "SET_APPOINTMENTS",
+  SET_AVAILABILITY: "SET_AVAILABILITY",
+  SELECT_APPOINTMENT: "SELECT_APPOINTMENT",
 };
 
 function reducer(state, action) {
@@ -53,7 +53,10 @@ export const AppointmentsProvider = ({ children }) => {
     try {
       dispatch({ type: actions.SET_LOADING, payload: true });
       const newAppointment = await appointmentService.createAppointment(appointmentData);
-      dispatch({ type: actions.SET_APPOINTMENTS, payload: [...state.appointments, newAppointment] });
+      dispatch({
+        type: actions.SET_APPOINTMENTS,
+        payload: [...state.appointments, newAppointment],
+      });
       return newAppointment;
     } catch (error) {
       dispatch({ type: actions.SET_ERROR, payload: error.message });
@@ -67,9 +70,7 @@ export const AppointmentsProvider = ({ children }) => {
       const updatedAppointment = await appointmentService.updateAppointment(id, updateData);
       dispatch({
         type: actions.SET_APPOINTMENTS,
-        payload: state.appointments.map(appt =>
-          appt.id === id ? updatedAppointment : appt
-        )
+        payload: state.appointments.map((appt) => (appt.id === id ? updatedAppointment : appt)),
       });
       return updatedAppointment;
     } catch (error) {
@@ -102,7 +103,7 @@ export const AppointmentsProvider = ({ children }) => {
         createAppointment,
         updateAppointment,
         checkAvailability,
-        selectAppointment: (appt) => dispatch({ type: actions.SELECT_APPOINTMENT, payload: appt })
+        selectAppointment: (appt) => dispatch({ type: actions.SELECT_APPOINTMENT, payload: appt }),
       }}
     >
       {children}
@@ -113,7 +114,7 @@ export const AppointmentsProvider = ({ children }) => {
 export const useAppointments = () => {
   const context = useContext(AppointmentsContext);
   if (!context) {
-    throw new Error('useAppointments must be used within an AppointmentsProvider');
+    throw new Error("useAppointments must be used within an AppointmentsProvider");
   }
   return context;
 };

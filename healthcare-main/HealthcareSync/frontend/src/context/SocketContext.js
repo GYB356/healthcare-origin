@@ -1,99 +1,95 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import io from 'socket.io-client';
-import { useAuth } from './AuthContext';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import io from "socket.io-client";
+import { useAuth } from "./AuthContext";
 
 const SocketContext = createContext();
 
 export const useSocket = () => {
-    const context = useContext(SocketContext);
-    if (!context) {
-        throw new Error('useSocket must be used within a SocketProvider');
-    }
-    return context;
+  const context = useContext(SocketContext);
+  if (!context) {
+    throw new Error("useSocket must be used within a SocketProvider");
+  }
+  return context;
 };
 
 export const SocketProvider = ({ children }) => {
-    const [socket, setSocket] = useState(null);
-    const { user, isAuthenticated } = useAuth();
-    const [isConnected, setIsConnected] = useState(false);
-    
-    useEffect(() => {
-        if (isAuthenticated && user) {
-            // Initialize socket connection
-            const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001', {
-                auth: {
-                    token: localStorage.getItem('token')
-                },
-                query: {
-                    userId: user.id,
-                    userRole: user.role
-                },
-                transports: ['websocket'],
-                autoConnect: true,
-            });
+  const [socket, setSocket] = useState(null);
+  const { user, isAuthenticated } = useAuth();
+  const [isConnected, setIsConnected] = useState(false);
 
-            newSocket.on('connect', () => {
-                console.log('Socket connected');
-                setIsConnected(true);
-            });
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Initialize socket connection
+      const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001", {
+        auth: {
+          token: localStorage.getItem("token"),
+        },
+        query: {
+          userId: user.id,
+          userRole: user.role,
+        },
+        transports: ["websocket"],
+        autoConnect: true,
+      });
 
-            newSocket.on('disconnect', () => {
-                console.log('Socket disconnected');
-                setIsConnected(false);
-            });
+      newSocket.on("connect", () => {
+        console.log("Socket connected");
+        setIsConnected(true);
+      });
 
-            setSocket(newSocket);
+      newSocket.on("disconnect", () => {
+        console.log("Socket disconnected");
+        setIsConnected(false);
+      });
 
-            // Cleanup on unmount
-            return () => {
-                newSocket.close();
-            };
-        } else {
-            // Close socket if user logs out
-            if (socket) {
-                socket.close();
-                setSocket(null);
-            }
-        }
-    }, [isAuthenticated, user]);
+      setSocket(newSocket);
 
-    // Join a telemedicine session
-    const joinTelemedicineSession = (sessionId) => {
-        if (socket) {
-            socket.emit('joinTelemedicineSession', sessionId);
-        }
-    };
+      // Cleanup on unmount
+      return () => {
+        newSocket.close();
+      };
+    } else {
+      // Close socket if user logs out
+      if (socket) {
+        socket.close();
+        setSocket(null);
+      }
+    }
+  }, [isAuthenticated, user]);
 
-    // Leave a telemedicine session
-    const leaveTelemedicineSession = (sessionId) => {
-        if (socket) {
-            socket.emit('leaveTelemedicineSession', sessionId);
-        }
-    };
+  // Join a telemedicine session
+  const joinTelemedicineSession = (sessionId) => {
+    if (socket) {
+      socket.emit("joinTelemedicineSession", sessionId);
+    }
+  };
 
-    // Update staff schedule
-    const updateSchedule = (scheduleData) => {
-        if (socket) {
-            socket.emit('scheduleUpdate', scheduleData);
-        }
-    };
+  // Leave a telemedicine session
+  const leaveTelemedicineSession = (sessionId) => {
+    if (socket) {
+      socket.emit("leaveTelemedicineSession", sessionId);
+    }
+  };
 
-    const value = {
-        socket,
-        isConnected,
-        emit: (event, data) => socket?.emit(event, data),
-        on: (event, callback) => socket?.on(event, callback),
-        off: (event) => socket?.off(event),
-        joinTelemedicineSession,
-        leaveTelemedicineSession,
-        updateSchedule
-    };
+  // Update staff schedule
+  const updateSchedule = (scheduleData) => {
+    if (socket) {
+      socket.emit("scheduleUpdate", scheduleData);
+    }
+  };
 
-    return (
-        <SocketContext.Provider value={value}>
-            {children}
-        </SocketContext.Provider>
-    );
+  const value = {
+    socket,
+    isConnected,
+    emit: (event, data) => socket?.emit(event, data),
+    on: (event, callback) => socket?.on(event, callback),
+    off: (event) => socket?.off(event),
+    joinTelemedicineSession,
+    leaveTelemedicineSession,
+    updateSchedule,
+  };
+
+  return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
 };
 
 export default SocketContext;

@@ -32,22 +32,26 @@ A comprehensive system for managing medical records, appointments, and patient i
 ## Getting Started
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/yourusername/medical-records-system.git
 cd medical-records-system
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env
 ```
 
 Edit `.env` with your configuration:
+
 ```env
 # Database
 DATABASE_URL="postgresql://user:password@localhost:5432/medical_records"
@@ -72,12 +76,14 @@ BLOB_READ_WRITE_TOKEN="your-blob-token"
 ```
 
 4. Set up the database:
+
 ```bash
 npx prisma generate
 npx prisma db push
 ```
 
 5. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -104,6 +110,7 @@ npm run dev
 ## Testing
 
 Run the test suite:
+
 ```bash
 npm test
 ```
@@ -111,17 +118,20 @@ npm test
 ## Development
 
 1. Create a new branch for your feature:
+
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
 2. Make your changes and commit them:
+
 ```bash
 git add .
 git commit -m "feat: add your feature"
 ```
 
 3. Push to your branch:
+
 ```bash
 git push origin feature/your-feature-name
 ```
@@ -145,4 +155,4 @@ git push origin feature/your-feature-name
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

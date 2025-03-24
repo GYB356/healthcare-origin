@@ -1,24 +1,24 @@
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
-import PatientDashboard from '../../components/patient/PatientDashboard';
-import PatientProfile from '../../components/patient/PatientProfile';
-import MedicalHistory from '../../components/patient/MedicalHistory';
-import Prescriptions from '../../components/patient/Prescriptions';
-import LabResults from '../../components/patient/LabResults';
-import PatientLayout from '../../components/layouts/PatientLayout';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import PatientDashboard from "../../components/patient/PatientDashboard";
+import PatientProfile from "../../components/patient/PatientProfile";
+import MedicalHistory from "../../components/patient/MedicalHistory";
+import Prescriptions from "../../components/patient/Prescriptions";
+import LabResults from "../../components/patient/LabResults";
+import PatientLayout from "../../components/layouts/PatientLayout";
 
 export default function PatientDashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
     }
   }, [status, router]);
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -34,9 +34,7 @@ export default function PatientDashboardPage() {
     <PatientLayout>
       <div className="max-w-7xl mx-auto">
         <div className="px-4 py-6 sm:px-0">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            Welcome, {session.user.name}
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Welcome, {session.user.name}</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Dashboard */}
@@ -68,4 +66,4 @@ export default function PatientDashboardPage() {
       </div>
     </PatientLayout>
   );
-} 
+}

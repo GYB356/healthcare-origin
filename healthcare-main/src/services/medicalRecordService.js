@@ -1,4 +1,4 @@
-import api from './api';
+import api from "./api";
 
 const medicalRecordService = {
   // Get records for a patient
@@ -7,17 +7,17 @@ const medicalRecordService = {
       const response = await api.get(`/records/${patientId}`);
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch medical records');
+      throw new Error(error.response?.data?.message || "Failed to fetch medical records");
     }
   },
 
   // Create new medical record
   createRecord: async (recordData) => {
     try {
-      const response = await api.post('/records', recordData);
+      const response = await api.post("/records", recordData);
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Record creation failed');
+      throw new Error(error.response?.data?.message || "Record creation failed");
     }
   },
 
@@ -27,7 +27,7 @@ const medicalRecordService = {
       const response = await api.patch(`/records/${recordId}`, updateData);
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Record update failed');
+      throw new Error(error.response?.data?.message || "Record update failed");
     }
   },
 
@@ -37,7 +37,7 @@ const medicalRecordService = {
       const response = await api.get(`/records/details/${recordId}`);
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch record details');
+      throw new Error(error.response?.data?.message || "Failed to fetch record details");
     }
   },
 
@@ -45,16 +45,16 @@ const medicalRecordService = {
   addDocument: async (recordId, file) => {
     try {
       const formData = new FormData();
-      formData.append('document', file);
-      
+      formData.append("document", file);
+
       const response = await api.post(`/records/${recordId}/documents`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+          "Content-Type": "multipart/form-data",
+        },
       });
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Document upload failed');
+      throw new Error(error.response?.data?.message || "Document upload failed");
     }
   },
 
@@ -62,11 +62,11 @@ const medicalRecordService = {
   addClinicalNote: async (recordId, noteContent) => {
     try {
       const response = await api.post(`/records/${recordId}/notes`, {
-        content: noteContent
+        content: noteContent,
       });
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Note addition failed');
+      throw new Error(error.response?.data?.message || "Note addition failed");
     }
   },
 
@@ -74,9 +74,9 @@ const medicalRecordService = {
   deleteRecord: async (recordId) => {
     try {
       await api.delete(`/records/${recordId}`);
-      return { message: 'Medical record deleted successfully' };
+      return { message: "Medical record deleted successfully" };
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Record deletion failed');
+      throw new Error(error.response?.data?.message || "Record deletion failed");
     }
   },
 
@@ -86,7 +86,7 @@ const medicalRecordService = {
       const response = await api.post(`/records/${recordId}/attachments`, attachmentData);
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Attachment addition failed');
+      throw new Error(error.response?.data?.message || "Attachment addition failed");
     }
   },
 
@@ -94,9 +94,9 @@ const medicalRecordService = {
   removeAttachment: async (recordId, attachmentId) => {
     try {
       await api.delete(`/records/${recordId}/attachments/${attachmentId}`);
-      return { message: 'Attachment removed successfully' };
+      return { message: "Attachment removed successfully" };
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Attachment removal failed');
+      throw new Error(error.response?.data?.message || "Attachment removal failed");
     }
   },
 
@@ -106,7 +106,7 @@ const medicalRecordService = {
       const response = await api.get(`/records/${patientId}/lab-results`, { params: filters });
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch lab results');
+      throw new Error(error.response?.data?.message || "Failed to fetch lab results");
     }
   },
 
@@ -116,9 +116,9 @@ const medicalRecordService = {
       const response = await api.get(`/records/${patientId}/imaging-studies`, { params: filters });
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch imaging studies');
+      throw new Error(error.response?.data?.message || "Failed to fetch imaging studies");
     }
-  }
+  },
 };
 
 export default medicalRecordService;

@@ -1,0 +1,387 @@
+898f7b19ed46dc0d63869882e7fbe666
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MongoBinaryDownload = void 0;
+const tslib_1 = require("tslib");
+const os_1 = (0, tslib_1.__importDefault)(require("os"));
+const url_1 = require("url");
+const path_1 = (0, tslib_1.__importDefault)(require("path"));
+const fs_1 = require("fs");
+const md5_file_1 = (0, tslib_1.__importDefault)(require("md5-file"));
+const follow_redirects_1 = require("follow-redirects");
+const zlib_1 = require("zlib");
+const tar_stream_1 = (0, tslib_1.__importDefault)(require("tar-stream"));
+const yauzl_1 = (0, tslib_1.__importDefault)(require("yauzl"));
+const MongoBinaryDownloadUrl_1 = (0, tslib_1.__importDefault)(require("./MongoBinaryDownloadUrl"));
+const https_proxy_agent_1 = require("https-proxy-agent");
+const resolveConfig_1 = (0, tslib_1.__importStar)(require("./resolveConfig"));
+const debug_1 = (0, tslib_1.__importDefault)(require("debug"));
+const utils_1 = require("./utils");
+const DryMongoBinary_1 = require("./DryMongoBinary");
+const readline_1 = require("readline");
+const errors_1 = require("./errors");
+const log = (0, debug_1.default)('MongoMS:MongoBinaryDownload');
+/**
+ * Download and extract the "mongod" binary
+ */
+class MongoBinaryDownload {
+  // end get/set backwards compat section
+  constructor(opts) {
+    var _a, _b, _c, _d, _e, _f;
+    (0, utils_1.assertion)(typeof opts.downloadDir === 'string', new Error('An DownloadDir must be specified!'));
+    const version = (_a = opts.version) !== null && _a !== void 0 ? _a : (0, resolveConfig_1.default)(resolveConfig_1.ResolveConfigVariables.VERSION);
+    (0, utils_1.assertion)(typeof version === 'string', new Error('An MongoDB Binary version must be specified!'));
+    // DryMongoBinary.generateOptions cannot be used here, because its async
+    this.binaryOpts = {
+      platform: (_b = opts.platform) !== null && _b !== void 0 ? _b : os_1.default.platform(),
+      arch: (_c = opts.arch) !== null && _c !== void 0 ? _c : os_1.default.arch(),
+      version: version,
+      downloadDir: opts.downloadDir,
+      checkMD5: (_d = opts.checkMD5) !== null && _d !== void 0 ? _d : (0, resolveConfig_1.envToBool)((0, resolveConfig_1.default)(resolveConfig_1.ResolveConfigVariables.MD5_CHECK)),
+      systemBinary: (_e = opts.systemBinary) !== null && _e !== void 0 ? _e : '',
+      os: (_f = opts.os) !== null && _f !== void 0 ? _f : {
+        os: 'unknown'
+      }
+    };
+    this.dlProgress = {
+      current: 0,
+      length: 0,
+      totalMb: 0,
+      lastPrintedAt: 0
+    };
+  }
+  // TODO: for an major version, remove the compat get/set
+  // the following get/set are to not break existing stuff
+  get checkMD5() {
+    return this.binaryOpts.checkMD5;
+  }
+  set checkMD5(val) {
+    this.binaryOpts.checkMD5 = val;
+  }
+  get downloadDir() {
+    return this.binaryOpts.downloadDir;
+  }
+  set downloadDir(val) {
+    this.binaryOpts.downloadDir = val;
+  }
+  get arch() {
+    return this.binaryOpts.arch;
+  }
+  set arch(val) {
+    this.binaryOpts.arch = val;
+  }
+  get version() {
+    return this.binaryOpts.version;
+  }
+  set version(val) {
+    this.binaryOpts.version = val;
+  }
+  get platform() {
+    return this.binaryOpts.platform;
+  }
+  set platform(val) {
+    this.binaryOpts.platform = val;
+  }
+  /**
+   * Get the full path with filename
+   * @returns Absoulte Path with FileName
+   */
+  getPath() {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      const opts = yield DryMongoBinary_1.DryMongoBinary.generateOptions(this.binaryOpts);
+      return DryMongoBinary_1.DryMongoBinary.combineBinaryName(this.downloadDir, yield DryMongoBinary_1.DryMongoBinary.getBinaryName(opts));
+    });
+  }
+  /**
+   * Get the path of the already downloaded "mongod" file
+   * otherwise download it and then return the path
+   */
+  getMongodPath() {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log('getMongodPath');
+      const mongodPath = yield this.getPath();
+      if (yield (0, utils_1.pathExists)(mongodPath)) {
+        log(`getMongodPath: mongod path "${mongodPath}" already exists, using this`);
+        return mongodPath;
+      }
+      const mongoDBArchive = yield this.startDownload();
+      yield this.extract(mongoDBArchive);
+      yield fs_1.promises.unlink(mongoDBArchive);
+      if (yield (0, utils_1.pathExists)(mongodPath)) {
+        return mongodPath;
+      }
+      throw new Error(`Cannot find downloaded mongod binary by path "${mongodPath}"`);
+    });
+  }
+  /**
+   * Download the MongoDB Archive and check it against an MD5
+   * @returns The MongoDB Archive location
+   */
+  startDownload() {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log('startDownload');
+      const mbdUrl = new MongoBinaryDownloadUrl_1.default(this.binaryOpts);
+      yield (0, utils_1.mkdir)(this.downloadDir);
+      try {
+        yield fs_1.promises.access(this.downloadDir, fs_1.constants.X_OK | fs_1.constants.W_OK); // check that this process has permissions to create files & modify file contents & read file contents
+      } catch (err) {
+        console.error(`Download Directory at "${this.downloadDir}" does not have sufficient permissions to be used by this process\n` + 'Needed Permissions: Write & Execute (-wx)\n');
+        throw err;
+      }
+      const downloadUrl = yield mbdUrl.getDownloadUrl();
+      const mongoDBArchive = yield this.download(downloadUrl);
+      yield this.makeMD5check(`${downloadUrl}.md5`, mongoDBArchive);
+      return mongoDBArchive;
+    });
+  }
+  /**
+   * Download MD5 file and check it against the MongoDB Archive
+   * @param urlForReferenceMD5 URL to download the MD5
+   * @param mongoDBArchive The MongoDB Archive file location
+   *
+   * @returns {undefined} if "checkMD5" is falsey
+   * @returns {true} if the md5 check was successful
+   * @throws if the md5 check failed
+   */
+  makeMD5check(urlForReferenceMD5, mongoDBArchive) {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log('makeMD5check: Checking MD5 of downloaded binary...');
+      if (!this.checkMD5) {
+        log('makeMD5check: checkMD5 is disabled');
+        return undefined;
+      }
+      const archiveMD5Path = yield this.download(urlForReferenceMD5);
+      const signatureContent = (yield fs_1.promises.readFile(archiveMD5Path)).toString('utf-8');
+      const regexMatch = signatureContent.match(/^\s*([\w\d]+)\s*/i);
+      const md5SigRemote = regexMatch ? regexMatch[1] : null;
+      const md5SigLocal = md5_file_1.default.sync(mongoDBArchive);
+      log(`makeMD5check: Local MD5: ${md5SigLocal}, Remote MD5: ${md5SigRemote}`);
+      if (md5SigRemote !== md5SigLocal) {
+        throw new errors_1.Md5CheckFailedError(md5SigLocal, md5SigRemote || 'unknown');
+      }
+      yield fs_1.promises.unlink(archiveMD5Path);
+      return true;
+    });
+  }
+  /**
+   * Download file from downloadUrl
+   * @param downloadUrl URL to download a File
+   * @returns The Path to the downloaded archive file
+   */
+  download(downloadUrl) {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log('download');
+      const proxy = process.env['yarn_https-proxy'] || process.env.yarn_proxy || process.env['npm_config_https-proxy'] || process.env.npm_config_proxy || process.env.https_proxy || process.env.http_proxy || process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+      const strictSsl = process.env.npm_config_strict_ssl === 'true';
+      const urlObject = new url_1.URL(downloadUrl);
+      urlObject.port = urlObject.port || '443';
+      const requestOptions = {
+        method: 'GET',
+        rejectUnauthorized: strictSsl,
+        protocol: (0, resolveConfig_1.envToBool)((0, resolveConfig_1.default)(resolveConfig_1.ResolveConfigVariables.USE_HTTP)) ? 'http:' : 'https:',
+        agent: proxy ? new https_proxy_agent_1.HttpsProxyAgent(proxy) : undefined
+      };
+      const filename = urlObject.pathname.split('/').pop();
+      if (!filename) {
+        throw new Error(`MongoBinaryDownload: missing filename for url "${downloadUrl}"`);
+      }
+      const downloadLocation = path_1.default.resolve(this.downloadDir, filename);
+      const tempDownloadLocation = path_1.default.resolve(this.downloadDir, `${filename}.downloading`);
+      log(`download: Downloading${proxy ? ` via proxy "${proxy}"` : ''}: "${downloadUrl}"`);
+      if (yield (0, utils_1.pathExists)(downloadLocation)) {
+        log('download: Already downloaded archive found, skipping download');
+        return downloadLocation;
+      }
+      this.assignDownloadingURL(urlObject);
+      const downloadedFile = yield this.httpDownload(urlObject, requestOptions, downloadLocation, tempDownloadLocation);
+      return downloadedFile;
+    });
+  }
+  /**
+   * Extract given Archive
+   * @param mongoDBArchive Archive location
+   * @returns extracted directory location
+   */
+  extract(mongoDBArchive) {
+    var _a, _b;
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log('extract');
+      const mongodbFullPath = yield this.getPath();
+      log(`extract: archive: "${mongoDBArchive}" final: "${mongodbFullPath}"`);
+      yield (0, utils_1.mkdir)(path_1.default.dirname(mongodbFullPath));
+      const filter = file => /(?:bin\/(?:mongod(?:\.exe)?))$/i.test(file);
+      if (/(.tar.gz|.tgz)$/.test(mongoDBArchive)) {
+        yield this.extractTarGz(mongoDBArchive, mongodbFullPath, filter);
+      } else if (/.zip$/.test(mongoDBArchive)) {
+        yield this.extractZip(mongoDBArchive, mongodbFullPath, filter);
+      } else {
+        throw new Error(`MongoBinaryDownload: unsupported archive "${mongoDBArchive}" (downloaded from "${(_a = this._downloadingUrl) !== null && _a !== void 0 ? _a : 'unknown'}"). Broken archive from MongoDB Provider?`);
+      }
+      if (!(yield (0, utils_1.pathExists)(mongodbFullPath))) {
+        throw new Error(`MongoBinaryDownload: missing mongod binary in "${mongoDBArchive}" (downloaded from "${(_b = this._downloadingUrl) !== null && _b !== void 0 ? _b : 'unknown'}"). Broken archive from MongoDB Provider?`);
+      }
+      return mongodbFullPath;
+    });
+  }
+  /**
+   * Extract a .tar.gz archive
+   * @param mongoDBArchive Archive location
+   * @param extractPath Directory to extract to
+   * @param filter Method to determine which files to extract
+   */
+  extractTarGz(mongoDBArchive, extractPath, filter) {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log('extractTarGz');
+      const extract = tar_stream_1.default.extract();
+      extract.on('entry', (header, stream, next) => {
+        if (filter(header.name)) {
+          stream.pipe((0, fs_1.createWriteStream)(extractPath, {
+            mode: 0o775
+          }));
+        }
+        stream.on('end', () => next());
+        stream.resume();
+      });
+      return new Promise((res, rej) => {
+        (0, fs_1.createReadStream)(mongoDBArchive).on('error', err => {
+          rej(new errors_1.GenericMMSError('Unable to open tarball ' + mongoDBArchive + ': ' + err));
+        }).pipe((0, zlib_1.createUnzip)()).on('error', err => {
+          rej(new errors_1.GenericMMSError('Error during unzip for ' + mongoDBArchive + ': ' + err));
+        }).pipe(extract).on('error', err => {
+          rej(new errors_1.GenericMMSError('Error during untar for ' + mongoDBArchive + ': ' + err));
+        }).on('finish', res);
+      });
+    });
+  }
+  /**
+   * Extract a .zip archive
+   * @param mongoDBArchive Archive location
+   * @param extractPath Directory to extract to
+   * @param filter Method to determine which files to extract
+   */
+  extractZip(mongoDBArchive, extractPath, filter) {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log('extractZip');
+      return new Promise((resolve, reject) => {
+        yauzl_1.default.open(mongoDBArchive, {
+          lazyEntries: true
+        }, (err, zipfile) => {
+          if (err || !zipfile) {
+            return reject(err);
+          }
+          zipfile.readEntry();
+          zipfile.on('end', () => resolve());
+          zipfile.on('entry', entry => {
+            if (!filter(entry.fileName)) {
+              return zipfile.readEntry();
+            }
+            zipfile.openReadStream(entry, (err2, r) => {
+              if (err2 || !r) {
+                return reject(err2);
+              }
+              r.on('end', () => zipfile.readEntry());
+              r.pipe((0, fs_1.createWriteStream)(extractPath, {
+                mode: 0o775
+              }));
+            });
+          });
+        });
+      });
+    });
+  }
+  /**
+   * Downlaod given httpOptions to tempDownloadLocation, then move it to downloadLocation
+   * @param httpOptions The httpOptions directly passed to https.get
+   * @param downloadLocation The location the File should be after the download
+   * @param tempDownloadLocation The location the File should be while downloading
+   */
+  httpDownload(url, httpOptions, downloadLocation, tempDownloadLocation) {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log('httpDownload');
+      const downloadUrl = this.assignDownloadingURL(url);
+      const maxRedirects = parseInt((0, resolveConfig_1.default)(resolveConfig_1.ResolveConfigVariables.MAX_REDIRECTS) || '');
+      const useHttpsOptions = Object.assign({
+        maxRedirects: Number.isNaN(maxRedirects) ? 2 : maxRedirects
+      }, httpOptions);
+      return new Promise((resolve, reject) => {
+        log(`httpDownload: trying to download "${downloadUrl}"`);
+        follow_redirects_1.https.get(url, useHttpsOptions, response => {
+          if (response.statusCode != 200) {
+            if (response.statusCode === 403) {
+              reject(new errors_1.DownloadError(downloadUrl, "Status Code is 403 (MongoDB's 404)\n" + "This means that the requested version-platform combination doesn't exist\n" + "Try to use different version 'new MongoMemoryServer({ binary: { version: 'X.Y.Z' } })'\n" + 'List of available versions can be found here: ' + 'https://www.mongodb.com/download-center/community/releases/archive'));
+              return;
+            }
+            reject(new errors_1.DownloadError(downloadUrl, `Status Code isnt 200! (it is ${response.statusCode})`));
+            return;
+          }
+          if (typeof response.headers['content-length'] != 'string') {
+            reject(new errors_1.DownloadError(downloadUrl, 'Response header "content-length" is empty!'));
+            return;
+          }
+          this.dlProgress.current = 0;
+          this.dlProgress.length = parseInt(response.headers['content-length'], 10);
+          this.dlProgress.totalMb = Math.round(this.dlProgress.length / 1048576 * 10) / 10;
+          const fileStream = (0, fs_1.createWriteStream)(tempDownloadLocation);
+          response.pipe(fileStream);
+          fileStream.on('finish', () => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            var _a;
+            if (this.dlProgress.current < this.dlProgress.length && !((_a = httpOptions.path) === null || _a === void 0 ? void 0 : _a.endsWith('.md5'))) {
+              reject(new errors_1.DownloadError(downloadUrl, `Too small (${this.dlProgress.current} bytes) mongod binary downloaded.`));
+              return;
+            }
+            this.printDownloadProgress({
+              length: 0
+            }, true);
+            fileStream.close();
+            yield fs_1.promises.rename(tempDownloadLocation, downloadLocation);
+            log(`httpDownload: moved "${tempDownloadLocation}" to "${downloadLocation}"`);
+            resolve(downloadLocation);
+          }));
+          response.on('data', chunk => {
+            this.printDownloadProgress(chunk);
+          });
+        }).on('error', err => {
+          // log it without having debug enabled
+          console.error(`Couldnt download "${downloadUrl}"!`, err.message);
+          reject(new errors_1.DownloadError(downloadUrl, err.message));
+        });
+      });
+    });
+  }
+  /**
+   * Print the Download Progress to STDOUT
+   * @param chunk A chunk to get the length
+   */
+  printDownloadProgress(chunk, forcePrint = false) {
+    this.dlProgress.current += chunk.length;
+    const now = Date.now();
+    if (now - this.dlProgress.lastPrintedAt < 2000 && !forcePrint) {
+      return;
+    }
+    this.dlProgress.lastPrintedAt = now;
+    const percentComplete = Math.round(100.0 * this.dlProgress.current / this.dlProgress.length * 10) / 10;
+    const mbComplete = Math.round(this.dlProgress.current / 1048576 * 10) / 10;
+    const crReturn = this.platform === 'win32' ? '\x1b[0G' : '\r';
+    const message = `Downloading MongoDB "${this.version}": ${percentComplete}% (${mbComplete}mb / ${this.dlProgress.totalMb}mb)${crReturn}`;
+    if (process.stdout.isTTY) {
+      // if TTY overwrite last line over and over until finished and clear line to avoid residual characters
+      (0, readline_1.clearLine)(process.stdout, 0); // this is because "process.stdout.clearLine" does not exist anymore
+      process.stdout.write(message);
+    } else {
+      console.log(message);
+    }
+  }
+  /**
+   * Helper function to de-duplicate assigning "_downloadingUrl"
+   */
+  assignDownloadingURL(url) {
+    this._downloadingUrl = url.href;
+    return this._downloadingUrl;
+  }
+}
+exports.MongoBinaryDownload = MongoBinaryDownload;
+exports.default = MongoBinaryDownload;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJvc18xIiwidHNsaWJfMSIsIl9faW1wb3J0RGVmYXVsdCIsInJlcXVpcmUiLCJ1cmxfMSIsInBhdGhfMSIsImZzXzEiLCJtZDVfZmlsZV8xIiwiZm9sbG93X3JlZGlyZWN0c18xIiwiemxpYl8xIiwidGFyX3N0cmVhbV8xIiwieWF1emxfMSIsIk1vbmdvQmluYXJ5RG93bmxvYWRVcmxfMSIsImh0dHBzX3Byb3h5X2FnZW50XzEiLCJyZXNvbHZlQ29uZmlnXzEiLCJfX2ltcG9ydFN0YXIiLCJkZWJ1Z18xIiwidXRpbHNfMSIsIkRyeU1vbmdvQmluYXJ5XzEiLCJyZWFkbGluZV8xIiwiZXJyb3JzXzEiLCJsb2ciLCJkZWZhdWx0IiwiTW9uZ29CaW5hcnlEb3dubG9hZCIsImNvbnN0cnVjdG9yIiwib3B0cyIsImFzc2VydGlvbiIsImRvd25sb2FkRGlyIiwiRXJyb3IiLCJ2ZXJzaW9uIiwiX2EiLCJSZXNvbHZlQ29uZmlnVmFyaWFibGVzIiwiVkVSU0lPTiIsImJpbmFyeU9wdHMiLCJwbGF0Zm9ybSIsIl9iIiwiYXJjaCIsIl9jIiwiY2hlY2tNRDUiLCJfZCIsImVudlRvQm9vbCIsIk1ENV9DSEVDSyIsInN5c3RlbUJpbmFyeSIsIl9lIiwib3MiLCJfZiIsImRsUHJvZ3Jlc3MiLCJjdXJyZW50IiwibGVuZ3RoIiwidG90YWxNYiIsImxhc3RQcmludGVkQXQiLCJ2YWwiLCJnZXRQYXRoIiwiRHJ5TW9uZ29CaW5hcnkiLCJnZW5lcmF0ZU9wdGlvbnMiLCJjb21iaW5lQmluYXJ5TmFtZSIsImdldEJpbmFyeU5hbWUiLCJnZXRNb25nb2RQYXRoIiwibW9uZ29kUGF0aCIsInBhdGhFeGlzdHMiLCJtb25nb0RCQXJjaGl2ZSIsInN0YXJ0RG93bmxvYWQiLCJleHRyYWN0IiwicHJvbWlzZXMiLCJ1bmxpbmsiLCJtYmRVcmwiLCJta2RpciIsImFjY2VzcyIsImNvbnN0YW50cyIsIlhfT0siLCJXX09LIiwiZXJyIiwiY29uc29sZSIsImVycm9yIiwiZG93bmxvYWRVcmwiLCJnZXREb3dubG9hZFVybCIsImRvd25sb2FkIiwibWFrZU1ENWNoZWNrIiwidXJsRm9yUmVmZXJlbmNlTUQ1IiwidW5kZWZpbmVkIiwiYXJjaGl2ZU1ENVBhdGgiLCJzaWduYXR1cmVDb250ZW50IiwicmVhZEZpbGUiLCJ0b1N0cmluZyIsInJlZ2V4TWF0Y2giLCJtYXRjaCIsIm1kNVNpZ1JlbW90ZSIsIm1kNVNpZ0xvY2FsIiwic3luYyIsIk1kNUNoZWNrRmFpbGVkRXJyb3IiLCJwcm94eSIsInByb2Nlc3MiLCJlbnYiLCJ5YXJuX3Byb3h5IiwibnBtX2NvbmZpZ19wcm94eSIsImh0dHBzX3Byb3h5IiwiaHR0cF9wcm94eSIsIkhUVFBTX1BST1hZIiwiSFRUUF9QUk9YWSIsInN0cmljdFNzbCIsIm5wbV9jb25maWdfc3RyaWN0X3NzbCIsInVybE9iamVjdCIsIlVSTCIsInBvcnQiLCJyZXF1ZXN0T3B0aW9ucyIsIm1ldGhvZCIsInJlamVjdFVuYXV0aG9yaXplZCIsInByb3RvY29sIiwiVVNFX0hUVFAiLCJhZ2VudCIsIkh0dHBzUHJveHlBZ2VudCIsImZpbGVuYW1lIiwicGF0aG5hbWUiLCJzcGxpdCIsInBvcCIsImRvd25sb2FkTG9jYXRpb24iLCJyZXNvbHZlIiwidGVtcERvd25sb2FkTG9jYXRpb24iLCJhc3NpZ25Eb3dubG9hZGluZ1VSTCIsImRvd25sb2FkZWRGaWxlIiwiaHR0cERvd25sb2FkIiwibW9uZ29kYkZ1bGxQYXRoIiwiZGlybmFtZSIsImZpbHRlciIsImZpbGUiLCJ0ZXN0IiwiZXh0cmFjdFRhckd6IiwiZXh0cmFjdFppcCIsIl9kb3dubG9hZGluZ1VybCIsImV4dHJhY3RQYXRoIiwib24iLCJoZWFkZXIiLCJzdHJlYW0iLCJuZXh0IiwibmFtZSIsInBpcGUiLCJjcmVhdGVXcml0ZVN0cmVhbSIsIm1vZGUiLCJyZXN1bWUiLCJQcm9taXNlIiwicmVzIiwicmVqIiwiY3JlYXRlUmVhZFN0cmVhbSIsIkdlbmVyaWNNTVNFcnJvciIsImNyZWF0ZVVuemlwIiwicmVqZWN0Iiwib3BlbiIsImxhenlFbnRyaWVzIiwiemlwZmlsZSIsInJlYWRFbnRyeSIsImVudHJ5IiwiZmlsZU5hbWUiLCJvcGVuUmVhZFN0cmVhbSIsImVycjIiLCJyIiwidXJsIiwiaHR0cE9wdGlvbnMiLCJtYXhSZWRpcmVjdHMiLCJwYXJzZUludCIsIk1BWF9SRURJUkVDVFMiLCJ1c2VIdHRwc09wdGlvbnMiLCJPYmplY3QiLCJhc3NpZ24iLCJOdW1iZXIiLCJpc05hTiIsImh0dHBzIiwiZ2V0IiwicmVzcG9uc2UiLCJzdGF0dXNDb2RlIiwiRG93bmxvYWRFcnJvciIsImhlYWRlcnMiLCJNYXRoIiwicm91bmQiLCJmaWxlU3RyZWFtIiwiX19hd2FpdGVyIiwicGF0aCIsImVuZHNXaXRoIiwicHJpbnREb3dubG9hZFByb2dyZXNzIiwiY2xvc2UiLCJyZW5hbWUiLCJjaHVuayIsIm1lc3NhZ2UiLCJmb3JjZVByaW50Iiwibm93IiwiRGF0ZSIsInBlcmNlbnRDb21wbGV0ZSIsIm1iQ29tcGxldGUiLCJjclJldHVybiIsInN0ZG91dCIsImlzVFRZIiwiY2xlYXJMaW5lIiwid3JpdGUiLCJocmVmIiwiZXhwb3J0cyJdLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy91dGlsL01vbmdvQmluYXJ5RG93bmxvYWQudHMiXSwic291cmNlc0NvbnRlbnQiOltudWxsXSwibWFwcGluZ3MiOiI7Ozs7Ozs7QUFBQSxNQUFBQSxJQUFBLE9BQUFDLE9BQUEsQ0FBQUMsZUFBQSxFQUFBQyxPQUFBO0FBQ0EsTUFBQUMsS0FBQSxHQUFBRCxPQUFBO0FBQ0EsTUFBQUUsTUFBQSxPQUFBSixPQUFBLENBQUFDLGVBQUEsRUFBQUMsT0FBQTtBQUNBLE1BQUFHLElBQUEsR0FBQUgsT0FBQTtBQUNBLE1BQUFJLFVBQUEsT0FBQU4sT0FBQSxDQUFBQyxlQUFBLEVBQUFDLE9BQUE7QUFDQSxNQUFBSyxrQkFBQSxHQUFBTCxPQUFBO0FBQ0EsTUFBQU0sTUFBQSxHQUFBTixPQUFBO0FBQ0EsTUFBQU8sWUFBQSxPQUFBVCxPQUFBLENBQUFDLGVBQUEsRUFBQUMsT0FBQTtBQUNBLE1BQUFRLE9BQUEsT0FBQVYsT0FBQSxDQUFBQyxlQUFBLEVBQUFDLE9BQUE7QUFDQSxNQUFBUyx3QkFBQSxPQUFBWCxPQUFBLENBQUFDLGVBQUEsRUFBQUMsT0FBQTtBQUNBLE1BQUFVLG1CQUFBLEdBQUFWLE9BQUE7QUFDQSxNQUFBVyxlQUFBLE9BQUFiLE9BQUEsQ0FBQWMsWUFBQSxFQUFBWixPQUFBO0FBQ0EsTUFBQWEsT0FBQSxPQUFBZixPQUFBLENBQUFDLGVBQUEsRUFBQUMsT0FBQTtBQUNBLE1BQUFjLE9BQUEsR0FBQWQsT0FBQTtBQUNBLE1BQUFlLGdCQUFBLEdBQUFmLE9BQUE7QUFFQSxNQUFBZ0IsVUFBQSxHQUFBaEIsT0FBQTtBQUNBLE1BQUFpQixRQUFBLEdBQUFqQixPQUFBO0FBR0EsTUFBTWtCLEdBQUcsR0FBRyxJQUFBTCxPQUFBLENBQUFNLE9BQUssRUFBQyw2QkFBNkIsQ0FBQztBQVNoRDs7O0FBR0EsTUFBYUMsbUJBQW1CO0VBa0Q5QjtFQUVBQyxZQUFZQyxJQUFxQjs7SUFDL0IsSUFBQVIsT0FBQSxDQUFBUyxTQUFTLEVBQUMsT0FBT0QsSUFBSSxDQUFDRSxXQUFXLEtBQUssUUFBUSxFQUFFLElBQUlDLEtBQUssQ0FBQyxtQ0FBbUMsQ0FBQyxDQUFDO0lBQy9GLE1BQU1DLE9BQU8sR0FBRyxDQUFBQyxFQUFBLEdBQUFMLElBQUksQ0FBQ0ksT0FBTyxjQUFBQyxFQUFBLGNBQUFBLEVBQUEsR0FBSSxJQUFBaEIsZUFBQSxDQUFBUSxPQUFhLEVBQUNSLGVBQUEsQ0FBQWlCLHNCQUFzQixDQUFDQyxPQUFPLENBQUM7SUFDN0UsSUFBQWYsT0FBQSxDQUFBUyxTQUFTLEVBQ1AsT0FBT0csT0FBTyxLQUFLLFFBQVEsRUFDM0IsSUFBSUQsS0FBSyxDQUFDLDhDQUE4QyxDQUFDLENBQzFEO0lBRUQ7SUFDQSxJQUFJLENBQUNLLFVBQVUsR0FBRztNQUNoQkMsUUFBUSxFQUFFLENBQUFDLEVBQUEsR0FBQVYsSUFBSSxDQUFDUyxRQUFRLGNBQUFDLEVBQUEsY0FBQUEsRUFBQSxHQUFJbkMsSUFBQSxDQUFBc0IsT0FBRSxDQUFDWSxRQUFRLEVBQUU7TUFDeENFLElBQUksRUFBRSxDQUFBQyxFQUFBLEdBQUFaLElBQUksQ0FBQ1csSUFBSSxjQUFBQyxFQUFBLGNBQUFBLEVBQUEsR0FBSXJDLElBQUEsQ0FBQXNCLE9BQUUsQ0FBQ2MsSUFBSSxFQUFFO01BQzVCUCxPQUFPLEVBQUVBLE9BQU87TUFDaEJGLFdBQVcsRUFBRUYsSUFBSSxDQUFDRSxXQUFXO01BQzdCVyxRQUFRLEVBQUUsQ0FBQUMsRUFBQSxHQUFBZCxJQUFJLENBQUNhLFFBQVEsY0FBQUMsRUFBQSxjQUFBQSxFQUFBLEdBQUksSUFBQXpCLGVBQUEsQ0FBQTBCLFNBQVMsRUFBQyxJQUFBMUIsZUFBQSxDQUFBUSxPQUFhLEVBQUNSLGVBQUEsQ0FBQWlCLHNCQUFzQixDQUFDVSxTQUFTLENBQUMsQ0FBQztNQUNyRkMsWUFBWSxFQUFFLENBQUFDLEVBQUEsR0FBQWxCLElBQUksQ0FBQ2lCLFlBQVksY0FBQUMsRUFBQSxjQUFBQSxFQUFBLEdBQUksRUFBRTtNQUNyQ0MsRUFBRSxFQUFFLENBQUFDLEVBQUEsR0FBQXBCLElBQUksQ0FBQ21CLEVBQUUsY0FBQUMsRUFBQSxjQUFBQSxFQUFBLEdBQUk7UUFBRUQsRUFBRSxFQUFFO01BQVM7S0FDL0I7SUFFRCxJQUFJLENBQUNFLFVBQVUsR0FBRztNQUNoQkMsT0FBTyxFQUFFLENBQUM7TUFDVkMsTUFBTSxFQUFFLENBQUM7TUFDVEMsT0FBTyxFQUFFLENBQUM7TUFDVkMsYUFBYSxFQUFFO0tBQ2hCO0VBQ0g7RUF0RUE7RUFDQTtFQUVBLElBQUlaLFFBQVFBLENBQUE7SUFDVixPQUFPLElBQUksQ0FBQ0wsVUFBVSxDQUFDSyxRQUFRO0VBQ2pDO0VBRUEsSUFBSUEsUUFBUUEsQ0FBQ2EsR0FBWTtJQUN2QixJQUFJLENBQUNsQixVQUFVLENBQUNLLFFBQVEsR0FBR2EsR0FBRztFQUNoQztFQUVBLElBQUl4QixXQUFXQSxDQUFBO0lBQ2IsT0FBTyxJQUFJLENBQUNNLFVBQVUsQ0FBQ04sV0FBVztFQUNwQztFQUVBLElBQUlBLFdBQVdBLENBQUN3QixHQUFXO0lBQ3pCLElBQUksQ0FBQ2xCLFVBQVUsQ0FBQ04sV0FBVyxHQUFHd0IsR0FBRztFQUNuQztFQUVBLElBQUlmLElBQUlBLENBQUE7SUFDTixPQUFPLElBQUksQ0FBQ0gsVUFBVSxDQUFDRyxJQUFJO0VBQzdCO0VBRUEsSUFBSUEsSUFBSUEsQ0FBQ2UsR0FBVztJQUNsQixJQUFJLENBQUNsQixVQUFVLENBQUNHLElBQUksR0FBR2UsR0FBRztFQUM1QjtFQUVBLElBQUl0QixPQUFPQSxDQUFBO0lBQ1QsT0FBTyxJQUFJLENBQUNJLFVBQVUsQ0FBQ0osT0FBTztFQUNoQztFQUVBLElBQUlBLE9BQU9BLENBQUNzQixHQUFXO0lBQ3JCLElBQUksQ0FBQ2xCLFVBQVUsQ0FBQ0osT0FBTyxHQUFHc0IsR0FBRztFQUMvQjtFQUVBLElBQUlqQixRQUFRQSxDQUFBO0lBQ1YsT0FBTyxJQUFJLENBQUNELFVBQVUsQ0FBQ0MsUUFBUTtFQUNqQztFQUVBLElBQUlBLFFBQVFBLENBQUNpQixHQUFXO0lBQ3RCLElBQUksQ0FBQ2xCLFVBQVUsQ0FBQ0MsUUFBUSxHQUFHaUIsR0FBRztFQUNoQztFQStCQTs7OztFQUlnQkMsT0FBT0EsQ0FBQTs7TUFDckIsTUFBTTNCLElBQUksR0FBRyxNQUFNUCxnQkFBQSxDQUFBbUMsY0FBYyxDQUFDQyxlQUFlLENBQUMsSUFBSSxDQUFDckIsVUFBVSxDQUFDO01BRWxFLE9BQU9mLGdCQUFBLENBQUFtQyxjQUFjLENBQUNFLGlCQUFpQixDQUNyQyxJQUFJLENBQUM1QixXQUFXLEVBQ2hCLE1BQU1ULGdCQUFBLENBQUFtQyxjQUFjLENBQUNHLGFBQWEsQ0FBQy9CLElBQUksQ0FBQyxDQUN6QztJQUNILENBQUM7O0VBRUQ7Ozs7RUFJTWdDLGFBQWFBLENBQUE7O01BQ2pCcEMsR0FBRyxDQUFDLGVBQWUsQ0FBQztNQUNwQixNQUFNcUMsVUFBVSxHQUFHLE1BQU0sSUFBSSxDQUFDTixPQUFPLEVBQUU7TUFFdkMsSUFBSSxNQUFNLElBQUFuQyxPQUFBLENBQUEwQyxVQUFVLEVBQUNELFVBQVUsQ0FBQyxFQUFFO1FBQ2hDckMsR0FBRyxDQUFDLCtCQUErQnFDLFVBQVUsOEJBQThCLENBQUM7UUFFNUUsT0FBT0EsVUFBVTs7TUFHbkIsTUFBTUUsY0FBYyxHQUFHLE1BQU0sSUFBSSxDQUFDQyxhQUFhLEVBQUU7TUFDakQsTUFBTSxJQUFJLENBQUNDLE9BQU8sQ0FBQ0YsY0FBYyxDQUFDO01BQ2xDLE1BQU10RCxJQUFBLENBQUF5RCxRQUFVLENBQUNDLE1BQU0sQ0FBQ0osY0FBYyxDQUFDO01BRXZDLElBQUksTUFBTSxJQUFBM0MsT0FBQSxDQUFBMEMsVUFBVSxFQUFDRCxVQUFVLENBQUMsRUFBRTtRQUNoQyxPQUFPQSxVQUFVOztNQUduQixNQUFNLElBQUk5QixLQUFLLENBQUMsaURBQWlEOEIsVUFBVSxHQUFHLENBQUM7SUFDakYsQ0FBQzs7RUFFRDs7OztFQUlNRyxhQUFhQSxDQUFBOztNQUNqQnhDLEdBQUcsQ0FBQyxlQUFlLENBQUM7TUFDcEIsTUFBTTRDLE1BQU0sR0FBRyxJQUFJckQsd0JBQUEsQ0FBQVUsT0FBc0IsQ0FBQyxJQUFJLENBQUNXLFVBQVUsQ0FBQztNQUUxRCxNQUFNLElBQUFoQixPQUFBLENBQUFpRCxLQUFLLEVBQUMsSUFBSSxDQUFDdkMsV0FBVyxDQUFDO01BRTdCLElBQUk7UUFDRixNQUFNckIsSUFBQSxDQUFBeUQsUUFBVSxDQUFDSSxNQUFNLENBQUMsSUFBSSxDQUFDeEMsV0FBVyxFQUFFckIsSUFBQSxDQUFBOEQsU0FBUyxDQUFDQyxJQUFJLEdBQUcvRCxJQUFBLENBQUE4RCxTQUFTLENBQUNFLElBQUksQ0FBQyxDQUFDLENBQUM7T0FDN0UsQ0FBQyxPQUFPQyxHQUFHLEVBQUU7UUFDWkMsT0FBTyxDQUFDQyxLQUFLLENBQ1gsMEJBQTBCLElBQUksQ0FBQzlDLFdBQVcscUVBQXFFLEdBQzdHLDZDQUE2QyxDQUNoRDtRQUNELE1BQU00QyxHQUFHOztNQUdYLE1BQU1HLFdBQVcsR0FBRyxNQUFNVCxNQUFNLENBQUNVLGNBQWMsRUFBRTtNQUVqRCxNQUFNZixjQUFjLEdBQUcsTUFBTSxJQUFJLENBQUNnQixRQUFRLENBQUNGLFdBQVcsQ0FBQztNQUV2RCxNQUFNLElBQUksQ0FBQ0csWUFBWSxDQUFDLEdBQUdILFdBQVcsTUFBTSxFQUFFZCxjQUFjLENBQUM7TUFFN0QsT0FBT0EsY0FBYztJQUN2QixDQUFDOztFQUVEOzs7Ozs7Ozs7RUFTTWlCLFlBQVlBLENBQ2hCQyxrQkFBMEIsRUFDMUJsQixjQUFzQjs7TUFFdEJ2QyxHQUFHLENBQUMsb0RBQW9ELENBQUM7TUFFekQsSUFBSSxDQUFDLElBQUksQ0FBQ2lCLFFBQVEsRUFBRTtRQUNsQmpCLEdBQUcsQ0FBQyxvQ0FBb0MsQ0FBQztRQUV6QyxPQUFPMEQsU0FBUzs7TUFHbEIsTUFBTUMsY0FBYyxHQUFHLE1BQU0sSUFBSSxDQUFDSixRQUFRLENBQUNFLGtCQUFrQixDQUFDO01BQzlELE1BQU1HLGdCQUFnQixHQUFHLENBQUMsTUFBTTNFLElBQUEsQ0FBQXlELFFBQVUsQ0FBQ21CLFFBQVEsQ0FBQ0YsY0FBYyxDQUFDLEVBQUVHLFFBQVEsQ0FBQyxPQUFPLENBQUM7TUFDdEYsTUFBTUMsVUFBVSxHQUFHSCxnQkFBZ0IsQ0FBQ0ksS0FBSyxDQUFDLG1CQUFtQixDQUFDO01BQzlELE1BQU1DLFlBQVksR0FBR0YsVUFBVSxHQUFHQSxVQUFVLENBQUMsQ0FBQyxDQUFDLEdBQUcsSUFBSTtNQUN0RCxNQUFNRyxXQUFXLEdBQUdoRixVQUFBLENBQUFlLE9BQU8sQ0FBQ2tFLElBQUksQ0FBQzVCLGNBQWMsQ0FBQztNQUNoRHZDLEdBQUcsQ0FBQyw0QkFBNEJrRSxXQUFXLGlCQUFpQkQsWUFBWSxFQUFFLENBQUM7TUFFM0UsSUFBSUEsWUFBWSxLQUFLQyxXQUFXLEVBQUU7UUFDaEMsTUFBTSxJQUFJbkUsUUFBQSxDQUFBcUUsbUJBQW1CLENBQUNGLFdBQVcsRUFBRUQsWUFBWSxJQUFJLFNBQVMsQ0FBQzs7TUFHdkUsTUFBTWhGLElBQUEsQ0FBQXlELFFBQVUsQ0FBQ0MsTUFBTSxDQUFDZ0IsY0FBYyxDQUFDO01BRXZDLE9BQU8sSUFBSTtJQUNiLENBQUM7O0VBRUQ7Ozs7O0VBS01KLFFBQVFBLENBQUNGLFdBQW1COztNQUNoQ3JELEdBQUcsQ0FBQyxVQUFVLENBQUM7TUFDZixNQUFNcUUsS0FBSyxHQUNUQyxPQUFPLENBQUNDLEdBQUcsQ0FBQyxrQkFBa0IsQ0FBQyxJQUMvQkQsT0FBTyxDQUFDQyxHQUFHLENBQUNDLFVBQVUsSUFDdEJGLE9BQU8sQ0FBQ0MsR0FBRyxDQUFDLHdCQUF3QixDQUFDLElBQ3JDRCxPQUFPLENBQUNDLEdBQUcsQ0FBQ0UsZ0JBQWdCLElBQzVCSCxPQUFPLENBQUNDLEdBQUcsQ0FBQ0csV0FBVyxJQUN2QkosT0FBTyxDQUFDQyxHQUFHLENBQUNJLFVBQVUsSUFDdEJMLE9BQU8sQ0FBQ0MsR0FBRyxDQUFDSyxXQUFXLElBQ3ZCTixPQUFPLENBQUNDLEdBQUcsQ0FBQ00sVUFBVTtNQUV4QixNQUFNQyxTQUFTLEdBQUdSLE9BQU8sQ0FBQ0MsR0FBRyxDQUFDUSxxQkFBcUIsS0FBSyxNQUFNO01BRTlELE1BQU1DLFNBQVMsR0FBRyxJQUFJakcsS0FBQSxDQUFBa0csR0FBRyxDQUFDNUIsV0FBVyxDQUFDO01BQ3RDMkIsU0FBUyxDQUFDRSxJQUFJLEdBQUdGLFNBQVMsQ0FBQ0UsSUFBSSxJQUFJLEtBQUs7TUFFeEMsTUFBTUMsY0FBYyxHQUFtQjtRQUNyQ0MsTUFBTSxFQUFFLEtBQUs7UUFDYkMsa0JBQWtCLEVBQUVQLFNBQVM7UUFDN0JRLFFBQVEsRUFBRSxJQUFBN0YsZUFBQSxDQUFBMEIsU0FBUyxFQUFDLElBQUExQixlQUFBLENBQUFRLE9BQWEsRUFBQ1IsZUFBQSxDQUFBaUIsc0JBQXNCLENBQUM2RSxRQUFRLENBQUMsQ0FBQyxHQUFHLE9BQU8sR0FBRyxRQUFRO1FBQ3hGQyxLQUFLLEVBQUVuQixLQUFLLEdBQUcsSUFBSTdFLG1CQUFBLENBQUFpRyxlQUFlLENBQUNwQixLQUFLLENBQUMsR0FBR1g7T0FDN0M7TUFFRCxNQUFNZ0MsUUFBUSxHQUFHVixTQUFTLENBQUNXLFFBQVEsQ0FBQ0MsS0FBSyxDQUFDLEdBQUcsQ0FBQyxDQUFDQyxHQUFHLEVBQUU7TUFFcEQsSUFBSSxDQUFDSCxRQUFRLEVBQUU7UUFDYixNQUFNLElBQUluRixLQUFLLENBQUMsa0RBQWtEOEMsV0FBVyxHQUFHLENBQUM7O01BR25GLE1BQU15QyxnQkFBZ0IsR0FBRzlHLE1BQUEsQ0FBQWlCLE9BQUksQ0FBQzhGLE9BQU8sQ0FBQyxJQUFJLENBQUN6RixXQUFXLEVBQUVvRixRQUFRLENBQUM7TUFDakUsTUFBTU0sb0JBQW9CLEdBQUdoSCxNQUFBLENBQUFpQixPQUFJLENBQUM4RixPQUFPLENBQUMsSUFBSSxDQUFDekYsV0FBVyxFQUFFLEdBQUdvRixRQUFRLGNBQWMsQ0FBQztNQUN0RjFGLEdBQUcsQ0FBQyx3QkFBd0JxRSxLQUFLLEdBQUcsZUFBZUEsS0FBSyxHQUFHLEdBQUcsRUFBRSxNQUFNaEIsV0FBVyxHQUFHLENBQUM7TUFFckYsSUFBSSxNQUFNLElBQUF6RCxPQUFBLENBQUEwQyxVQUFVLEVBQUN3RCxnQkFBZ0IsQ0FBQyxFQUFFO1FBQ3RDOUYsR0FBRyxDQUFDLCtEQUErRCxDQUFDO1FBRXBFLE9BQU84RixnQkFBZ0I7O01BR3pCLElBQUksQ0FBQ0csb0JBQW9CLENBQUNqQixTQUFTLENBQUM7TUFFcEMsTUFBTWtCLGNBQWMsR0FBRyxNQUFNLElBQUksQ0FBQ0MsWUFBWSxDQUM1Q25CLFNBQVMsRUFDVEcsY0FBYyxFQUNkVyxnQkFBZ0IsRUFDaEJFLG9CQUFvQixDQUNyQjtNQUVELE9BQU9FLGNBQWM7SUFDdkIsQ0FBQzs7RUFFRDs7Ozs7RUFLTXpELE9BQU9BLENBQUNGLGNBQXNCOzs7TUFDbEN2QyxHQUFHLENBQUMsU0FBUyxDQUFDO01BQ2QsTUFBTW9HLGVBQWUsR0FBRyxNQUFNLElBQUksQ0FBQ3JFLE9BQU8sRUFBRTtNQUM1Qy9CLEdBQUcsQ0FBQyxzQkFBc0J1QyxjQUFjLGFBQWE2RCxlQUFlLEdBQUcsQ0FBQztNQUV4RSxNQUFNLElBQUF4RyxPQUFBLENBQUFpRCxLQUFLLEVBQUM3RCxNQUFBLENBQUFpQixPQUFJLENBQUNvRyxPQUFPLENBQUNELGVBQWUsQ0FBQyxDQUFDO01BRTFDLE1BQU1FLE1BQU0sR0FBSUMsSUFBWSxJQUFLLGlDQUFpQyxDQUFDQyxJQUFJLENBQUNELElBQUksQ0FBQztNQUU3RSxJQUFJLGlCQUFpQixDQUFDQyxJQUFJLENBQUNqRSxjQUFjLENBQUMsRUFBRTtRQUMxQyxNQUFNLElBQUksQ0FBQ2tFLFlBQVksQ0FBQ2xFLGNBQWMsRUFBRTZELGVBQWUsRUFBRUUsTUFBTSxDQUFDO09BQ2pFLE1BQU0sSUFBSSxPQUFPLENBQUNFLElBQUksQ0FBQ2pFLGNBQWMsQ0FBQyxFQUFFO1FBQ3ZDLE1BQU0sSUFBSSxDQUFDbUUsVUFBVSxDQUFDbkUsY0FBYyxFQUFFNkQsZUFBZSxFQUFFRSxNQUFNLENBQUM7T0FDL0QsTUFBTTtRQUNMLE1BQU0sSUFBSS9GLEtBQUssQ0FDYiw2Q0FBNkNnQyxjQUFjLHVCQUN6RCxDQUFBOUIsRUFBQSxPQUFJLENBQUNrRyxlQUFlLGNBQUFsRyxFQUFBLGNBQUFBLEVBQUEsR0FBSSxTQUMxQiwyQ0FBMkMsQ0FDNUM7O01BR0gsSUFBSSxFQUFFLE1BQU0sSUFBQWIsT0FBQSxDQUFBMEMsVUFBVSxFQUFDOEQsZUFBZSxDQUFDLENBQUMsRUFBRTtRQUN4QyxNQUFNLElBQUk3RixLQUFLLENBQ2Isa0RBQWtEZ0MsY0FBYyx1QkFDOUQsQ0FBQXpCLEVBQUEsT0FBSSxDQUFDNkYsZUFBZSxjQUFBN0YsRUFBQSxjQUFBQSxFQUFBLEdBQUksU0FDMUIsMkNBQTJDLENBQzVDOztNQUdILE9BQU9zRixlQUFlOzs7RUFHeEI7Ozs7OztFQU1NSyxZQUFZQSxDQUNoQmxFLGNBQXNCLEVBQ3RCcUUsV0FBbUIsRUFDbkJOLE1BQWlDOztNQUVqQ3RHLEdBQUcsQ0FBQyxjQUFjLENBQUM7TUFDbkIsTUFBTXlDLE9BQU8sR0FBR3BELFlBQUEsQ0FBQVksT0FBRyxDQUFDd0MsT0FBTyxFQUFFO01BQzdCQSxPQUFPLENBQUNvRSxFQUFFLENBQUMsT0FBTyxFQUFFLENBQUNDLE1BQU0sRUFBRUMsTUFBTSxFQUFFQyxJQUFJLEtBQUk7UUFDM0MsSUFBSVYsTUFBTSxDQUFDUSxNQUFNLENBQUNHLElBQUksQ0FBQyxFQUFFO1VBQ3ZCRixNQUFNLENBQUNHLElBQUksQ0FDVCxJQUFBakksSUFBQSxDQUFBa0ksaUJBQWlCLEVBQUNQLFdBQVcsRUFBRTtZQUM3QlEsSUFBSSxFQUFFO1dBQ1AsQ0FBQyxDQUNIOztRQUdITCxNQUFNLENBQUNGLEVBQUUsQ0FBQyxLQUFLLEVBQUUsTUFBTUcsSUFBSSxFQUFFLENBQUM7UUFDOUJELE1BQU0sQ0FBQ00sTUFBTSxFQUFFO01BQ2pCLENBQUMsQ0FBQztNQUVGLE9BQU8sSUFBSUMsT0FBTyxDQUFDLENBQUNDLEdBQUcsRUFBRUMsR0FBRyxLQUFJO1FBQzlCLElBQUF2SSxJQUFBLENBQUF3SSxnQkFBZ0IsRUFBQ2xGLGNBQWMsQ0FBQyxDQUM3QnNFLEVBQUUsQ0FBQyxPQUFPLEVBQUczRCxHQUFHLElBQUk7VUFDbkJzRSxHQUFHLENBQUMsSUFBSXpILFFBQUEsQ0FBQTJILGVBQWUsQ0FBQyx5QkFBeUIsR0FBR25GLGNBQWMsR0FBRyxJQUFJLEdBQUdXLEdBQUcsQ0FBQyxDQUFDO1FBQ25GLENBQUMsQ0FBQyxDQUNEZ0UsSUFBSSxDQUFDLElBQUE5SCxNQUFBLENBQUF1SSxXQUFXLEdBQUUsQ0FBQyxDQUNuQmQsRUFBRSxDQUFDLE9BQU8sRUFBRzNELEdBQUcsSUFBSTtVQUNuQnNFLEdBQUcsQ0FBQyxJQUFJekgsUUFBQSxDQUFBMkgsZUFBZSxDQUFDLHlCQUF5QixHQUFHbkYsY0FBYyxHQUFHLElBQUksR0FBR1csR0FBRyxDQUFDLENBQUM7UUFDbkYsQ0FBQyxDQUFDLENBQ0RnRSxJQUFJLENBQUN6RSxPQUFPLENBQUMsQ0FDYm9FLEVBQUUsQ0FBQyxPQUFPLEVBQUczRCxHQUFHLElBQUk7VUFDbkJzRSxHQUFHLENBQUMsSUFBSXpILFFBQUEsQ0FBQTJILGVBQWUsQ0FBQyx5QkFBeUIsR0FBR25GLGNBQWMsR0FBRyxJQUFJLEdBQUdXLEdBQUcsQ0FBQyxDQUFDO1FBQ25GLENBQUMsQ0FBQyxDQUNEMkQsRUFBRSxDQUFDLFFBQVEsRUFBRVUsR0FBRyxDQUFDO01BQ3RCLENBQUMsQ0FBQztJQUNKLENBQUM7O0VBRUQ7Ozs7OztFQU1NYixVQUFVQSxDQUNkbkUsY0FBc0IsRUFDdEJxRSxXQUFtQixFQUNuQk4sTUFBaUM7O01BRWpDdEcsR0FBRyxDQUFDLFlBQVksQ0FBQztNQUVqQixPQUFPLElBQUlzSCxPQUFPLENBQUMsQ0FBQ3ZCLE9BQU8sRUFBRTZCLE1BQU0sS0FBSTtRQUNyQ3RJLE9BQUEsQ0FBQVcsT0FBSyxDQUFDNEgsSUFBSSxDQUFDdEYsY0FBYyxFQUFFO1VBQUV1RixXQUFXLEVBQUU7UUFBSSxDQUFFLEVBQUUsQ0FBQzVFLEdBQUcsRUFBRTZFLE9BQU8sS0FBSTtVQUNqRSxJQUFJN0UsR0FBRyxJQUFJLENBQUM2RSxPQUFPLEVBQUU7WUFDbkIsT0FBT0gsTUFBTSxDQUFDMUUsR0FBRyxDQUFDOztVQUdwQjZFLE9BQU8sQ0FBQ0MsU0FBUyxFQUFFO1VBRW5CRCxPQUFPLENBQUNsQixFQUFFLENBQUMsS0FBSyxFQUFFLE1BQU1kLE9BQU8sRUFBRSxDQUFDO1VBRWxDZ0MsT0FBTyxDQUFDbEIsRUFBRSxDQUFDLE9BQU8sRUFBR29CLEtBQUssSUFBSTtZQUM1QixJQUFJLENBQUMzQixNQUFNLENBQUMyQixLQUFLLENBQUNDLFFBQVEsQ0FBQyxFQUFFO2NBQzNCLE9BQU9ILE9BQU8sQ0FBQ0MsU0FBUyxFQUFFOztZQUc1QkQsT0FBTyxDQUFDSSxjQUFjLENBQUNGLEtBQUssRUFBRSxDQUFDRyxJQUFJLEVBQUVDLENBQUMsS0FBSTtjQUN4QyxJQUFJRCxJQUFJLElBQUksQ0FBQ0MsQ0FBQyxFQUFFO2dCQUNkLE9BQU9ULE1BQU0sQ0FBQ1EsSUFBSSxDQUFDOztjQUdyQkMsQ0FBQyxDQUFDeEIsRUFBRSxDQUFDLEtBQUssRUFBRSxNQUFNa0IsT0FBTyxDQUFDQyxTQUFTLEVBQUUsQ0FBQztjQUN0Q0ssQ0FBQyxDQUFDbkIsSUFBSSxDQUNKLElBQUFqSSxJQUFBLENBQUFrSSxpQkFBaUIsRUFBQ1AsV0FBVyxFQUFFO2dCQUM3QlEsSUFBSSxFQUFFO2VBQ1AsQ0FBQyxDQUNIO1lBQ0gsQ0FBQyxDQUFDO1VBQ0osQ0FBQyxDQUFDO1FBQ0osQ0FBQyxDQUFDO01BQ0osQ0FBQyxDQUFDO0lBQ0osQ0FBQzs7RUFFRDs7Ozs7O0VBTU1qQixZQUFZQSxDQUNoQm1DLEdBQVEsRUFDUkMsV0FBMkIsRUFDM0J6QyxnQkFBd0IsRUFDeEJFLG9CQUE0Qjs7TUFFNUJoRyxHQUFHLENBQUMsY0FBYyxDQUFDO01BQ25CLE1BQU1xRCxXQUFXLEdBQUcsSUFBSSxDQUFDNEMsb0JBQW9CLENBQUNxQyxHQUFHLENBQUM7TUFFbEQsTUFBTUUsWUFBWSxHQUFHQyxRQUFRLENBQUMsSUFBQWhKLGVBQUEsQ0FBQVEsT0FBYSxFQUFDUixlQUFBLENBQUFpQixzQkFBc0IsQ0FBQ2dJLGFBQWEsQ0FBQyxJQUFJLEVBQUUsQ0FBQztNQUN4RixNQUFNQyxlQUFlLEdBQUFDLE1BQUEsQ0FBQUMsTUFBQTtRQUNuQkwsWUFBWSxFQUFFTSxNQUFNLENBQUNDLEtBQUssQ0FBQ1AsWUFBWSxDQUFDLEdBQUcsQ0FBQyxHQUFHQTtNQUFZLEdBQ3hERCxXQUFXLENBQ2Y7TUFFRCxPQUFPLElBQUlqQixPQUFPLENBQUMsQ0FBQ3ZCLE9BQU8sRUFBRTZCLE1BQU0sS0FBSTtRQUNyQzVILEdBQUcsQ0FBQyxxQ0FBcUNxRCxXQUFXLEdBQUcsQ0FBQztRQUN4RGxFLGtCQUFBLENBQUE2SixLQUFLLENBQ0ZDLEdBQUcsQ0FBQ1gsR0FBRyxFQUFFSyxlQUFlLEVBQUdPLFFBQVEsSUFBSTtVQUN0QyxJQUFJQSxRQUFRLENBQUNDLFVBQVUsSUFBSSxHQUFHLEVBQUU7WUFDOUIsSUFBSUQsUUFBUSxDQUFDQyxVQUFVLEtBQUssR0FBRyxFQUFFO2NBQy9CdkIsTUFBTSxDQUNKLElBQUk3SCxRQUFBLENBQUFxSixhQUFhLENBQ2YvRixXQUFXLEVBQ1gsc0NBQXNDLEdBQ3BDLDRFQUE0RSxHQUM1RSwwRkFBMEYsR0FDMUYsZ0RBQWdELEdBQ2hELG9FQUFvRSxDQUN2RSxDQUNGO2NBRUQ7O1lBR0Z1RSxNQUFNLENBQ0osSUFBSTdILFFBQUEsQ0FBQXFKLGFBQWEsQ0FBQy9GLFdBQVcsRUFBRSxnQ0FBZ0M2RixRQUFRLENBQUNDLFVBQVUsR0FBRyxDQUFDLENBQ3ZGO1lBRUQ7O1VBRUYsSUFBSSxPQUFPRCxRQUFRLENBQUNHLE9BQU8sQ0FBQyxnQkFBZ0IsQ0FBQyxJQUFJLFFBQVEsRUFBRTtZQUN6RHpCLE1BQU0sQ0FBQyxJQUFJN0gsUUFBQSxDQUFBcUosYUFBYSxDQUFDL0YsV0FBVyxFQUFFLDRDQUE0QyxDQUFDLENBQUM7WUFFcEY7O1VBR0YsSUFBSSxDQUFDNUIsVUFBVSxDQUFDQyxPQUFPLEdBQUcsQ0FBQztVQUMzQixJQUFJLENBQUNELFVBQVUsQ0FBQ0UsTUFBTSxHQUFHOEcsUUFBUSxDQUFDUyxRQUFRLENBQUNHLE9BQU8sQ0FBQyxnQkFBZ0IsQ0FBQyxFQUFFLEVBQUUsQ0FBQztVQUN6RSxJQUFJLENBQUM1SCxVQUFVLENBQUNHLE9BQU8sR0FBRzBILElBQUksQ0FBQ0MsS0FBSyxDQUFFLElBQUksQ0FBQzlILFVBQVUsQ0FBQ0UsTUFBTSxHQUFHLE9BQU8sR0FBSSxFQUFFLENBQUMsR0FBRyxFQUFFO1VBRWxGLE1BQU02SCxVQUFVLEdBQUcsSUFBQXZLLElBQUEsQ0FBQWtJLGlCQUFpQixFQUFDbkIsb0JBQW9CLENBQUM7VUFFMURrRCxRQUFRLENBQUNoQyxJQUFJLENBQUNzQyxVQUFVLENBQUM7VUFFekJBLFVBQVUsQ0FBQzNDLEVBQUUsQ0FBQyxRQUFRLEVBQUUsTUFBVyxJQUFBakksT0FBQSxDQUFBNkssU0FBQTs7WUFDakMsSUFDRSxJQUFJLENBQUNoSSxVQUFVLENBQUNDLE9BQU8sR0FBRyxJQUFJLENBQUNELFVBQVUsQ0FBQ0UsTUFBTSxJQUNoRCxFQUFDLENBQUFsQixFQUFBLEdBQUE4SCxXQUFXLENBQUNtQixJQUFJLGNBQUFqSixFQUFBLHVCQUFBQSxFQUFBLENBQUVrSixRQUFRLENBQUMsTUFBTSxDQUFDLEdBQ25DO2NBQ0EvQixNQUFNLENBQ0osSUFBSTdILFFBQUEsQ0FBQXFKLGFBQWEsQ0FDZi9GLFdBQVcsRUFDWCxjQUFjLElBQUksQ0FBQzVCLFVBQVUsQ0FBQ0MsT0FBTyxtQ0FBbUMsQ0FDekUsQ0FDRjtjQUVEOztZQUdGLElBQUksQ0FBQ2tJLHFCQUFxQixDQUFDO2NBQUVqSSxNQUFNLEVBQUU7WUFBQyxDQUFFLEVBQUUsSUFBSSxDQUFDO1lBRS9DNkgsVUFBVSxDQUFDSyxLQUFLLEVBQUU7WUFDbEIsTUFBTTVLLElBQUEsQ0FBQXlELFFBQVUsQ0FBQ29ILE1BQU0sQ0FBQzlELG9CQUFvQixFQUFFRixnQkFBZ0IsQ0FBQztZQUMvRDlGLEdBQUcsQ0FBQyx3QkFBd0JnRyxvQkFBb0IsU0FBU0YsZ0JBQWdCLEdBQUcsQ0FBQztZQUU3RUMsT0FBTyxDQUFDRCxnQkFBZ0IsQ0FBQztVQUMzQixDQUFDLEVBQUM7VUFFRm9ELFFBQVEsQ0FBQ3JDLEVBQUUsQ0FBQyxNQUFNLEVBQUdrRCxLQUFVLElBQUk7WUFDakMsSUFBSSxDQUFDSCxxQkFBcUIsQ0FBQ0csS0FBSyxDQUFDO1VBQ25DLENBQUMsQ0FBQztRQUNKLENBQUMsQ0FBQyxDQUNEbEQsRUFBRSxDQUFDLE9BQU8sRUFBRzNELEdBQVUsSUFBSTtVQUMxQjtVQUNBQyxPQUFPLENBQUNDLEtBQUssQ0FBQyxxQkFBcUJDLFdBQVcsSUFBSSxFQUFFSCxHQUFHLENBQUM4RyxPQUFPLENBQUM7VUFDaEVwQyxNQUFNLENBQUMsSUFBSTdILFFBQUEsQ0FBQXFKLGFBQWEsQ0FBQy9GLFdBQVcsRUFBRUgsR0FBRyxDQUFDOEcsT0FBTyxDQUFDLENBQUM7UUFDckQsQ0FBQyxDQUFDO01BQ04sQ0FBQyxDQUFDO0lBQ0osQ0FBQzs7RUFFRDs7OztFQUlBSixxQkFBcUJBLENBQUNHLEtBQXlCLEVBQUVFLFVBQUEsR0FBc0IsS0FBSztJQUMxRSxJQUFJLENBQUN4SSxVQUFVLENBQUNDLE9BQU8sSUFBSXFJLEtBQUssQ0FBQ3BJLE1BQU07SUFFdkMsTUFBTXVJLEdBQUcsR0FBR0MsSUFBSSxDQUFDRCxHQUFHLEVBQUU7SUFFdEIsSUFBSUEsR0FBRyxHQUFHLElBQUksQ0FBQ3pJLFVBQVUsQ0FBQ0ksYUFBYSxHQUFHLElBQUksSUFBSSxDQUFDb0ksVUFBVSxFQUFFO01BQzdEOztJQUdGLElBQUksQ0FBQ3hJLFVBQVUsQ0FBQ0ksYUFBYSxHQUFHcUksR0FBRztJQUVuQyxNQUFNRSxlQUFlLEdBQ25CZCxJQUFJLENBQUNDLEtBQUssQ0FBRyxLQUFLLEdBQUcsSUFBSSxDQUFDOUgsVUFBVSxDQUFDQyxPQUFPLEdBQUksSUFBSSxDQUFDRCxVQUFVLENBQUNFLE1BQU0sR0FBSSxFQUFFLENBQUMsR0FBRyxFQUFFO0lBQ3BGLE1BQU0wSSxVQUFVLEdBQUdmLElBQUksQ0FBQ0MsS0FBSyxDQUFFLElBQUksQ0FBQzlILFVBQVUsQ0FBQ0MsT0FBTyxHQUFHLE9BQU8sR0FBSSxFQUFFLENBQUMsR0FBRyxFQUFFO0lBRTVFLE1BQU00SSxRQUFRLEdBQUcsSUFBSSxDQUFDekosUUFBUSxLQUFLLE9BQU8sR0FBRyxTQUFTLEdBQUcsSUFBSTtJQUM3RCxNQUFNbUosT0FBTyxHQUFHLHdCQUF3QixJQUFJLENBQUN4SixPQUFPLE1BQU00SixlQUFlLE1BQU1DLFVBQVUsUUFBUSxJQUFJLENBQUM1SSxVQUFVLENBQUNHLE9BQU8sTUFBTTBJLFFBQVEsRUFBRTtJQUV4SSxJQUFJaEcsT0FBTyxDQUFDaUcsTUFBTSxDQUFDQyxLQUFLLEVBQUU7TUFDeEI7TUFDQSxJQUFBMUssVUFBQSxDQUFBMkssU0FBUyxFQUFDbkcsT0FBTyxDQUFDaUcsTUFBTSxFQUFFLENBQUMsQ0FBQyxDQUFDLENBQUM7TUFDOUJqRyxPQUFPLENBQUNpRyxNQUFNLENBQUNHLEtBQUssQ0FBQ1YsT0FBTyxDQUFDO0tBQzlCLE1BQU07TUFDTDdHLE9BQU8sQ0FBQ25ELEdBQUcsQ0FBQ2dLLE9BQU8sQ0FBQzs7RUFFeEI7RUFFQTs7O0VBR0EvRCxvQkFBb0JBLENBQUNxQyxHQUFRO0lBQzNCLElBQUksQ0FBQzNCLGVBQWUsR0FBRzJCLEdBQUcsQ0FBQ3FDLElBQUk7SUFFL0IsT0FBTyxJQUFJLENBQUNoRSxlQUFlO0VBQzdCOztBQXBmRmlFLE9BQUEsQ0FBQTFLLG1CQUFBLEdBQUFBLG1CQUFBO0FBdWZBMEssT0FBQSxDQUFBM0ssT0FBQSxHQUFlQyxtQkFBbUIiLCJpZ25vcmVMaXN0IjpbXX0=

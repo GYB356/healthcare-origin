@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import ChatList from '../components/ChatList';
-import Chat from '../components/Chat';
-import { createChat } from '../utils/chat';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import ChatList from "../components/ChatList";
+import Chat from "../components/Chat";
+import { createChat } from "../utils/chat";
 
 interface User {
   id: string;
@@ -25,13 +25,13 @@ export default function Messages() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/users');
+        const response = await fetch("/api/users");
         if (response.ok) {
           const data = await response.json();
           setUsers(data);
         }
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error("Error fetching users:", error);
       } finally {
         setLoading(false);
       }
@@ -42,23 +42,23 @@ export default function Messages() {
 
   // Handle chat selection
   const handleSelectChat = async (chatId: string, receiverId: string, receiverName: string) => {
-    if (chatId === 'new' && user?.id) {
+    if (chatId === "new" && user?.id) {
       try {
         // Create a new chat
         const newChat = await createChat(user.id, receiverId);
         setSelectedChat({
           chatId: newChat._id,
           receiverId,
-          receiverName
+          receiverName,
         });
       } catch (error) {
-        console.error('Error creating chat:', error);
+        console.error("Error creating chat:", error);
       }
     } else {
       setSelectedChat({
         chatId,
         receiverId,
-        receiverName
+        receiverName,
       });
     }
   };
@@ -74,22 +74,25 @@ export default function Messages() {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Messages</h1>
-      
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden" style={{ height: 'calc(100vh - 200px)' }}>
+
+      <div
+        className="bg-white rounded-lg shadow-lg overflow-hidden"
+        style={{ height: "calc(100vh - 200px)" }}
+      >
         <div className="flex h-full">
           {/* Chat List */}
           <div className="w-1/3 border-r">
-            <ChatList 
+            <ChatList
               users={users}
               onSelectChat={handleSelectChat}
               selectedChatId={selectedChat?.chatId}
             />
           </div>
-          
+
           {/* Chat Area */}
           <div className="w-2/3">
             {selectedChat ? (
-              <Chat 
+              <Chat
                 chatId={selectedChat.chatId}
                 receiverId={selectedChat.receiverId}
                 receiverName={selectedChat.receiverName}
@@ -107,4 +110,4 @@ export default function Messages() {
       </div>
     </div>
   );
-} 
+}

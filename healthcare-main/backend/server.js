@@ -1,7 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
 
 // Load environment variables
 dotenv.config();
@@ -14,18 +14,18 @@ app.use(cors());
 app.use(express.json());
 
 // Import routes
-const authRoutes = require('./routes/authRoutes');
-const appointmentRoutes = require('./routes/appointmentRoutes');
-const projectRoutes = require('./routes/projectRoutes');
-const videoRoutes = require('./routes/videoRoutes');
-const aiRoutes = require('./routes/aiRoutes');
+const authRoutes = require("./routes/authRoutes");
+const appointmentRoutes = require("./routes/appointmentRoutes");
+const projectRoutes = require("./routes/projectRoutes");
+const videoRoutes = require("./routes/videoRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
 // Use routes
-app.use('/api/auth', authRoutes);
-app.use('/api/appointments', appointmentRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/video', videoRoutes);
-app.use('/api/ai', aiRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/video", videoRoutes);
+app.use("/api/ai", aiRoutes);
 
 // Connect to MongoDB
 mongoose
@@ -33,8 +33,8 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 // Define port
 const PORT = process.env.PORT || 5000;

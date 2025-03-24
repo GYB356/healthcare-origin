@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { FiFileText, FiLock, FiAlertTriangle } from 'react-icons/fi';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { FiFileText, FiLock, FiAlertTriangle } from "react-icons/fi";
 
 const MedicalRecords = () => {
   const { currentUser } = useAuth();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [selectedRecord, setSelectedRecord] = useState(null);
 
   // Check if user has required permissions
   const hasAccess = () => {
     if (!currentUser) return false;
-    const allowedRoles = ['admin', 'doctor', 'nurse'];
-    
+    const allowedRoles = ["admin", "doctor", "nurse"];
+
     if (allowedRoles.includes(currentUser.role)) {
       // Additional HIPAA compliance check
-      if (['doctor', 'nurse'].includes(currentUser.role)) {
-        return currentUser.hipaaConsent && currentUser.hipaaConsent.status === 'accepted';
+      if (["doctor", "nurse"].includes(currentUser.role)) {
+        return currentUser.hipaaConsent && currentUser.hipaaConsent.status === "accepted";
       }
       return true;
     }
@@ -33,27 +33,27 @@ const MedicalRecords = () => {
         const mockRecords = [
           {
             id: 1,
-            patientName: 'John Doe',
-            recordType: 'Lab Result',
-            date: '2024-01-15',
-            doctor: 'Dr. Smith',
-            status: 'Complete'
+            patientName: "John Doe",
+            recordType: "Lab Result",
+            date: "2024-01-15",
+            doctor: "Dr. Smith",
+            status: "Complete",
           },
           {
             id: 2,
-            patientName: 'Jane Smith',
-            recordType: 'Imaging',
-            date: '2024-01-14',
-            doctor: 'Dr. Johnson',
-            status: 'Pending Review'
-          }
+            patientName: "Jane Smith",
+            recordType: "Imaging",
+            date: "2024-01-14",
+            doctor: "Dr. Johnson",
+            status: "Pending Review",
+          },
         ];
 
         setRecords(mockRecords);
-        setError('');
+        setError("");
       } catch (err) {
-        setError('Failed to fetch medical records. Please try again later.');
-        console.error('Error fetching records:', err);
+        setError("Failed to fetch medical records. Please try again later.");
+        console.error("Error fetching records:", err);
       } finally {
         setLoading(false);
       }
@@ -73,7 +73,8 @@ const MedicalRecords = () => {
             <h2 className="text-xl font-semibold">Access Denied</h2>
           </div>
           <p className="text-gray-600">
-            You do not have permission to view medical records. This feature is only available to authorized healthcare providers.
+            You do not have permission to view medical records. This feature is only available to
+            authorized healthcare providers.
           </p>
         </div>
       </div>
@@ -109,19 +110,34 @@ const MedicalRecords = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Patient Name
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Record Type
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Date
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Doctor
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Status
                     </th>
                     <th scope="col" className="relative px-6 py-3">
@@ -133,7 +149,9 @@ const MedicalRecords = () => {
                   {records.map((record) => (
                     <tr key={record.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{record.patientName}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {record.patientName}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{record.recordType}</div>
@@ -145,11 +163,13 @@ const MedicalRecords = () => {
                         <div className="text-sm text-gray-900">{record.doctor}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          record.status === 'Complete' 
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            record.status === "Complete"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
                           {record.status}
                         </span>
                       </td>

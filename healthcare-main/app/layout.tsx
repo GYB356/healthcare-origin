@@ -1,19 +1,15 @@
-import { Inter } from 'next/font/google'
-import './globals.css'
-import { Toaster } from "@/components/ui/toaster"
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: 'Healthcare Management System',
-  description: 'A comprehensive healthcare management system',
-}
+  title: "Healthcare Management System",
+  description: "A comprehensive healthcare management system",
+};
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -21,5 +17,5 @@ export default function RootLayout({
         <Toaster />
       </body>
     </html>
-  )
+  );
 }

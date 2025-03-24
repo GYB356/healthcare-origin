@@ -32,7 +32,10 @@ export default function Billing() {
   const handlePayment = async (invoice) => {
     const stripe = await stripePromise;
     try {
-      const { data } = await axios.post("/api/billing/pay", { amount: invoice.amount, token: { id: "tok_visa" } });
+      const { data } = await axios.post("/api/billing/pay", {
+        amount: invoice.amount,
+        token: { id: "tok_visa" },
+      });
       alert("Payment successful!");
     } catch (error) {
       console.error("Payment failed:", error);
@@ -44,13 +47,27 @@ export default function Billing() {
       <h2 className="text-3xl font-bold">Billing</h2>
 
       <div className="mt-4">
-        <input type="text" placeholder="Patient ID" className="border p-2 m-2" 
-               onChange={(e) => setNewInvoice({ ...newInvoice, patientId: e.target.value })} />
-        <input type="number" placeholder="Amount" className="border p-2 m-2"
-               onChange={(e) => setNewInvoice({ ...newInvoice, amount: e.target.value })} />
-        <input type="text" placeholder="Description" className="border p-2 m-2"
-               onChange={(e) => setNewInvoice({ ...newInvoice, description: e.target.value })} />
-        <button onClick={handleCreate} className="bg-blue-500 text-white p-2 rounded-lg">Create Invoice</button>
+        <input
+          type="text"
+          placeholder="Patient ID"
+          className="border p-2 m-2"
+          onChange={(e) => setNewInvoice({ ...newInvoice, patientId: e.target.value })}
+        />
+        <input
+          type="number"
+          placeholder="Amount"
+          className="border p-2 m-2"
+          onChange={(e) => setNewInvoice({ ...newInvoice, amount: e.target.value })}
+        />
+        <input
+          type="text"
+          placeholder="Description"
+          className="border p-2 m-2"
+          onChange={(e) => setNewInvoice({ ...newInvoice, description: e.target.value })}
+        />
+        <button onClick={handleCreate} className="bg-blue-500 text-white p-2 rounded-lg">
+          Create Invoice
+        </button>
       </div>
 
       <div className="mt-6">
@@ -60,7 +77,10 @@ export default function Billing() {
             <li key={invoice._id} className="p-2 border-b">
               {invoice.description} - ${invoice.amount} - {invoice.status}
               {invoice.status === "Pending" && (
-                <button onClick={() => handlePayment(invoice)} className="ml-4 bg-green-500 text-white p-2 rounded-lg">
+                <button
+                  onClick={() => handlePayment(invoice)}
+                  className="ml-4 bg-green-500 text-white p-2 rounded-lg"
+                >
                   Pay Now
                 </button>
               )}
@@ -70,4 +90,4 @@ export default function Billing() {
       </div>
     </div>
   );
-} 
+}

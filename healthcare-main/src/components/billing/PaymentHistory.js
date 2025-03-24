@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { FiDollarSign, FiDownload, FiAlertCircle } from 'react-icons/fi';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { FiDollarSign, FiDownload, FiAlertCircle } from "react-icons/fi";
 
 export default function PaymentHistory() {
   const { authAxios } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchPaymentHistory = async () => {
       try {
-        const response = await authAxios.get('/api/billing/history');
+        const response = await authAxios.get("/api/billing/history");
         setTransactions(response.data);
       } catch (err) {
-        setError('Failed to load payment history');
-        console.error('Billing history error:', err);
+        setError("Failed to load payment history");
+        console.error("Billing history error:", err);
       } finally {
         setLoading(false);
       }
@@ -25,9 +25,9 @@ export default function PaymentHistory() {
   }, []);
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(amount / 100); // Convert cents to dollars
   };
 
@@ -59,11 +59,21 @@ export default function PaymentHistory() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Description
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Amount
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -77,18 +87,20 @@ export default function PaymentHistory() {
                   {formatCurrency(transaction.amount)}
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    transaction.status === 'paid' 
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      transaction.status === "paid"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
                     {transaction.status}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900">
                   <button
                     className="text-blue-600 hover:text-blue-900 flex items-center"
-                    onClick={() => window.open(`/api/billing/invoice/${transaction.id}`, '_blank')}
+                    onClick={() => window.open(`/api/billing/invoice/${transaction.id}`, "_blank")}
                   >
                     <FiDownload className="mr-1" />
                     Invoice

@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useSession } from "next-auth/react"
-import { useRouter, usePathname } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { useSession } from "next-auth/react";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { CalendarIcon, FileTextIcon, CreditCardIcon, UserIcon, LogOutIcon } from "lucide-react"
-import { signOut } from "next-auth/react"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CalendarIcon, FileTextIcon, CreditCardIcon, UserIcon, LogOutIcon } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 const navigation = [
   {
@@ -35,20 +35,16 @@ const navigation = [
     href: "/billing",
     icon: CreditCardIcon,
   },
-]
+];
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const { data: session } = useSession()
-  const router = useRouter()
-  const pathname = usePathname()
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
 
   if (!session) {
-    router.push("/login")
-    return null
+    router.push("/login");
+    return null;
   }
 
   return (
@@ -62,7 +58,7 @@ export default function DashboardLayout({
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 {navigation.map((item) => {
-                  const Icon = item.icon
+                  const Icon = item.icon;
                   return (
                     <Link
                       key={item.name}
@@ -76,7 +72,7 @@ export default function DashboardLayout({
                       <Icon className="mr-2 h-4 w-4" />
                       {item.name}
                     </Link>
-                  )
+                  );
                 })}
               </div>
             </div>
@@ -86,9 +82,7 @@ export default function DashboardLayout({
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
-                      <AvatarFallback>
-                        {session.user?.name?.charAt(0) || "U"}
-                      </AvatarFallback>
+                      <AvatarFallback>{session.user?.name?.charAt(0) || "U"}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
@@ -105,10 +99,8 @@ export default function DashboardLayout({
       </nav>
 
       <main className="py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {children}
-        </div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">{children}</div>
       </main>
     </div>
-  )
-} 
+  );
+}

@@ -1,20 +1,20 @@
-import { WebSocket } from 'ws';
-import { CacheService } from '../lib/cache';
+import { WebSocket } from "ws";
+import { CacheService } from "../lib/cache";
 
 export interface Notification {
   id: string;
   userId: number;
-  type: 'appointment' | 'health' | 'medication' | 'system';
+  type: "appointment" | "health" | "medication" | "system";
   title: string;
   message: string;
-  priority: 'low' | 'medium' | 'high';
+  priority: "low" | "medium" | "high";
   timestamp: string;
   read: boolean;
 }
 
 export class NotificationService {
   private static clients = new Map<number, WebSocket>();
-  private static CACHE_PREFIX = 'notifications:';
+  private static CACHE_PREFIX = "notifications:";
   private static CACHE_TTL = 86400; // 24 hours
 
   static addClient(userId: number, ws: WebSocket) {
@@ -25,13 +25,13 @@ export class NotificationService {
     this.clients.delete(userId);
   }
 
-  static async sendNotification(notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) {
+  static async sendNotification(notification: Omit<Notification, "id" | "timestamp" | "read">) {
     try {
       const fullNotification: Notification = {
         ...notification,
         id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
-        read: false
+        read: false,
       };
 
       // Store notification in cache
@@ -40,19 +40,21 @@ export class NotificationService {
       await CacheService.set(
         `${this.CACHE_PREFIX}${notification.userId}`,
         userNotifications,
-        this.CACHE_TTL
+        this.CACHE_TTL,
       );
 
       // Send to connected client if available
       const client = this.clients.get(notification.userId);
       if (client && client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({
-          type: 'notification',
-          data: fullNotification
-        }));
+        client.send(
+          JSON.stringify({
+            type: "notification",
+            data: fullNotification,
+          }),
+        );
       }
     } catch (error) {
-      console.error('Error sending notification:', error);
+      console.error("Error sending notification:", error);
     }
   }
 
@@ -64,28 +66,24 @@ export class NotificationService {
   static async markAsRead(userId: number, notificationId: string) {
     try {
       const notifications = await this.getUserNotifications(userId);
-      const updatedNotifications = notifications.map(notification =>
-        notification.id === notificationId
-          ? { ...notification, read: true }
-          : notification
+      const updatedNotifications = notifications.map((notification) =>
+        notification.id === notificationId ? { ...notification, read: true } : notification,
       );
 
-      await CacheService.set(
-        `${this.CACHE_PREFIX}${userId}`,
-        updatedNotifications,
-        this.CACHE_TTL
-      );
+      await CacheService.set(`${this.CACHE_PREFIX}${userId}`, updatedNotifications, this.CACHE_TTL);
 
       // Notify client about the update
       const client = this.clients.get(userId);
       if (client && client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({
-          type: 'notificationUpdate',
-          data: { id: notificationId, read: true }
-        }));
+        client.send(
+          JSON.stringify({
+            type: "notificationUpdate",
+            data: { id: notificationId, read: true },
+          }),
+        );
       }
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error("Error marking notification as read:", error);
     }
   }
 

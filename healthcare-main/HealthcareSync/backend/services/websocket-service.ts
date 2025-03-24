@@ -1,6 +1,6 @@
-import { WebSocket, WebSocketServer } from 'ws';
-import { Server } from 'http';
-import { parse } from 'url';
+import { WebSocket, WebSocketServer } from "ws";
+import { Server } from "http";
+import { parse } from "url";
 
 interface WebSocketConnection {
   ws: WebSocket;
@@ -24,27 +24,27 @@ class WebSocketService {
     try {
       this.wss = new WebSocketServer({ noServer: true });
 
-      server.on('upgrade', (request, socket, head) => {
+      server.on("upgrade", (request, socket, head) => {
         try {
-          const { pathname, query } = parse(request.url || '', true);
+          const { pathname, query } = parse(request.url || "", true);
 
-          if (pathname === '/ws') {
+          if (pathname === "/ws") {
             // Handle video consultation connections
             this.wss.handleUpgrade(request, socket, head, (ws) => {
-              this.wss.emit('connection', ws, { ...request, isVideoConsultation: true });
+              this.wss.emit("connection", ws, { ...request, isVideoConsultation: true });
             });
           }
         } catch (error) {
-          console.error('WebSocket upgrade error:', error);
+          console.error("WebSocket upgrade error:", error);
           socket.destroy();
         }
       });
 
-      this.wss.on('connection', this.handleConnection.bind(this));
+      this.wss.on("connection", this.handleConnection.bind(this));
       this.setupHeartbeat();
-      console.log('WebSocket server initialized successfully');
+      console.log("WebSocket server initialized successfully");
     } catch (error) {
-      console.error('Failed to initialize WebSocket server:', error);
+      console.error("Failed to initialize WebSocket server:", error);
       throw error;
     }
   }
@@ -63,7 +63,7 @@ class WebSocketService {
       });
     }, 30000);
 
-    this.wss.on('close', () => {
+    this.wss.on("close", () => {
       clearInterval(this.heartbeatInterval);
     });
   }
@@ -74,8 +74,8 @@ class WebSocketService {
       const userRole = request.session?.passport?.role;
 
       if (!userId) {
-        console.log('WebSocket connection rejected: No authentication');
-        ws.close(1008, 'Authentication required');
+        console.log("WebSocket connection rejected: No authentication");
+        ws.close(1008, "Authentication required");
         return;
       }
 
@@ -85,7 +85,7 @@ class WebSocketService {
         ws,
         userId,
         role: userRole,
-        isAlive: true
+        isAlive: true,
       };
 
       if (!this.connections.has(userId)) {
@@ -93,36 +93,35 @@ class WebSocketService {
       }
       this.connections.get(userId)!.add(connection);
 
-      ws.on('pong', () => {
+      ws.on("pong", () => {
         connection.isAlive = true;
       });
 
-      ws.on('message', (data: string) => {
+      ws.on("message", (data: string) => {
         try {
           const message = JSON.parse(data) as SignalingMessage;
 
           // Handle WebRTC signaling for video consultations
-          if (message.type === 'signal') {
+          if (message.type === "signal") {
             this.handleSignaling(message);
           }
         } catch (error) {
-          console.error('Error processing WebSocket message:', error);
+          console.error("Error processing WebSocket message:", error);
         }
       });
 
-      ws.on('close', () => {
+      ws.on("close", () => {
         this.removeConnection(userId, connection);
       });
 
-      ws.on('error', (error) => {
+      ws.on("error", (error) => {
         console.error(`WebSocket error for user ${userId}:`, error);
         this.removeConnection(userId, connection);
       });
-
     } catch (error) {
-      console.error('Error handling WebSocket connection:', error);
+      console.error("Error handling WebSocket connection:", error);
       if (ws.readyState === WebSocket.OPEN) {
-        ws.close(1011, 'Internal server error');
+        ws.close(1011, "Internal server error");
       }
     }
   }
@@ -138,7 +137,7 @@ class WebSocketService {
         });
       });
     } catch (error) {
-      console.error('Error handling signaling message:', error);
+      console.error("Error handling signaling message:", error);
     }
   }
 
@@ -177,7 +176,7 @@ export function initializeWebSocket(server: Server) {
     websocketService = new WebSocketService(server);
     return websocketService;
   } catch (error) {
-    console.error('Failed to initialize WebSocket service:', error);
+    console.error("Failed to initialize WebSocket service:", error);
     throw error;
   }
 }

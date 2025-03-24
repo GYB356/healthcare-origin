@@ -13,7 +13,7 @@ export interface TimeEntry {
   updatedAt: Date;
   billableRate: number | null; // hourly rate if different from default project rate
   tags: string[]; // for categorizing time entries
-  source: 'timer' | 'manual'; // how the entry was created
+  source: "timer" | "manual"; // how the entry was created
 }
 
 export interface TimeTrackingSettings {
@@ -23,11 +23,12 @@ export interface TimeTrackingSettings {
   autoStopTimerAfterInactivity: number; // in minutes, 0 for disabled
   reminderInterval: number; // in minutes, 0 for disabled
   workingHours: {
-    [key: string]: { // day of week (0-6)
+    [key: string]: {
+      // day of week (0-6)
       start: string; // HH:MM format
       end: string; // HH:MM format
       isWorkDay: boolean;
-    }
+    };
   };
 }
 
@@ -54,4 +55,4 @@ export interface TimeTrackingSummary {
   billableAmount: number; // calculated amount
   currency: string;
   entries: TimeEntry[];
-} 
+}

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import {
   UserIcon,
   PhoneIcon,
@@ -7,7 +7,7 @@ import {
   MapPinIcon,
   CalendarIcon,
   PencilIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 interface PatientProfile {
   id: string;
@@ -22,7 +22,7 @@ export default function PatientProfile() {
   const { data: session } = useSession();
   const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<PatientProfile>>({});
 
@@ -33,15 +33,15 @@ export default function PatientProfile() {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/patient/profile');
+      const response = await fetch("/api/patient/profile");
       if (!response.ok) {
-        throw new Error('Failed to fetch profile');
+        throw new Error("Failed to fetch profile");
       }
       const data = await response.json();
       setProfile(data);
     } catch (error) {
-      console.error('Error fetching profile:', error);
-      setError('Failed to load profile');
+      console.error("Error fetching profile:", error);
+      setError("Failed to load profile");
     } finally {
       setLoading(false);
     }
@@ -55,24 +55,24 @@ export default function PatientProfile() {
   const handleSave = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/patient/profile', {
-        method: 'PUT',
+      const response = await fetch("/api/patient/profile", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update profile');
+        throw new Error("Failed to update profile");
       }
 
       const updatedProfile = await response.json();
       setProfile(updatedProfile);
       setIsEditing(false);
     } catch (error) {
-      console.error('Error updating profile:', error);
-      setError('Failed to update profile');
+      console.error("Error updating profile:", error);
+      setError("Failed to update profile");
     } finally {
       setLoading(false);
     }
@@ -81,12 +81,12 @@ export default function PatientProfile() {
   const handleCancel = () => {
     setIsEditing(false);
     setFormData({});
-    setError('');
+    setError("");
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -101,11 +101,7 @@ export default function PatientProfile() {
   }
 
   if (error) {
-    return (
-      <div className="text-red-500 text-center p-4">
-        {error}
-      </div>
-    );
+    return <div className="text-red-500 text-center p-4">{error}</div>;
   }
 
   return (
@@ -131,7 +127,7 @@ export default function PatientProfile() {
               <input
                 type="date"
                 name="dateOfBirth"
-                value={formData.dateOfBirth || ''}
+                value={formData.dateOfBirth || ""}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
@@ -141,7 +137,7 @@ export default function PatientProfile() {
               <label className="block text-sm font-medium text-gray-700">Gender</label>
               <select
                 name="gender"
-                value={formData.gender || ''}
+                value={formData.gender || ""}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
@@ -157,7 +153,7 @@ export default function PatientProfile() {
               <input
                 type="tel"
                 name="phoneNumber"
-                value={formData.phoneNumber || ''}
+                value={formData.phoneNumber || ""}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
@@ -168,7 +164,7 @@ export default function PatientProfile() {
               <input
                 type="text"
                 name="address"
-                value={formData.address || ''}
+                value={formData.address || ""}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
@@ -179,7 +175,7 @@ export default function PatientProfile() {
               <input
                 type="text"
                 name="emergencyContact"
-                value={formData.emergencyContact || ''}
+                value={formData.emergencyContact || ""}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
@@ -206,9 +202,7 @@ export default function PatientProfile() {
               <UserIcon className="h-5 w-5 text-gray-400 mr-3" />
               <div>
                 <p className="text-sm font-medium text-gray-500">Name</p>
-                <p className="text-sm text-gray-900">
-                  {session?.user?.name}
-                </p>
+                <p className="text-sm text-gray-900">{session?.user?.name}</p>
               </div>
             </div>
 
@@ -217,7 +211,9 @@ export default function PatientProfile() {
               <div>
                 <p className="text-sm font-medium text-gray-500">Date of Birth</p>
                 <p className="text-sm text-gray-900">
-                  {profile?.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : 'Not provided'}
+                  {profile?.dateOfBirth
+                    ? new Date(profile.dateOfBirth).toLocaleDateString()
+                    : "Not provided"}
                 </p>
               </div>
             </div>
@@ -226,9 +222,7 @@ export default function PatientProfile() {
               <UserIcon className="h-5 w-5 text-gray-400 mr-3" />
               <div>
                 <p className="text-sm font-medium text-gray-500">Gender</p>
-                <p className="text-sm text-gray-900">
-                  {profile?.gender || 'Not provided'}
-                </p>
+                <p className="text-sm text-gray-900">{profile?.gender || "Not provided"}</p>
               </div>
             </div>
 
@@ -236,9 +230,7 @@ export default function PatientProfile() {
               <PhoneIcon className="h-5 w-5 text-gray-400 mr-3" />
               <div>
                 <p className="text-sm font-medium text-gray-500">Phone Number</p>
-                <p className="text-sm text-gray-900">
-                  {profile?.phoneNumber || 'Not provided'}
-                </p>
+                <p className="text-sm text-gray-900">{profile?.phoneNumber || "Not provided"}</p>
               </div>
             </div>
 
@@ -246,9 +238,7 @@ export default function PatientProfile() {
               <EnvelopeIcon className="h-5 w-5 text-gray-400 mr-3" />
               <div>
                 <p className="text-sm font-medium text-gray-500">Email</p>
-                <p className="text-sm text-gray-900">
-                  {session?.user?.email}
-                </p>
+                <p className="text-sm text-gray-900">{session?.user?.email}</p>
               </div>
             </div>
 
@@ -256,9 +246,7 @@ export default function PatientProfile() {
               <MapPinIcon className="h-5 w-5 text-gray-400 mr-3" />
               <div>
                 <p className="text-sm font-medium text-gray-500">Address</p>
-                <p className="text-sm text-gray-900">
-                  {profile?.address || 'Not provided'}
-                </p>
+                <p className="text-sm text-gray-900">{profile?.address || "Not provided"}</p>
               </div>
             </div>
 
@@ -267,7 +255,7 @@ export default function PatientProfile() {
               <div>
                 <p className="text-sm font-medium text-gray-500">Emergency Contact</p>
                 <p className="text-sm text-gray-900">
-                  {profile?.emergencyContact || 'Not provided'}
+                  {profile?.emergencyContact || "Not provided"}
                 </p>
               </div>
             </div>
@@ -276,4 +264,4 @@ export default function PatientProfile() {
       </div>
     </div>
   );
-} 
+}

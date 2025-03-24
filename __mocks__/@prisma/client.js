@@ -9,7 +9,7 @@ const mockPrisma = {
     upsert: jest.fn(),
     count: jest.fn(),
     aggregate: jest.fn(),
-    groupBy: jest.fn()
+    groupBy: jest.fn(),
   },
   patient: {
     findUnique: jest.fn(),
@@ -21,7 +21,7 @@ const mockPrisma = {
     upsert: jest.fn(),
     count: jest.fn(),
     aggregate: jest.fn(),
-    groupBy: jest.fn()
+    groupBy: jest.fn(),
   },
   appointment: {
     findUnique: jest.fn(),
@@ -33,7 +33,7 @@ const mockPrisma = {
     upsert: jest.fn(),
     count: jest.fn(),
     aggregate: jest.fn(),
-    groupBy: jest.fn()
+    groupBy: jest.fn(),
   },
   availability: {
     findUnique: jest.fn(),
@@ -45,7 +45,7 @@ const mockPrisma = {
     upsert: jest.fn(),
     count: jest.fn(),
     aggregate: jest.fn(),
-    groupBy: jest.fn()
+    groupBy: jest.fn(),
   },
   $connect: jest.fn(),
   $disconnect: jest.fn(),
@@ -55,7 +55,7 @@ const mockPrisma = {
   $runCommandRaw: jest.fn(),
   $use: jest.fn(),
   $on: jest.fn(),
-  $metrics: jest.fn()
+  $metrics: jest.fn(),
 };
 
 class PrismaClient {
@@ -65,5 +65,5 @@ class PrismaClient {
 }
 
 module.exports = {
-  PrismaClient
-}; 
+  PrismaClient,
+};

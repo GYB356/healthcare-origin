@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -15,17 +15,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "sonner"
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 const doctorFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -59,11 +59,11 @@ const doctorFormSchema = z.object({
       ]),
       startTime: z.string(),
       endTime: z.string(),
-    })
+    }),
   ),
-})
+});
 
-type DoctorFormValues = z.infer<typeof doctorFormSchema>
+type DoctorFormValues = z.infer<typeof doctorFormSchema>;
 
 const DAYS_OF_WEEK = [
   "MONDAY",
@@ -73,12 +73,12 @@ const DAYS_OF_WEEK = [
   "FRIDAY",
   "SATURDAY",
   "SUNDAY",
-] as const
+] as const;
 
 export default function NewDoctorPage() {
-  const { data: session } = useSession()
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<DoctorFormValues>({
     resolver: zodResolver(doctorFormSchema),
@@ -98,15 +98,15 @@ export default function NewDoctorPage() {
         endTime: "17:00",
       })),
     },
-  })
+  });
 
   const onSubmit = async (data: DoctorFormValues) => {
     if (session?.user.role !== "ADMIN") {
-      toast.error("Unauthorized")
-      return
+      toast.error("Unauthorized");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       const response = await fetch("/api/doctors", {
@@ -120,29 +120,27 @@ export default function NewDoctorPage() {
             qualifications: data.qualifications,
             experience: data.experience,
             bio: data.bio || null,
-            languages: data.languages ? data.languages.split(",").map(l => l.trim()) : null,
+            languages: data.languages ? data.languages.split(",").map((l) => l.trim()) : null,
             acceptingPatients: data.acceptingPatients,
           },
-          availability: data.availability.filter(
-            (slot) => slot.startTime && slot.endTime
-          ),
+          availability: data.availability.filter((slot) => slot.startTime && slot.endTime),
         }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to create doctor")
+        throw new Error("Failed to create doctor");
       }
 
-      const doctor = await response.json()
-      toast.success("Doctor created successfully")
-      router.push(`/doctors/${doctor.id}`)
+      const doctor = await response.json();
+      toast.success("Doctor created successfully");
+      router.push(`/doctors/${doctor.id}`);
     } catch (error) {
-      console.error("Error creating doctor:", error)
-      toast.error("Failed to create doctor")
+      console.error("Error creating doctor:", error);
+      toast.error("Failed to create doctor");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -208,19 +206,14 @@ export default function NewDoctorPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Specialization</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select specialization" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="GENERAL_PRACTICE">
-                          General Practice
-                        </SelectItem>
+                        <SelectItem value="GENERAL_PRACTICE">General Practice</SelectItem>
                         <SelectItem value="PEDIATRICS">Pediatrics</SelectItem>
                         <SelectItem value="CARDIOLOGY">Cardiology</SelectItem>
                         <SelectItem value="DERMATOLOGY">Dermatology</SelectItem>
@@ -357,5 +350,5 @@ export default function NewDoctorPage() {
         </form>
       </Form>
     </div>
-  )
-} 
+  );
+}

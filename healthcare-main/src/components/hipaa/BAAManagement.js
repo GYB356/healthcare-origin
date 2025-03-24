@@ -1,23 +1,23 @@
 // src/components/hipaa/BAAManagement.js
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { FiPlus, FiEdit, FiTrash2, FiAlertCircle, FiClock } from 'react-icons/fi';
-import BAAModal from './BAAModal';
-import BAAVersionHistory from './BAAVersionHistory';
-import BAACompare from './BAACompare';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { FiPlus, FiEdit, FiTrash2, FiAlertCircle, FiClock } from "react-icons/fi";
+import BAAModal from "./BAAModal";
+import BAAVersionHistory from "./BAAVersionHistory";
+import BAACompare from "./BAACompare";
 import {
   createBAA,
   getBAA,
   updateBAAStatus,
   terminateBAA,
-  BAA_STATUS
-} from '../../utils/baaManagement';
+  BAA_STATUS,
+} from "../../utils/baaManagement";
 
 const BAAManagement = () => {
   const { currentUser } = useAuth();
   const [baas, setBaas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showCompareVersions, setShowCompareVersions] = useState(false);
@@ -31,21 +31,21 @@ const BAAManagement = () => {
   const fetchBAAs = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/hipaa/baa', {
+      const response = await fetch("/api/hipaa/baa", {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch BAAs');
+        throw new Error("Failed to fetch BAAs");
       }
 
       const data = await response.json();
       setBaas(data);
     } catch (err) {
-      console.error('Error fetching BAAs:', err);
-      setError('Failed to load Business Associate Agreements');
+      console.error("Error fetching BAAs:", err);
+      setError("Failed to load Business Associate Agreements");
     } finally {
       setLoading(false);
     }
@@ -53,46 +53,50 @@ const BAAManagement = () => {
 
   const handleCreateBAA = async (formData) => {
     try {
-      const newBAA = await createBAA({
-        id: formData.businessAssociateId,
-        name: formData.businessAssociateName
-      }, formData.terms, currentUser);
+      const newBAA = await createBAA(
+        {
+          id: formData.businessAssociateId,
+          name: formData.businessAssociateName,
+        },
+        formData.terms,
+        currentUser,
+      );
 
       setBaas([...baas, newBAA]);
       setShowCreateModal(false);
     } catch (err) {
-      console.error('Error creating BAA:', err);
-      setError('Failed to create Business Associate Agreement');
+      console.error("Error creating BAA:", err);
+      setError("Failed to create Business Associate Agreement");
     }
   };
 
   const handleUpdateStatus = async (baaId, newStatus) => {
     try {
       await updateBAAStatus(baaId, newStatus, currentUser);
-      const updatedBAAs = baas.map(baa =>
-        baa.id === baaId ? { ...baa, status: newStatus } : baa
+      const updatedBAAs = baas.map((baa) =>
+        baa.id === baaId ? { ...baa, status: newStatus } : baa,
       );
       setBaas(updatedBAAs);
     } catch (err) {
-      console.error('Error updating BAA status:', err);
-      setError('Failed to update BAA status');
+      console.error("Error updating BAA status:", err);
+      setError("Failed to update BAA status");
     }
   };
 
   const handleTerminate = async (baaId, reason) => {
     try {
       await terminateBAA(baaId, reason, currentUser);
-      const updatedBAAs = baas.map(baa =>
-        baa.id === baaId ? { ...baa, status: BAA_STATUS.TERMINATED } : baa
+      const updatedBAAs = baas.map((baa) =>
+        baa.id === baaId ? { ...baa, status: BAA_STATUS.TERMINATED } : baa,
       );
       setBaas(updatedBAAs);
     } catch (err) {
-      console.error('Error terminating BAA:', err);
-      setError('Failed to terminate BAA');
+      console.error("Error terminating BAA:", err);
+      setError("Failed to terminate BAA");
     }
   };
 
-  if (!currentUser || currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== "admin") {
     return (
       <div className="p-4">
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
@@ -114,9 +118,7 @@ const BAAManagement = () => {
   return (
     <div className="p-4">
       <div className="mb-4 flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-900">
-          Business Associate Agreements
-        </h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Business Associate Agreements</h1>
         <button
           onClick={() => setShowCreateModal(true)}
           className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
@@ -177,7 +179,7 @@ const BAAManagement = () => {
                       </button>
                       {baa.status !== BAA_STATUS.TERMINATED && (
                         <button
-                          onClick={() => handleTerminate(baa.id, 'User requested termination')}
+                          onClick={() => handleTerminate(baa.id, "User requested termination")}
                           className="inline-flex items-center text-sm text-red-500 hover:text-red-700"
                         >
                           <FiTrash2 className="h-5 w-5" />
@@ -222,12 +224,17 @@ const BAAManagement = () => {
               >
                 <span className="sr-only">Close</span>
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
-            <BAAVersionHistory 
-              baaId={selectedBAA.id} 
+            <BAAVersionHistory
+              baaId={selectedBAA.id}
               onCompareClick={(versions) => {
                 setVersionData(versions);
                 setShowVersionHistory(false);
@@ -237,17 +244,17 @@ const BAAManagement = () => {
           </div>
         </div>
       )}
-      
+
       {showCompareVersions && selectedBAA && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-full max-w-5xl shadow-lg rounded-md bg-white">
-            <BAACompare 
-              baaId={selectedBAA.id} 
-              versions={versionData} 
+            <BAACompare
+              baaId={selectedBAA.id}
+              versions={versionData}
               onClose={() => {
                 setShowCompareVersions(false);
                 setVersionData([]);
-              }} 
+              }}
             />
           </div>
         </div>

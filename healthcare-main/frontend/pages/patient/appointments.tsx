@@ -21,9 +21,13 @@ export default function PatientAppointments() {
   const handleBooking = async () => {
     const token = localStorage.getItem("token");
 
-    await axios.post("/api/appointments", { doctorId, date, reason }, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await axios.post(
+      "/api/appointments",
+      { doctorId, date, reason },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
 
     window.location.reload();
   };
@@ -33,7 +37,9 @@ export default function PatientAppointments() {
       <h1>My Appointments</h1>
       <ul>
         {appointments.map((appt) => (
-          <li key={appt.id}>{appt.date} - {appt.status}</li>
+          <li key={appt.id}>
+            {appt.date} - {appt.status}
+          </li>
         ))}
       </ul>
 

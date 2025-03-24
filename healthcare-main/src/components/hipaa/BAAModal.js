@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { FiAlertCircle, FiX } from 'react-icons/fi';
-import { BAA_STATUS } from '../../utils/baaManagement';
+import React, { useState, useEffect } from "react";
+import { FiAlertCircle, FiX } from "react-icons/fi";
+import { BAA_STATUS } from "../../utils/baaManagement";
 
 const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
   const [formData, setFormData] = useState({
-    businessAssociateId: '',
-    businessAssociateName: '',
-    terms: '',
-    status: BAA_STATUS.PENDING
+    businessAssociateId: "",
+    businessAssociateName: "",
+    terms: "",
+    status: BAA_STATUS.PENDING,
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -15,10 +15,10 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
   useEffect(() => {
     if (baa) {
       setFormData({
-        businessAssociateId: baa.businessAssociateId || '',
-        businessAssociateName: baa.businessAssociateName || '',
-        terms: baa.terms || '',
-        status: baa.status || BAA_STATUS.PENDING
+        businessAssociateId: baa.businessAssociateId || "",
+        businessAssociateName: baa.businessAssociateName || "",
+        terms: baa.terms || "",
+        status: baa.status || BAA_STATUS.PENDING,
       });
     }
   }, [baa]);
@@ -27,15 +27,15 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
     const newErrors = {};
 
     if (!formData.businessAssociateId.trim()) {
-      newErrors.businessAssociateId = 'Business Associate ID is required';
+      newErrors.businessAssociateId = "Business Associate ID is required";
     }
 
     if (!formData.businessAssociateName.trim()) {
-      newErrors.businessAssociateName = 'Business Associate Name is required';
+      newErrors.businessAssociateName = "Business Associate Name is required";
     }
 
     if (!formData.terms.trim()) {
-      newErrors.terms = 'Terms are required';
+      newErrors.terms = "Terms are required";
     }
 
     setErrors(newErrors);
@@ -54,7 +54,7 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
       await onSave(formData);
       onClose();
     } catch (err) {
-      setErrors({ submit: err.message || 'Failed to save BAA' });
+      setErrors({ submit: err.message || "Failed to save BAA" });
     } finally {
       setLoading(false);
     }
@@ -62,15 +62,15 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear error when field is modified
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: null
+        [name]: null,
       }));
     }
   };
@@ -82,12 +82,9 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">
-            {baa ? 'Edit BAA' : 'Create New BAA'}
+            {baa ? "Edit BAA" : "Create New BAA"}
           </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-500"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
             <FiX className="h-6 w-6" />
           </button>
         </div>
@@ -107,7 +104,10 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="businessAssociateId" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="businessAssociateId"
+              className="block text-sm font-medium text-gray-700"
+            >
               Business Associate ID
             </label>
             <input
@@ -116,7 +116,7 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
               name="businessAssociateId"
               value={formData.businessAssociateId}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.businessAssociateId ? 'border-red-300' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.businessAssociateId ? "border-red-300" : ""}`}
             />
             {errors.businessAssociateId && (
               <p className="mt-1 text-sm text-red-600">{errors.businessAssociateId}</p>
@@ -124,7 +124,10 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
           </div>
 
           <div>
-            <label htmlFor="businessAssociateName" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="businessAssociateName"
+              className="block text-sm font-medium text-gray-700"
+            >
               Business Associate Name
             </label>
             <input
@@ -133,7 +136,7 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
               name="businessAssociateName"
               value={formData.businessAssociateName}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.businessAssociateName ? 'border-red-300' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.businessAssociateName ? "border-red-300" : ""}`}
             />
             {errors.businessAssociateName && (
               <p className="mt-1 text-sm text-red-600">{errors.businessAssociateName}</p>
@@ -150,11 +153,9 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
               rows="4"
               value={formData.terms}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.terms ? 'border-red-300' : ''}`}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.terms ? "border-red-300" : ""}`}
             />
-            {errors.terms && (
-              <p className="mt-1 text-sm text-red-600">{errors.terms}</p>
-            )}
+            {errors.terms && <p className="mt-1 text-sm text-red-600">{errors.terms}</p>}
           </div>
 
           {baa && (
@@ -169,7 +170,7 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               >
-                {Object.values(BAA_STATUS).map(status => (
+                {Object.values(BAA_STATUS).map((status) => (
                   <option key={status} value={status}>
                     {status.charAt(0).toUpperCase() + status.slice(1)}
                   </option>
@@ -189,9 +190,9 @@ const BAAModal = ({ isOpen, onClose, onSave, baa = null }) => {
             <button
               type="submit"
               disabled={loading}
-              className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              {loading ? 'Saving...' : baa ? 'Update BAA' : 'Create BAA'}
+              {loading ? "Saving..." : baa ? "Update BAA" : "Create BAA"}
             </button>
           </div>
         </form>

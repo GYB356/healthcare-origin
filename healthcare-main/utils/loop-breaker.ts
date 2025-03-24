@@ -1,37 +1,37 @@
 /**
  * EMERGENCY REFRESH LOOP BREAKER
- * 
+ *
  * This script detects and breaks refresh loops in Next.js applications.
  * To use: Import and call this function in your root layout component.
  */
 
 export function initLoopBreaker() {
   // Check if we're in the browser
-  if (typeof window !== 'undefined') {
-    console.log('🔍 Loop breaker activated');
-    
+  if (typeof window !== "undefined") {
+    console.log("🔍 Loop breaker activated");
+
     // Track page loads
     const now = Date.now();
-    const lastLoad = parseInt(sessionStorage.getItem('lastPageLoad') || '0');
-    const loadCount = parseInt(sessionStorage.getItem('pageLoadCount') || '0');
+    const lastLoad = parseInt(sessionStorage.getItem("lastPageLoad") || "0");
+    const loadCount = parseInt(sessionStorage.getItem("pageLoadCount") || "0");
     const timeBetweenLoads = now - lastLoad;
-    
+
     // Store current values
-    sessionStorage.setItem('lastPageLoad', now.toString());
-    sessionStorage.setItem('pageLoadCount', (loadCount + 1).toString());
-    
+    sessionStorage.setItem("lastPageLoad", now.toString());
+    sessionStorage.setItem("pageLoadCount", (loadCount + 1).toString());
+
     // Log diagnostic info
     console.log(`Page load #${loadCount + 1} | Time since last load: ${timeBetweenLoads}ms`);
-    
+
     // Check for refresh loops (3+ rapid refreshes with <1000ms between them)
     if (loadCount >= 2 && timeBetweenLoads < 1000) {
-      console.error('⚠️ REFRESH LOOP DETECTED!');
-      
+      console.error("⚠️ REFRESH LOOP DETECTED!");
+
       // Check if we already tried to break the loop
-      if (sessionStorage.getItem('breakingLoop') !== 'true') {
-        console.log('Attempting to break the loop...');
-        sessionStorage.setItem('breakingLoop', 'true');
-        
+      if (sessionStorage.getItem("breakingLoop") !== "true") {
+        console.log("Attempting to break the loop...");
+        sessionStorage.setItem("breakingLoop", "true");
+
         // Override the page with a static emergency page
         document.body.innerHTML = `
           <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
@@ -44,7 +44,7 @@ export function initLoopBreaker() {
                 <li>URL: ${window.location.href}</li>
                 <li>Refresh count: ${loadCount + 1}</li>
                 <li>Time between refreshes: ${timeBetweenLoads}ms</li>
-                <li>Token exists: ${!!localStorage.getItem('token')}</li>
+                <li>Token exists: ${!!localStorage.getItem("token")}</li>
                 <li>Path: ${window.location.pathname}</li>
               </ul>
             </div>
@@ -70,14 +70,14 @@ export function initLoopBreaker() {
             </div>
           </div>
         `;
-        
+
         // Stop any further rendering to break the loop
-        throw new Error('Refresh loop detected and broken');
+        throw new Error("Refresh loop detected and broken");
       }
     } else if (loadCount > 10) {
       // Reset counter after 10 successful loads without triggering the loop detection
-      sessionStorage.removeItem('pageLoadCount');
-      sessionStorage.removeItem('breakingLoop');
+      sessionStorage.removeItem("pageLoadCount");
+      sessionStorage.removeItem("breakingLoop");
     }
   }
-} 
+}

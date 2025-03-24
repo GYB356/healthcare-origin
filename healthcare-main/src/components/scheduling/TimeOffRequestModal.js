@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 export default function TimeOffRequestModal({ onClose, onSubmit }) {
   const [formData, setFormData] = useState({
-    startDate: '',
-    endDate: '',
-    type: 'vacation',
-    reason: ''
+    startDate: "",
+    endDate: "",
+    type: "vacation",
+    reason: "",
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/time-off', {
-        method: 'POST',
+      const response = await fetch("/api/time-off", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
@@ -25,7 +25,7 @@ export default function TimeOffRequestModal({ onClose, onSubmit }) {
         onClose();
       }
     } catch (error) {
-      console.error('Error submitting time-off request:', error);
+      console.error("Error submitting time-off request:", error);
     }
   };
 
@@ -41,7 +41,7 @@ export default function TimeOffRequestModal({ onClose, onSubmit }) {
                 type="datetime-local"
                 className="w-full p-2 border rounded"
                 value={formData.startDate}
-                onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                 required
               />
             </div>
@@ -51,18 +51,18 @@ export default function TimeOffRequestModal({ onClose, onSubmit }) {
                 type="datetime-local"
                 className="w-full p-2 border rounded"
                 value={formData.endDate}
-                onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                 required
               />
             </div>
           </div>
-          
+
           <div className="mb-4">
             <label className="block mb-2">Request Type</label>
             <select
               className="w-full p-2 border rounded"
               value={formData.type}
-              onChange={(e) => setFormData({...formData, type: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
             >
               <option value="vacation">Vacation</option>
               <option value="sick">Sick Leave</option>
@@ -75,7 +75,7 @@ export default function TimeOffRequestModal({ onClose, onSubmit }) {
             <textarea
               className="w-full p-2 border rounded"
               value={formData.reason}
-              onChange={(e) => setFormData({...formData, reason: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
               rows="3"
             />
           </div>

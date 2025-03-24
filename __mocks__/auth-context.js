@@ -1,23 +1,24 @@
-const React = require('react');
+const React = require("react");
 
 // Mock AuthContext
 const mockAuthState = {
   isAuthenticated: true,
   user: {
-    id: '123',
-    username: 'testuser',
-    email: 'test@example.com',
-    role: 'admin'
+    id: "123",
+    username: "testuser",
+    email: "test@example.com",
+    role: "admin",
   },
   login: jest.fn(() => Promise.resolve({ success: true })),
   logout: jest.fn(),
   register: jest.fn(() => Promise.resolve({ success: true })),
   loading: false,
-  error: null
+  error: null,
+  token: "mock-token",
 };
 
 const AuthContext = React.createContext(mockAuthState);
-AuthContext.displayName = 'AuthContext';
+AuthContext.displayName = "AuthContext";
 
 // Auth Provider component
 const AuthProvider = ({ children, value = mockAuthState }) => {
@@ -27,9 +28,22 @@ const AuthProvider = ({ children, value = mockAuthState }) => {
 // Custom hook for consuming Auth Context
 const useAuth = () => React.useContext(AuthContext);
 
-module.exports = {
+// Handle both ESM and CommonJS
+const exports = {
   AuthContext,
   AuthProvider,
   useAuth,
-  mockAuthState
-}; 
+  mockAuthState,
+  default: {
+    AuthContext,
+    AuthProvider,
+    useAuth,
+    mockAuthState,
+  },
+};
+
+// For default export patterns
+exports.__esModule = true;
+exports.default = useAuth;
+
+module.exports = exports;

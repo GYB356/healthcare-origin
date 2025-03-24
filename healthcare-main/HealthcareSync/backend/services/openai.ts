@@ -7,7 +7,7 @@ const openai = new OpenAI({
 // Log OpenAI configuration status without exposing the key
 console.log("OpenAI API Configuration Status:", {
   keyConfigured: !!process.env.OPENAI_API_KEY,
-  keyPrefix: process.env.OPENAI_API_KEY?.substring(0, 3)
+  keyPrefix: process.env.OPENAI_API_KEY?.substring(0, 3),
 });
 
 export async function generateHealthPrediction(patientData: {
@@ -25,7 +25,7 @@ export async function generateHealthPrediction(patientData: {
       age: patientData.age,
       hasHistory: !!patientData.medicalHistory,
       symptomsCount: patientData.symptoms.length,
-      vitalSigns: patientData.vitalSigns
+      vitalSigns: patientData.vitalSigns,
     });
 
     const completion = await openai.chat.completions.create({
@@ -33,7 +33,8 @@ export async function generateHealthPrediction(patientData: {
       messages: [
         {
           role: "system",
-          content: "You are a healthcare AI assistant that helps analyze patient data and provide health insights. Be concise and professional in your analysis."
+          content:
+            "You are a healthcare AI assistant that helps analyze patient data and provide health insights. Be concise and professional in your analysis.",
         },
         {
           role: "user",
@@ -44,8 +45,8 @@ export async function generateHealthPrediction(patientData: {
           Vital Signs:
           - Blood Pressure: ${patientData.vitalSigns.bloodPressure}
           - Heart Rate: ${patientData.vitalSigns.heartRate}
-          - Temperature: ${patientData.vitalSigns.temperature}`
-        }
+          - Temperature: ${patientData.vitalSigns.temperature}`,
+        },
       ],
       temperature: 0.7,
       max_tokens: 500,

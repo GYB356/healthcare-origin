@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { A11yAppScanner } from '../utils/a11yAppScanner';
-import { A11yScanResult } from '../types/a11y';
-import { A11yAuditService } from '../services/a11yAuditService';
+import { useState, useEffect } from "react";
+import { A11yAppScanner } from "../utils/a11yAppScanner";
+import { A11yScanResult } from "../types/a11y";
+import { A11yAuditService } from "../services/a11yAuditService";
 
 export function useA11yAudit(autoScan: boolean = true) {
   const [scanResult, setScanResult] = useState<A11yScanResult | null>(null);
@@ -12,13 +12,13 @@ export function useA11yAudit(autoScan: boolean = true) {
     try {
       setIsScanning(true);
       const result = await A11yAppScanner.scanApplication();
-      
+
       // Optionally send results to a backend service
       await A11yAuditService.reportScanResults(result);
-      
+
       setScanResult(result);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown scan error'));
+      setError(err instanceof Error ? err : new Error("Unknown scan error"));
     } finally {
       setIsScanning(false);
     }
@@ -34,6 +34,6 @@ export function useA11yAudit(autoScan: boolean = true) {
     scanResult,
     isScanning,
     error,
-    performAudit
+    performAudit,
   };
 }

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import Link from 'next/link';
-import { formatDate } from '../../lib/formatDate';
-import LoadingSpinner from '../LoadingSpinner';
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { formatDate } from "../../lib/formatDate";
+import LoadingSpinner from "../LoadingSpinner";
 
 interface Patient {
   id: string;
@@ -24,9 +24,9 @@ interface Task {
   patientName: string;
   patientId: string;
   description: string;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  priority: "HIGH" | "MEDIUM" | "LOW";
   dueTime: Date;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  status: "PENDING" | "IN_PROGRESS" | "COMPLETED";
   assignedBy: string;
 }
 
@@ -59,142 +59,142 @@ export default function NurseDashboard() {
     setTimeout(() => {
       setPatients([
         {
-          id: '1',
-          name: 'Jane Doe',
-          image: 'https://randomuser.me/api/portraits/women/90.jpg',
-          room: '101A',
-          status: 'Stable',
+          id: "1",
+          name: "Jane Doe",
+          image: "https://randomuser.me/api/portraits/women/90.jpg",
+          room: "101A",
+          status: "Stable",
           vitals: {
-            bloodPressure: '120/80',
-            heartRate: '72',
-            temperature: '98.6',
-            oxygenSaturation: '98%',
+            bloodPressure: "120/80",
+            heartRate: "72",
+            temperature: "98.6",
+            oxygenSaturation: "98%",
             lastUpdated: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
           },
         },
         {
-          id: '2',
-          name: 'John Smith',
-          image: 'https://randomuser.me/api/portraits/men/32.jpg',
-          room: '103B',
-          status: 'Needs Attention',
+          id: "2",
+          name: "John Smith",
+          image: "https://randomuser.me/api/portraits/men/32.jpg",
+          room: "103B",
+          status: "Needs Attention",
           vitals: {
-            bloodPressure: '140/90',
-            heartRate: '88',
-            temperature: '99.2',
-            oxygenSaturation: '95%',
+            bloodPressure: "140/90",
+            heartRate: "88",
+            temperature: "99.2",
+            oxygenSaturation: "95%",
             lastUpdated: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
           },
         },
         {
-          id: '3',
-          name: 'Emily Williams',
-          image: 'https://randomuser.me/api/portraits/women/45.jpg',
-          room: '105A',
-          status: 'Critical',
+          id: "3",
+          name: "Emily Williams",
+          image: "https://randomuser.me/api/portraits/women/45.jpg",
+          room: "105A",
+          status: "Critical",
           vitals: {
-            bloodPressure: '160/100',
-            heartRate: '110',
-            temperature: '101.3',
-            oxygenSaturation: '92%',
+            bloodPressure: "160/100",
+            heartRate: "110",
+            temperature: "101.3",
+            oxygenSaturation: "92%",
             lastUpdated: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
           },
         },
         {
-          id: '4',
-          name: 'Michael Johnson',
-          image: 'https://randomuser.me/api/portraits/men/45.jpg',
-          room: '102C',
-          status: 'Stable',
+          id: "4",
+          name: "Michael Johnson",
+          image: "https://randomuser.me/api/portraits/men/45.jpg",
+          room: "102C",
+          status: "Stable",
           vitals: {
-            bloodPressure: '118/78',
-            heartRate: '68',
-            temperature: '98.4',
-            oxygenSaturation: '99%',
+            bloodPressure: "118/78",
+            heartRate: "68",
+            temperature: "98.4",
+            oxygenSaturation: "99%",
             lastUpdated: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
           },
         },
       ]);
 
       const now = new Date();
-      
+
       setTasks([
         {
-          id: '1',
-          patientName: 'Jane Doe',
-          patientId: '1',
-          description: 'Administer IV medication',
-          priority: 'MEDIUM',
+          id: "1",
+          patientName: "Jane Doe",
+          patientId: "1",
+          description: "Administer IV medication",
+          priority: "MEDIUM",
           dueTime: new Date(now.getTime() + 1 * 60 * 60 * 1000), // 1 hour from now
-          status: 'PENDING',
-          assignedBy: 'Dr. Smith',
+          status: "PENDING",
+          assignedBy: "Dr. Smith",
         },
         {
-          id: '2',
-          patientName: 'John Smith',
-          patientId: '2',
-          description: 'Check blood pressure and update chart',
-          priority: 'HIGH',
+          id: "2",
+          patientName: "John Smith",
+          patientId: "2",
+          description: "Check blood pressure and update chart",
+          priority: "HIGH",
           dueTime: new Date(now.getTime() + 30 * 60 * 1000), // 30 min from now
-          status: 'PENDING',
-          assignedBy: 'Dr. Johnson',
+          status: "PENDING",
+          assignedBy: "Dr. Johnson",
         },
         {
-          id: '3',
-          patientName: 'Emily Williams',
-          patientId: '3',
-          description: 'Monitor vitals every 15 minutes',
-          priority: 'HIGH',
+          id: "3",
+          patientName: "Emily Williams",
+          patientId: "3",
+          description: "Monitor vitals every 15 minutes",
+          priority: "HIGH",
           dueTime: new Date(now.getTime() + 15 * 60 * 1000), // 15 min from now
-          status: 'IN_PROGRESS',
-          assignedBy: 'Dr. Smith',
+          status: "IN_PROGRESS",
+          assignedBy: "Dr. Smith",
         },
         {
-          id: '4',
-          patientName: 'Michael Johnson',
-          patientId: '4',
-          description: 'Assist with physical therapy exercises',
-          priority: 'LOW',
+          id: "4",
+          patientName: "Michael Johnson",
+          patientId: "4",
+          description: "Assist with physical therapy exercises",
+          priority: "LOW",
           dueTime: new Date(now.getTime() + 3 * 60 * 60 * 1000), // 3 hours from now
-          status: 'PENDING',
-          assignedBy: 'Dr. Williams',
+          status: "PENDING",
+          assignedBy: "Dr. Williams",
         },
       ]);
 
       setMedicationSchedules([
         {
-          id: '1',
-          patientId: '1',
-          patientName: 'Jane Doe',
-          medication: 'Amoxicillin',
-          dosage: '500mg',
+          id: "1",
+          patientId: "1",
+          patientName: "Jane Doe",
+          medication: "Amoxicillin",
+          dosage: "500mg",
           time: new Date(now.getTime() + 1 * 60 * 60 * 1000), // 1 hour from now
           administered: false,
         },
         {
-          id: '2',
-          patientId: '2',
-          patientName: 'John Smith',
-          medication: 'Lisinopril',
-          dosage: '10mg',
+          id: "2",
+          patientId: "2",
+          patientName: "John Smith",
+          medication: "Lisinopril",
+          dosage: "10mg",
           time: new Date(now.getTime() + 30 * 60 * 1000), // 30 min from now
           administered: false,
         },
         {
-          id: '3',
-          patientId: '3',
-          patientName: 'Emily Williams',
-          medication: 'Morphine',
-          dosage: '5mg',
+          id: "3",
+          patientId: "3",
+          patientName: "Emily Williams",
+          medication: "Morphine",
+          dosage: "5mg",
           time: new Date(now.getTime() + 15 * 60 * 1000), // 15 min from now
           administered: false,
         },
         {
-          id: '4',
-          patientId: '1',
-          patientName: 'Jane Doe',
-          medication: 'Acetaminophen',
-          dosage: '650mg',
+          id: "4",
+          patientId: "1",
+          patientName: "Jane Doe",
+          medication: "Acetaminophen",
+          dosage: "650mg",
           time: new Date(now.getTime() - 1 * 60 * 60 * 1000), // 1 hour ago
           administered: true,
         },
@@ -212,21 +212,17 @@ export default function NurseDashboard() {
   }, []);
 
   const handleMarkTaskComplete = (taskId: string) => {
-    setTasks(prev => 
-      prev.map(task => 
-        task.id === taskId ? { ...task, status: 'COMPLETED' as const } : task
-      )
+    setTasks((prev) =>
+      prev.map((task) => (task.id === taskId ? { ...task, status: "COMPLETED" as const } : task)),
     );
-    setStats(prev => ({ ...prev, pendingTasks: prev.pendingTasks - 1 }));
+    setStats((prev) => ({ ...prev, pendingTasks: prev.pendingTasks - 1 }));
   };
 
   const handleMedicationAdministered = (medicationId: string) => {
-    setMedicationSchedules(prev => 
-      prev.map(med => 
-        med.id === medicationId ? { ...med, administered: true } : med
-      )
+    setMedicationSchedules((prev) =>
+      prev.map((med) => (med.id === medicationId ? { ...med, administered: true } : med)),
     );
-    setStats(prev => ({ ...prev, medicationsDue: prev.medicationsDue - 1 }));
+    setStats((prev) => ({ ...prev, medicationsDue: prev.medicationsDue - 1 }));
   };
 
   if (loading) {
@@ -240,7 +236,7 @@ export default function NurseDashboard() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Nurse Dashboard</h1>
-      
+
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
@@ -260,7 +256,7 @@ export default function NurseDashboard() {
           <p className="text-3xl font-bold text-red-600">{stats.criticalPatients}</p>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Patient Overview */}
         <div className="bg-white p-6 rounded-lg shadow-md lg:col-span-2">
@@ -304,9 +300,7 @@ export default function NurseDashboard() {
                           />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {patient.name}
-                          </div>
+                          <div className="text-sm font-medium text-gray-900">{patient.name}</div>
                         </div>
                       </div>
                     </td>
@@ -314,11 +308,15 @@ export default function NurseDashboard() {
                       {patient.room}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        patient.status === 'Stable' ? 'bg-green-100 text-green-800' : 
-                        patient.status === 'Needs Attention' ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-red-100 text-red-800'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          patient.status === "Stable"
+                            ? "bg-green-100 text-green-800"
+                            : patient.status === "Needs Attention"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                        }`}
+                      >
                         {patient.status}
                       </span>
                     </td>
@@ -328,7 +326,11 @@ export default function NurseDashboard() {
                           <div>BP: {patient.vitals.bloodPressure}</div>
                           <div>HR: {patient.vitals.heartRate}</div>
                           <div className="text-xs text-gray-500">
-                            Updated: {new Date(patient.vitals.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            Updated:{" "}
+                            {new Date(patient.vitals.lastUpdated).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </div>
                         </div>
                       ) : (
@@ -336,10 +338,16 @@ export default function NurseDashboard() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <Link href={`/patients/${patient.id}`} className="text-blue-500 hover:text-blue-700 mr-3">
+                      <Link
+                        href={`/patients/${patient.id}`}
+                        className="text-blue-500 hover:text-blue-700 mr-3"
+                      >
                         View
                       </Link>
-                      <Link href={`/patients/${patient.id}/vitals`} className="text-green-500 hover:text-green-700">
+                      <Link
+                        href={`/patients/${patient.id}/vitals`}
+                        className="text-green-500 hover:text-green-700"
+                      >
                         Update Vitals
                       </Link>
                     </td>
@@ -359,46 +367,64 @@ export default function NurseDashboard() {
             </Link>
           </div>
           <div className="space-y-4">
-            {tasks.filter(task => task.status !== 'COMPLETED').map((task) => (
-              <div key={task.id} className={`border-l-4 pl-4 py-2 ${
-                task.priority === 'HIGH' ? 'border-red-500' : 
-                task.priority === 'MEDIUM' ? 'border-yellow-500' : 
-                'border-green-500'
-              }`}>
-                <div className="flex justify-between">
-                  <p className="font-medium">{task.description}</p>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    task.priority === 'HIGH' ? 'bg-red-100 text-red-800' : 
-                    task.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' : 
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {task.priority}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600">Patient: {task.patientName}</p>
-                <p className="text-sm text-gray-600">
-                  Due: {new Date(task.dueTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </p>
-                <p className="text-sm text-gray-600">Assigned by: {task.assignedBy}</p>
-                <div className="mt-2 flex space-x-2">
-                  {task.status === 'PENDING' ? (
-                    <button 
-                      onClick={() => handleMarkTaskComplete(task.id)}
-                      className="text-sm bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600"
+            {tasks
+              .filter((task) => task.status !== "COMPLETED")
+              .map((task) => (
+                <div
+                  key={task.id}
+                  className={`border-l-4 pl-4 py-2 ${
+                    task.priority === "HIGH"
+                      ? "border-red-500"
+                      : task.priority === "MEDIUM"
+                        ? "border-yellow-500"
+                        : "border-green-500"
+                  }`}
+                >
+                  <div className="flex justify-between">
+                    <p className="font-medium">{task.description}</p>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        task.priority === "HIGH"
+                          ? "bg-red-100 text-red-800"
+                          : task.priority === "MEDIUM"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-green-100 text-green-800"
+                      }`}
                     >
-                      Mark Complete
-                    </button>
-                  ) : (
-                    <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-md">
-                      In Progress
+                      {task.priority}
                     </span>
-                  )}
-                  <Link href={`/patients/${task.patientId}`} className="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-200">
-                    View Patient
-                  </Link>
+                  </div>
+                  <p className="text-sm text-gray-600">Patient: {task.patientName}</p>
+                  <p className="text-sm text-gray-600">
+                    Due:{" "}
+                    {new Date(task.dueTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                  <p className="text-sm text-gray-600">Assigned by: {task.assignedBy}</p>
+                  <div className="mt-2 flex space-x-2">
+                    {task.status === "PENDING" ? (
+                      <button
+                        onClick={() => handleMarkTaskComplete(task.id)}
+                        className="text-sm bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600"
+                      >
+                        Mark Complete
+                      </button>
+                    ) : (
+                      <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-md">
+                        In Progress
+                      </span>
+                    )}
+                    <Link
+                      href={`/patients/${task.patientId}`}
+                      className="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-200"
+                    >
+                      View Patient
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
@@ -444,7 +470,10 @@ export default function NurseDashboard() {
                       {med.dosage}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(med.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(med.time).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {med.administered ? (
@@ -452,7 +481,7 @@ export default function NurseDashboard() {
                           Administered
                         </span>
                       ) : (
-                        <button 
+                        <button
                           onClick={() => handleMedicationAdministered(med.id)}
                           className="text-sm bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600"
                         >
@@ -491,4 +520,4 @@ export default function NurseDashboard() {
       </div>
     </div>
   );
-} 
+}

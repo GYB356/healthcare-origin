@@ -1,4 +1,4 @@
-import { A11yIssue, A11yScanResult, A11ySeverity } from '../types/a11y';
+import { A11yIssue, A11yScanResult, A11ySeverity } from "../types/a11y";
 
 export class A11yAppScanner {
   /**
@@ -22,7 +22,9 @@ export class A11yAppScanner {
 
     // Calculate overall score
     const totalIssues = issues.length;
-    const criticalIssues = issues.filter(issue => issue.severity === A11ySeverity.CRITICAL).length;
+    const criticalIssues = issues.filter(
+      (issue) => issue.severity === A11ySeverity.CRITICAL,
+    ).length;
     const score = this.calculateAccessibilityScore(totalIssues, criticalIssues);
 
     return {
@@ -30,7 +32,7 @@ export class A11yAppScanner {
       totalIssues,
       criticalIssues,
       issues,
-      score
+      score,
     };
   }
 
@@ -42,25 +44,26 @@ export class A11yAppScanner {
     const issues: A11yIssue[] = [];
 
     // Check for missing alt texts
-    const imagesWithoutAlt = Array.from(document.images).filter(img => !img.alt);
-    imagesWithoutAlt.forEach(img => {
+    const imagesWithoutAlt = Array.from(document.images).filter((img) => !img.alt);
+    imagesWithoutAlt.forEach((img) => {
       issues.push({
-        type: 'missing-alt-text',
+        type: "missing-alt-text",
         element: img,
         severity: A11ySeverity.HIGH,
-        description: 'Image is missing alt text'
+        description: "Image is missing alt text",
       });
     });
 
     // Check for missing aria labels
-    const elementsWithoutAriaLabel = Array.from(document.querySelectorAll('button, a'))
-      .filter(el => !el.getAttribute('aria-label') && !el.textContent?.trim());
-    elementsWithoutAriaLabel.forEach(el => {
+    const elementsWithoutAriaLabel = Array.from(document.querySelectorAll("button, a")).filter(
+      (el) => !el.getAttribute("aria-label") && !el.textContent?.trim(),
+    );
+    elementsWithoutAriaLabel.forEach((el) => {
       issues.push({
-        type: 'missing-aria-label',
+        type: "missing-aria-label",
         element: el,
         severity: A11ySeverity.MEDIUM,
-        description: 'Interactive element is missing aria-label'
+        description: "Interactive element is missing aria-label",
       });
     });
 
@@ -73,24 +76,23 @@ export class A11yAppScanner {
    */
   private static checkColorContrast(): A11yIssue[] {
     const issues: A11yIssue[] = [];
-    
+
     // Implement color contrast checking logic
     // This is a simplified version and would benefit from a more robust implementation
-    const textElements = Array.from(document.querySelectorAll('p, span, div, h1, h2, h3, h4, h5, h6'));
-    
-    textElements.forEach(el => {
+    const textElements = Array.from(
+      document.querySelectorAll("p, span, div, h1, h2, h3, h4, h5, h6"),
+    );
+
+    textElements.forEach((el) => {
       const style = window.getComputedStyle(el);
-      const contrast = this.calculateContrastRatio(
-        style.color, 
-        style.backgroundColor
-      );
+      const contrast = this.calculateContrastRatio(style.color, style.backgroundColor);
 
       if (contrast < 4.5) {
         issues.push({
-          type: 'low-color-contrast',
+          type: "low-color-contrast",
           element: el,
           severity: A11ySeverity.HIGH,
-          description: `Color contrast ratio is too low: ${contrast.toFixed(2)}`
+          description: `Color contrast ratio is too low: ${contrast.toFixed(2)}`,
         });
       }
     });
@@ -105,15 +107,15 @@ export class A11yAppScanner {
   private static checkFormAccessibility(): A11yIssue[] {
     const issues: A11yIssue[] = [];
 
-    const formElements = Array.from(document.querySelectorAll('input, select, textarea'));
-    formElements.forEach(el => {
+    const formElements = Array.from(document.querySelectorAll("input, select, textarea"));
+    formElements.forEach((el) => {
       // Check for associated labels
       if (!this.hasAssociatedLabel(el)) {
         issues.push({
-          type: 'missing-form-label',
+          type: "missing-form-label",
           element: el,
           severity: A11ySeverity.HIGH,
-          description: 'Form input is missing an associated label'
+          description: "Form input is missing an associated label",
         });
       }
     });
@@ -140,13 +142,13 @@ export class A11yAppScanner {
    * @returns boolean Whether the element has an associated label
    */
   private static hasAssociatedLabel(element: Element): boolean {
-    const id = element.getAttribute('id');
+    const id = element.getAttribute("id");
     if (id) {
       return !!document.querySelector(`label[for="${id}"]`);
     }
-    
+
     // Check if element is directly wrapped in a label
-    return !!element.closest('label');
+    return !!element.closest("label");
   }
 
   /**

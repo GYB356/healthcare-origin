@@ -3,7 +3,7 @@ const rbacMiddleware = (allowedRoles) => {
     const userRole = req.user?.role;
 
     if (!allowedRoles.includes(userRole)) {
-      return res.status(403).json({ message: 'Access denied' });
+      return res.status(403).json({ message: "Access denied" });
     }
 
     next();

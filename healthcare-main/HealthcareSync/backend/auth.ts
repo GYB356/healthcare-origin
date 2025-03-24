@@ -9,7 +9,7 @@ import { log } from "./vite";
 
 declare global {
   namespace Express {
-    interface User extends Omit<User, 'password'> {}
+    interface User extends Omit<User, "password"> {}
   }
 }
 

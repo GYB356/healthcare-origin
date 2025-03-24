@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { FiFileText, FiDownload, FiAlertTriangle, FiLock } from 'react-icons/fi';
-import { logHIPAAAction, checkHIPAAAccess } from '../../utils/hipaaCompliance';
-import { trackDocumentAccess, validateDocumentAccess } from '../../utils/hipaaAudit';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { FiFileText, FiDownload, FiAlertTriangle, FiLock } from "react-icons/fi";
+import { logHIPAAAction, checkHIPAAAccess } from "../../utils/hipaaCompliance";
+import { trackDocumentAccess, validateDocumentAccess } from "../../utils/hipaaAudit";
 
 const HIPAADocs = () => {
   const { currentUser } = useAuth();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -19,14 +19,14 @@ const HIPAADocs = () => {
   const fetchDocuments = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/hipaa-documents', {
+      const response = await fetch("/api/hipaa-documents", {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch HIPAA documents');
+        throw new Error("Failed to fetch HIPAA documents");
       }
 
       const data = await response.json();
@@ -34,15 +34,18 @@ const HIPAADocs = () => {
 
       // Log this access for HIPAA auditing
       // Log document access in audit trail
-      await trackDocumentAccess('all', 'list', currentUser);
-      await logHIPAAAction('access_hipaa_documents', {
-        documentCount: data.length,
-        userRole: currentUser.role
-      }, currentUser.id);
-
+      await trackDocumentAccess("all", "list", currentUser);
+      await logHIPAAAction(
+        "access_hipaa_documents",
+        {
+          documentCount: data.length,
+          userRole: currentUser.role,
+        },
+        currentUser.id,
+      );
     } catch (err) {
-      console.error('Error fetching HIPAA documents:', err);
-      setError('Failed to load HIPAA documents. Please try again.');
+      console.error("Error fetching HIPAA documents:", err);
+      setError("Failed to load HIPAA documents. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -50,23 +53,26 @@ const HIPAADocs = () => {
 
   const handleDownload = async (documentId) => {
     try {
-      if (!checkHIPAAAccess(currentUser) || !validateDocumentAccess({ requiredPermission: 'download' }, currentUser)) {
-        throw new Error('You do not have permission to download HIPAA documents');
+      if (
+        !checkHIPAAAccess(currentUser) ||
+        !validateDocumentAccess({ requiredPermission: "download" }, currentUser)
+      ) {
+        throw new Error("You do not have permission to download HIPAA documents");
       }
 
       const response = await fetch(`/api/hipaa-documents/${documentId}/download`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to download document');
+        throw new Error("Failed to download document");
       }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `hipaa-document-${documentId}.pdf`;
       document.body.appendChild(a);
@@ -75,14 +81,17 @@ const HIPAADocs = () => {
       document.body.removeChild(a);
 
       // Log document access and download in audit trail
-      await trackDocumentAccess(documentId, 'download', currentUser);
-      await logHIPAAAction('download_hipaa_document', {
-        documentId,
-        userRole: currentUser.role
-      }, currentUser.id);
-
+      await trackDocumentAccess(documentId, "download", currentUser);
+      await logHIPAAAction(
+        "download_hipaa_document",
+        {
+          documentId,
+          userRole: currentUser.role,
+        },
+        currentUser.id,
+      );
     } catch (error) {
-      console.error('Error downloading document:', error);
+      console.error("Error downloading document:", error);
       setError(error.message);
     }
   };
@@ -96,7 +105,8 @@ const HIPAADocs = () => {
             <h2 className="text-xl font-semibold">Access Denied</h2>
           </div>
           <p className="text-gray-600">
-            You do not have permission to view HIPAA documents. This feature is only available to authorized healthcare providers.
+            You do not have permission to view HIPAA documents. This feature is only available to
+            authorized healthcare providers.
           </p>
         </div>
       </div>
@@ -135,9 +145,7 @@ const HIPAADocs = () => {
                   className="bg-white border rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
                 >
                   <div className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {doc.title}
-                    </h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{doc.title}</h3>
                     <p className="text-sm text-gray-600 mb-4">{doc.description}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">

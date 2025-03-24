@@ -1,13 +1,13 @@
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 
 // Mock the next/router
-jest.mock('next/router', () => ({
+jest.mock("next/router", () => ({
   useRouter() {
     return {
-      route: '/',
-      pathname: '',
-      query: '',
-      asPath: '',
+      route: "/",
+      pathname: "",
+      query: "",
+      asPath: "",
       push: jest.fn(),
       replace: jest.fn(),
     };
@@ -24,4 +24,4 @@ const localStorageMock = {
 global.localStorage = localStorageMock;
 
 // Mock fetch
-global.fetch = jest.fn(); 
+global.fetch = jest.fn();

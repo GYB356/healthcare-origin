@@ -1,75 +1,75 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter, useParams } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { toast } from "sonner"
-import { format } from "date-fns"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter, useParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface Doctor {
-  id: string
-  name: string
-  email: string
-  phone: string
-  specialization: string
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  specialization: string;
   doctorProfile: {
-    qualifications: string
-    experience: string
-    acceptingPatients: boolean
-    bio: string | null
-    languages: string[] | null
-  } | null
+    qualifications: string;
+    experience: string;
+    acceptingPatients: boolean;
+    bio: string | null;
+    languages: string[] | null;
+  } | null;
   availability: Array<{
-    id: string
-    dayOfWeek: string
-    startTime: string
-    endTime: string
-  }>
+    id: string;
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+  }>;
   appointments: Array<{
-    id: string
-    date: string
-    status: string
-    reason: string
-    patientId: string
+    id: string;
+    date: string;
+    status: string;
+    reason: string;
+    patientId: string;
     patient: {
-      name: string
-    }
-  }>
+      name: string;
+    };
+  }>;
 }
 
 export default function DoctorProfilePage() {
-  const { data: session } = useSession()
-  const router = useRouter()
-  const params = useParams()
-  const [doctor, setDoctor] = useState<Doctor | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: session } = useSession();
+  const router = useRouter();
+  const params = useParams();
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDoctor()
-  }, [params.id])
+    fetchDoctor();
+  }, [params.id]);
 
   const fetchDoctor = async () => {
     try {
-      const response = await fetch(`/api/doctors/${params.id}`)
+      const response = await fetch(`/api/doctors/${params.id}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch doctor")
+        throw new Error("Failed to fetch doctor");
       }
 
-      const data = await response.json()
-      setDoctor(data)
+      const data = await response.json();
+      setDoctor(data);
     } catch (error) {
-      console.error("Error fetching doctor:", error)
-      toast.error("Failed to load doctor profile")
+      console.error("Error fetching doctor:", error);
+      toast.error("Failed to load doctor profile");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleToggleAcceptingPatients = async () => {
-    if (!doctor || !session?.user.role === "ADMIN") return
+    if (!doctor || !session?.user.role === "ADMIN") return;
 
     try {
       const response = await fetch(`/api/doctors/${doctor.id}`, {
@@ -83,26 +83,26 @@ export default function DoctorProfilePage() {
             acceptingPatients: !doctor.doctorProfile?.acceptingPatients,
           },
         }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to update doctor status")
+        throw new Error("Failed to update doctor status");
       }
 
-      await fetchDoctor()
-      toast.success("Doctor status updated successfully")
+      await fetchDoctor();
+      toast.success("Doctor status updated successfully");
     } catch (error) {
-      console.error("Error updating doctor status:", error)
-      toast.error("Failed to update doctor status")
+      console.error("Error updating doctor status:", error);
+      toast.error("Failed to update doctor status");
     }
-  }
+  };
 
   if (loading) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   if (!doctor) {
-    return <div>Doctor not found</div>
+    return <div>Doctor not found</div>;
   }
 
   return (
@@ -111,10 +111,7 @@ export default function DoctorProfilePage() {
         <h1 className="text-3xl font-bold">{doctor.name}</h1>
         <div className="space-x-4">
           {session?.user.role === "ADMIN" && (
-            <Button
-              variant="outline"
-              onClick={handleToggleAcceptingPatients}
-            >
+            <Button variant="outline" onClick={handleToggleAcceptingPatients}>
               {doctor.doctorProfile?.acceptingPatients
                 ? "Stop Accepting Patients"
                 : "Start Accepting Patients"}
@@ -173,16 +170,11 @@ export default function DoctorProfilePage() {
                   </div>
                   <div>
                     <dt className="font-medium">Qualifications</dt>
-                    <dd>
-                      {doctor.doctorProfile?.qualifications || "Not specified"}
-                    </dd>
+                    <dd>{doctor.doctorProfile?.qualifications || "Not specified"}</dd>
                   </div>
                   <div>
                     <dt className="font-medium">Languages</dt>
-                    <dd>
-                      {doctor.doctorProfile?.languages?.join(", ") ||
-                        "Not specified"}
-                    </dd>
+                    <dd>{doctor.doctorProfile?.languages?.join(", ") || "Not specified"}</dd>
                   </div>
                   <div>
                     <dt className="font-medium">Status</dt>
@@ -235,10 +227,8 @@ export default function DoctorProfilePage() {
                         "FRIDAY",
                         "SATURDAY",
                         "SUNDAY",
-                      ]
-                      return (
-                        days.indexOf(a.dayOfWeek) - days.indexOf(b.dayOfWeek)
-                      )
+                      ];
+                      return days.indexOf(a.dayOfWeek) - days.indexOf(b.dayOfWeek);
                     })
                     .map((slot) => (
                       <div
@@ -247,8 +237,7 @@ export default function DoctorProfilePage() {
                       >
                         <div>
                           <p className="font-medium">
-                            {slot.dayOfWeek.charAt(0) +
-                              slot.dayOfWeek.slice(1).toLowerCase()}
+                            {slot.dayOfWeek.charAt(0) + slot.dayOfWeek.slice(1).toLowerCase()}
                           </p>
                           <p className="text-sm text-gray-500">
                             {format(new Date(`2000-01-01T${slot.startTime}`), "h:mm a")} -{" "}
@@ -274,10 +263,7 @@ export default function DoctorProfilePage() {
               {doctor.appointments.length > 0 ? (
                 <div className="space-y-4">
                   {doctor.appointments
-                    .sort(
-                      (a, b) =>
-                        new Date(a.date).getTime() - new Date(b.date).getTime()
-                    )
+                    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                     .map((appointment) => (
                       <div
                         key={appointment.id}
@@ -290,9 +276,7 @@ export default function DoctorProfilePage() {
                           <p className="text-sm text-gray-500">
                             Patient: {appointment.patient.name}
                           </p>
-                          <p className="text-sm text-gray-500">
-                            Reason: {appointment.reason}
-                          </p>
+                          <p className="text-sm text-gray-500">Reason: {appointment.reason}</p>
                         </div>
                         <div>
                           <span
@@ -300,8 +284,8 @@ export default function DoctorProfilePage() {
                               appointment.status === "COMPLETED"
                                 ? "bg-green-100 text-green-800"
                                 : appointment.status === "CANCELLED"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-blue-100 text-blue-800"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-blue-100 text-blue-800"
                             }`}
                           >
                             {appointment.status}
@@ -318,5 +302,5 @@ export default function DoctorProfilePage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
-} 
+  );
+}

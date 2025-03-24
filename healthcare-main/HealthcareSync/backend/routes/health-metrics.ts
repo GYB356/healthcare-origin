@@ -14,7 +14,7 @@ router.get("/:patientId", requireAuth, async (req, res) => {
     const patientId = req.params.patientId;
 
     // Check if user has access to these metrics
-    if (req.user?.role === 'patient' && req.user?.id !== patientId) {
+    if (req.user?.role === "patient" && req.user?.id !== patientId) {
       return res.status(403).json({ message: "Access denied" });
     }
 
@@ -41,9 +41,9 @@ router.get("/:patientId", requireAuth, async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching health metrics:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Failed to fetch health metrics",
-      details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      details: process.env.NODE_ENV === "development" ? (error as Error).message : undefined,
     });
   }
 });
@@ -55,7 +55,7 @@ router.get("/:patientId/type/:type", requireAuth, async (req, res) => {
     const type = req.params.type as MetricType;
 
     // Check if user has access to these metrics
-    if (req.user?.role === 'patient' && req.user?.id !== patientId) {
+    if (req.user?.role === "patient" && req.user?.id !== patientId) {
       return res.status(403).json({ message: "Access denied" });
     }
 
@@ -64,9 +64,9 @@ router.get("/:patientId/type/:type", requireAuth, async (req, res) => {
     res.json(metrics);
   } catch (error) {
     console.error("Error fetching health metrics by type:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Failed to fetch health metrics",
-      details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      details: process.env.NODE_ENV === "development" ? (error as Error).message : undefined,
     });
   }
 });
@@ -77,7 +77,7 @@ router.get("/:patientId/trends", requireAuth, async (req, res) => {
     const patientId = req.params.patientId;
 
     // Check if user has access to these metrics
-    if (req.user?.role === 'patient' && req.user?.id !== patientId) {
+    if (req.user?.role === "patient" && req.user?.id !== patientId) {
       return res.status(403).json({ message: "Access denied" });
     }
 
@@ -86,9 +86,9 @@ router.get("/:patientId/trends", requireAuth, async (req, res) => {
     res.json(trends);
   } catch (error) {
     console.error("Error fetching health trends:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Failed to fetch health trends",
-      details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      details: process.env.NODE_ENV === "development" ? (error as Error).message : undefined,
     });
   }
 });
@@ -99,7 +99,7 @@ router.post("/", requireAuth, async (req, res) => {
     const { type, value, unit, notes, patientId: reqPatientId } = req.body;
 
     // If patient is adding their own metric, use their ID, otherwise use the provided patient ID
-    const patientId = req.user?.role === 'patient' ? req.user?.id : reqPatientId;
+    const patientId = req.user?.role === "patient" ? req.user?.id : reqPatientId;
 
     if (!patientId) {
       return res.status(400).json({ message: "Patient ID is required" });
@@ -111,7 +111,7 @@ router.post("/", requireAuth, async (req, res) => {
       type,
       value,
       unit,
-      notes
+      notes,
     });
 
     // Create notification for abnormal readings if needed
@@ -121,23 +121,27 @@ router.post("/", requireAuth, async (req, res) => {
         userId: patientId,
         title: "Abnormal Health Reading",
         message: `Your ${type} reading of ${value} ${unit} is outside normal ranges.`,
-        priority: "high"
+        priority: "high",
       });
     }
 
     res.status(201).json(newMetric);
   } catch (error) {
     console.error("Error creating health metric:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Failed to create health metric",
-      details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      details: process.env.NODE_ENV === "development" ? (error as Error).message : undefined,
     });
   }
 });
 
 // Helper function to check if a metric reading is abnormal
 // This is a placeholder and should be replaced with actual clinical guidelines
-async function checkIfMetricIsAbnormal(type: string, value: string, unit: string): Promise<boolean> {
+async function checkIfMetricIsAbnormal(
+  type: string,
+  value: string,
+  unit: string,
+): Promise<boolean> {
   const numValue = parseFloat(value);
 
   if (isNaN(numValue)) return false;
@@ -145,7 +149,7 @@ async function checkIfMetricIsAbnormal(type: string, value: string, unit: string
   switch (type) {
     case "blood_pressure":
       // Example threshold for systolic/diastolic
-      const parts = value.split('/');
+      const parts = value.split("/");
       if (parts.length === 2) {
         const systolic = parseInt(parts[0], 10);
         const diastolic = parseInt(parts[1], 10);
@@ -165,19 +169,19 @@ async function checkIfMetricIsAbnormal(type: string, value: string, unit: string
 }
 
 export default router;
-import express from 'express';
-import { prisma } from '../../lib/prisma';
+import express from "express";
+import { prisma } from "../../lib/prisma";
 
 const router = express.Router();
 
 // Minimal implementation - get all health metrics
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const healthMetrics = await prisma.healthMetric.findMany();
     res.json(healthMetrics);
   } catch (error) {
-    console.error('Error fetching health metrics:', error);
-    res.status(500).json({ error: 'Failed to fetch health metrics' });
+    console.error("Error fetching health metrics:", error);
+    res.status(500).json({ error: "Failed to fetch health metrics" });
   }
 });
 

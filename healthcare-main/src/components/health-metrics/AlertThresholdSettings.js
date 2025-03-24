@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { FiAlertTriangle, FiCheckCircle } from 'react-icons/fi';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { FiAlertTriangle, FiCheckCircle } from "react-icons/fi";
 
 export default function AlertThresholdSettings({ metricType, thresholds, onUpdate }) {
   const { authAxios } = useAuth();
   const [localThresholds, setLocalThresholds] = useState(thresholds);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     setLocalThresholds(thresholds);
   }, [thresholds]);
 
   const handleChange = (path, value) => {
-    const parts = path.split('.');
-    setLocalThresholds(prev => ({
+    const parts = path.split(".");
+    setLocalThresholds((prev) => ({
       ...prev,
       [parts[0]]: {
         ...prev[parts[0]],
         [parts[1]]: {
           ...prev[parts[0]][parts[1]],
-          value: Number(value)
-        }
-      }
+          value: Number(value),
+        },
+      },
     }));
   };
 
@@ -30,11 +30,11 @@ export default function AlertThresholdSettings({ metricType, thresholds, onUpdat
     for (const category of Object.values(localThresholds)) {
       for (const { min, max } of Object.values(category)) {
         if (min.value >= max.value) {
-          setError('Minimum value must be less than maximum');
+          setError("Minimum value must be less than maximum");
           return false;
         }
         if (min.value < 0 || max.value < 0) {
-          setError('Values cannot be negative');
+          setError("Values cannot be negative");
           return false;
         }
       }
@@ -46,18 +46,18 @@ export default function AlertThresholdSettings({ metricType, thresholds, onUpdat
     try {
       if (!validateThresholds()) return;
 
-      await authAxios.post('/api/alert-thresholds', {
+      await authAxios.post("/api/alert-thresholds", {
         metricType,
-        thresholds: localThresholds
+        thresholds: localThresholds,
       });
-      
+
       onUpdate(localThresholds);
-      setSuccess('Thresholds updated successfully');
-      setError('');
-      setTimeout(() => setSuccess(''), 3000);
+      setSuccess("Thresholds updated successfully");
+      setError("");
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      setError('Failed to save thresholds. Please try again.');
-      console.error('Save error:', err);
+      setError("Failed to save thresholds. Please try again.");
+      console.error("Save error:", err);
     }
   };
 

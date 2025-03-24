@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verify } from 'jsonwebtoken';
-import { prisma } from '@/lib/prisma';
-import { User, Appointment } from '@prisma/client';
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { verify } from "jsonwebtoken";
+import { prisma } from "@/lib/prisma";
+import { User, Appointment } from "@prisma/client";
 
 interface PatientWithAppointments extends User {
   appointments: {
@@ -23,9 +23,9 @@ interface UpcomingAppointment {
 export async function GET() {
   try {
     // Get token from cookies
-    const token = cookies().get('token')?.value;
+    const token = cookies().get("token")?.value;
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Verify token and get user ID
@@ -40,14 +40,14 @@ export async function GET() {
             doctorId: userId,
           },
         },
-        role: 'PATIENT',
+        role: "PATIENT",
       },
       select: {
         id: true,
         name: true,
         appointments: {
           orderBy: {
-            date: 'desc',
+            date: "desc",
           },
           take: 1,
           select: {
@@ -63,7 +63,7 @@ export async function GET() {
       },
       orderBy: {
         appointments: {
-          _count: 'desc',
+          _count: "desc",
         },
       },
       take: 10, // Limit to 10 most recent patients
@@ -75,9 +75,9 @@ export async function GET() {
       return {
         id: patient.id,
         name: patient.name,
-        lastVisit: lastAppointment ? 
-          `${lastAppointment.date.toISOString().split('T')[0]} ${lastAppointment.time}` : 
-          null,
+        lastVisit: lastAppointment
+          ? `${lastAppointment.date.toISOString().split("T")[0]} ${lastAppointment.time}`
+          : null,
         totalVisits: patient._count.appointments,
         upcomingAppointment: null, // We'll fetch this separately
       };
@@ -95,7 +95,7 @@ export async function GET() {
         date: {
           gte: now,
         },
-        status: 'SCHEDULED',
+        status: "SCHEDULED",
       },
       select: {
         patientId: true,
@@ -103,17 +103,20 @@ export async function GET() {
         time: true,
       },
       orderBy: {
-        date: 'asc',
+        date: "asc",
       },
     });
 
     // Add upcoming appointments to the formatted patients
-    const upcomingByPatient = upcomingAppointments.reduce((acc: Record<string, string>, apt: UpcomingAppointment) => {
-      if (!acc[apt.patientId]) {
-        acc[apt.patientId] = `${apt.date.toISOString().split('T')[0]} ${apt.time}`;
-      }
-      return acc;
-    }, {} as Record<string, string>);
+    const upcomingByPatient = upcomingAppointments.reduce(
+      (acc: Record<string, string>, apt: UpcomingAppointment) => {
+        if (!acc[apt.patientId]) {
+          acc[apt.patientId] = `${apt.date.toISOString().split("T")[0]} ${apt.time}`;
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
 
     formattedPatients.forEach((patient: { id: string; upcomingAppointment: string | null }) => {
       patient.upcomingAppointment = upcomingByPatient[patient.id] || null;
@@ -121,10 +124,7 @@ export async function GET() {
 
     return NextResponse.json({ patients: formattedPatients });
   } catch (error) {
-    console.error('Error fetching doctor patients:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error fetching doctor patients:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-} 
+}

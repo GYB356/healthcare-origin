@@ -1,6 +1,6 @@
-import { createAuditLog, verifyPatientAccess } from '@/lib/hipaa';
-import { AuditAction, ResourceType, AuditSeverity, AuditStatus } from '@prisma/client';
-import { headers } from 'next/headers';
+import { createAuditLog, verifyPatientAccess } from "@/lib/hipaa";
+import { AuditAction, ResourceType, AuditSeverity, AuditStatus } from "@prisma/client";
+import { headers } from "next/headers";
 
 export interface AuditContext {
   userId: string;
@@ -17,22 +17,22 @@ export async function logDashboardAccess(context: AuditContext) {
   try {
     // Verify access
     const hasAccess = await verifyPatientAccess(context.userId, context.patientId);
-    
+
     if (!hasAccess) {
       await createAuditLog({
         userId: context.userId,
         action: AuditAction.ACCESS_ATTEMPT,
         resourceType: ResourceType.PATIENT,
         resourceId: context.patientId,
-        details: 'Unauthorized attempt to access patient dashboard',
+        details: "Unauthorized attempt to access patient dashboard",
         severity: AuditSeverity.HIGH,
         status: AuditStatus.FAILURE,
         sessionId: context.sessionId,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
       });
-      
-      throw new Error('Unauthorized access to patient dashboard');
+
+      throw new Error("Unauthorized access to patient dashboard");
     }
 
     // Log successful access
@@ -41,7 +41,7 @@ export async function logDashboardAccess(context: AuditContext) {
       action: AuditAction.VIEW,
       resourceType: ResourceType.PATIENT,
       resourceId: context.patientId,
-      details: 'Patient dashboard accessed',
+      details: "Patient dashboard accessed",
       severity: AuditSeverity.LOW,
       status: AuditStatus.SUCCESS,
       sessionId: context.sessionId,
@@ -49,7 +49,7 @@ export async function logDashboardAccess(context: AuditContext) {
       userAgent: context.userAgent,
     });
   } catch (error) {
-    console.error('Failed to log dashboard access:', error);
+    console.error("Failed to log dashboard access:", error);
     throw error;
   }
 }
@@ -59,7 +59,7 @@ export async function logDashboardAccess(context: AuditContext) {
  */
 export async function logPatientDataAccess(
   context: AuditContext,
-  dataType: 'appointments' | 'medications' | 'vitals' | 'summary'
+  dataType: "appointments" | "medications" | "vitals" | "summary",
 ) {
   try {
     await createAuditLog({
@@ -87,7 +87,7 @@ export async function logPatientAction(
   context: AuditContext,
   action: AuditAction,
   details: string,
-  severity: AuditSeverity = AuditSeverity.LOW
+  severity: AuditSeverity = AuditSeverity.LOW,
 ) {
   try {
     await createAuditLog({
@@ -103,7 +103,7 @@ export async function logPatientAction(
       userAgent: context.userAgent,
     });
   } catch (error) {
-    console.error('Failed to log patient action:', error);
+    console.error("Failed to log patient action:", error);
     throw error;
   }
-} 
+}

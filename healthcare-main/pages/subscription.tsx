@@ -37,7 +37,9 @@ const SubscriptionForm = () => {
         <option value="enterprise">Enterprise - $50</option>
       </select>
       <CardElement />
-      <button type="submit" disabled={!stripe || loading}>Subscribe</button>
+      <button type="submit" disabled={!stripe || loading}>
+        Subscribe
+      </button>
     </form>
   );
 };

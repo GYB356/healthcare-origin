@@ -19,9 +19,13 @@ export default function Payments() {
   const handlePayment = async () => {
     const token = localStorage.getItem("token");
 
-    const res = await axios.post("/api/payments/checkout", { appointmentId }, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await axios.post(
+      "/api/payments/checkout",
+      { appointmentId },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
 
     window.location.href = res.data.url;
   };
@@ -31,7 +35,9 @@ export default function Payments() {
       <h1>My Payments</h1>
       <ul>
         {payments.map((pay) => (
-          <li key={pay.id}>{pay.amount / 100}$ - {pay.status}</li>
+          <li key={pay.id}>
+            {pay.amount / 100}$ - {pay.status}
+          </li>
         ))}
       </ul>
 

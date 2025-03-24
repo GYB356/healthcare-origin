@@ -1,6 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
-const { hash } = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const { PrismaClient } = require("@prisma/client");
+const { hash } = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const prisma = new PrismaClient();
 
@@ -9,36 +9,36 @@ async function globalSetup() {
   await prisma.$connect();
 
   // Create test users
-  const hashedPassword = await hash('password123', 10);
+  const hashedPassword = await hash("password123", 10);
 
   // Create admin user
   const admin = await prisma.user.create({
     data: {
-      name: 'Test Admin',
-      email: 'admin@test.com',
+      name: "Test Admin",
+      email: "admin@test.com",
       password: hashedPassword,
-      role: 'ADMIN'
-    }
+      role: "ADMIN",
+    },
   });
 
   // Create doctor user
   const doctor = await prisma.user.create({
     data: {
-      name: 'Test Doctor',
-      email: 'doctor@test.com',
+      name: "Test Doctor",
+      email: "doctor@test.com",
       password: hashedPassword,
-      role: 'DOCTOR'
-    }
+      role: "DOCTOR",
+    },
   });
 
   // Create patient user
   const patient = await prisma.user.create({
     data: {
-      name: 'Test Patient',
-      email: 'patient@test.com',
+      name: "Test Patient",
+      email: "patient@test.com",
       password: hashedPassword,
-      role: 'PATIENT'
-    }
+      role: "PATIENT",
+    },
   });
 
   // Generate test tokens
@@ -55,4 +55,4 @@ async function globalSetup() {
   process.env.TEST_PATIENT_ID = patient.id;
 }
 
-module.exports = globalSetup; 
+module.exports = globalSetup;

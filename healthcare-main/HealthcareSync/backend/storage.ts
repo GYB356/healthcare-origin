@@ -3,7 +3,7 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 import { log } from "./vite";
-import { prisma } from '../lib/prisma';
+import { prisma } from "../lib/prisma";
 
 const PostgresSessionStore = connectPg(session);
 
@@ -28,8 +28,15 @@ export interface IStorage {
   getAppointment(id: string): Promise<Appointment | undefined>;
   createAppointment(data: any): Promise<Appointment>;
   updateAppointment(id: string, data: any): Promise<Appointment>;
-  checkTimeSlotAvailability(doctorId: string, dateStr: string, excludeAppointmentId?: string): Promise<boolean>;
-  getAvailableTimeSlots(doctorId: string, dateStr: string): Promise<{ time: string; available: boolean }[]>;
+  checkTimeSlotAvailability(
+    doctorId: string,
+    dateStr: string,
+    excludeAppointmentId?: string,
+  ): Promise<boolean>;
+  getAvailableTimeSlots(
+    doctorId: string,
+    dateStr: string,
+  ): Promise<{ time: string; available: boolean }[]>;
   deleteAppointment(id: string): Promise<void>;
 
   // Health Metrics operations
@@ -99,26 +106,26 @@ export class DatabaseStorage implements IStorage {
 
   async getUser(id: string): Promise<User | null> {
     return await prisma.user.findUnique({
-      where: { id }
+      where: { id },
     });
   }
 
   async getUserByUsername(username: string): Promise<User | null> {
     return await prisma.user.findUnique({
-      where: { username }
+      where: { username },
     });
   }
 
   async createUser(user: Omit<User, "id" | "createdAt" | "updatedAt">): Promise<User> {
     return await prisma.user.create({
-      data: user
+      data: user,
     });
   }
 
   async updateUser(id: string, userData: Partial<User>): Promise<User> {
     return await prisma.user.update({
       where: { id },
-      data: userData
+      data: userData,
     });
   }
   async getPatients(page: number = 1, limit: number = 10): Promise<Patient[]> {
@@ -126,7 +133,7 @@ export class DatabaseStorage implements IStorage {
     return await this.prisma.patient.findMany({
       skip,
       take: limit,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -146,7 +153,7 @@ export class DatabaseStorage implements IStorage {
   async updatePatient(id: string, data: any): Promise<Patient> {
     return await this.prisma.patient.update({
       where: { id },
-      data
+      data,
     });
   }
 
@@ -154,7 +161,11 @@ export class DatabaseStorage implements IStorage {
     await this.prisma.patient.delete({ where: { id } });
   }
 
-  async getAppointments(filters: any = {}, page: number = 1, limit: number = 10): Promise<Appointment[]> {
+  async getAppointments(
+    filters: any = {},
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<Appointment[]> {
     const skip = (page - 1) * limit;
     const where: any = {};
 
@@ -164,22 +175,22 @@ export class DatabaseStorage implements IStorage {
       where,
       skip,
       take: limit,
-      orderBy: { date: 'asc' },
+      orderBy: { date: "asc" },
       include: {
         patient: {
           select: {
             firstName: true,
             lastName: true,
-            email: true
-          }
+            email: true,
+          },
         },
         doctor: {
           select: {
             fullName: true,
-            specialty: true
-          }
-        }
-      }
+            specialty: true,
+          },
+        },
+      },
     });
   }
 
@@ -200,17 +211,17 @@ export class DatabaseStorage implements IStorage {
             dateOfBirth: true,
             gender: true,
             phone: true,
-            email: true
-          }
+            email: true,
+          },
         },
         doctor: {
           select: {
             fullName: true,
             specialty: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
   }
 
@@ -221,21 +232,27 @@ export class DatabaseStorage implements IStorage {
   async updateAppointment(id: string, data: any): Promise<Appointment> {
     return await this.prisma.appointment.update({
       where: { id },
-      data
+      data,
     });
   }
 
-  async checkTimeSlotAvailability(doctorId: string, dateStr: string, excludeAppointmentId?: string): Promise<boolean> {
+  async checkTimeSlotAvailability(
+    doctorId: string,
+    dateStr: string,
+    excludeAppointmentId?: string,
+  ): Promise<boolean> {
     const date = new Date(dateStr);
     // Implement time slot check logic using Prisma
     return true; // Replace with actual implementation
   }
 
-  async getAvailableTimeSlots(doctorId: string, dateStr: string): Promise<{ time: string; available: boolean }[]> {
+  async getAvailableTimeSlots(
+    doctorId: string,
+    dateStr: string,
+  ): Promise<{ time: string; available: boolean }[]> {
     const date = new Date(dateStr);
     // Implement available time slot generation using Prisma
     return []; // Replace with actual implementation
-
   }
 
   async deleteAppointment(id: string): Promise<void> {
@@ -250,20 +267,20 @@ export class DatabaseStorage implements IStorage {
       where,
       skip,
       take: limit,
-      orderBy: { submissionDate: 'desc' },
+      orderBy: { submissionDate: "desc" },
       include: {
         patient: {
           select: {
             firstName: true,
-            lastName: true
-          }
+            lastName: true,
+          },
         },
         doctor: {
           select: {
-            fullName: true
-          }
-        }
-      }
+            fullName: true,
+          },
+        },
+      },
     });
   }
 
@@ -280,16 +297,16 @@ export class DatabaseStorage implements IStorage {
         patient: {
           select: {
             firstName: true,
-            lastName: true
-          }
+            lastName: true,
+          },
         },
         doctor: {
           select: {
             fullName: true,
-            specialty: true
-          }
-        }
-      }
+            specialty: true,
+          },
+        },
+      },
     });
   }
 
@@ -300,7 +317,7 @@ export class DatabaseStorage implements IStorage {
   async updateClaim(id: string, data: any): Promise<Claim> {
     return await this.prisma.claim.update({
       where: { id },
-      data
+      data,
     });
   }
 
@@ -358,7 +375,10 @@ export class DatabaseStorage implements IStorage {
   async createPrescription(prescription: InsertPrescription): Promise<Prescription> {
     return await this.prisma.prescription.create({ data: prescription });
   }
-  async updatePrescription(id: number, prescription: Partial<InsertPrescription>): Promise<Prescription> {
+  async updatePrescription(
+    id: number,
+    prescription: Partial<InsertPrescription>,
+  ): Promise<Prescription> {
     return await this.prisma.prescription.update({ where: { id }, data: prescription });
   }
   async deletePrescription(id: number): Promise<void> {
@@ -376,20 +396,20 @@ export class DatabaseStorage implements IStorage {
       where,
       skip,
       take: limit,
-      orderBy: { submissionDate: 'desc' },
+      orderBy: { submissionDate: "desc" },
       include: {
         patient: {
           select: {
             firstName: true,
-            lastName: true
-          }
+            lastName: true,
+          },
         },
         doctor: {
           select: {
-            fullName: true
-          }
-        }
-      }
+            fullName: true,
+          },
+        },
+      },
     });
   }
   async getClaimsCount(filters?: any): Promise<number> {
@@ -436,7 +456,10 @@ export class DatabaseStorage implements IStorage {
   async createMedicalRecord(record: InsertMedicalRecord): Promise<MedicalRecord> {
     return await this.prisma.medicalRecord.create({ data: record });
   }
-  async updateMedicalRecord(id: number, record: Partial<InsertMedicalRecord>): Promise<MedicalRecord> {
+  async updateMedicalRecord(
+    id: number,
+    record: Partial<InsertMedicalRecord>,
+  ): Promise<MedicalRecord> {
     return await this.prisma.medicalRecord.update({ where: { id }, data: record });
   }
   async deleteMedicalRecord(id: number): Promise<void> {
@@ -445,7 +468,7 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | null> {
     return await this.prisma.user.findFirst({
-      where: { stripeCustomerId }
+      where: { stripeCustomerId },
     });
   }
 

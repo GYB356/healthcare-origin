@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
 
 const ShiftSwapModal = ({ shift, onClose, onComplete }) => {
   const [availableStaff, setAvailableStaff] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState(null);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -14,10 +14,10 @@ const ShiftSwapModal = ({ shift, onClose, onComplete }) => {
         const data = await response.json();
         setAvailableStaff(data.staff);
       } catch (error) {
-        console.error('Error fetching available staff:', error);
+        console.error("Error fetching available staff:", error);
       }
     };
-    
+
     if (shift) fetchAvailableStaff();
   }, [shift]);
 
@@ -25,16 +25,16 @@ const ShiftSwapModal = ({ shift, onClose, onComplete }) => {
     e.preventDefault();
     try {
       const response = await fetch(`/api/shifts/${shift.id}/swap`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
           requestedStaffId: selectedStaff,
           message,
-          requesterId: currentUser.id
-        })
+          requesterId: currentUser.id,
+        }),
       });
 
       if (response.ok) {
@@ -42,7 +42,7 @@ const ShiftSwapModal = ({ shift, onClose, onComplete }) => {
         onClose();
       }
     } catch (error) {
-      console.error('Error submitting shift swap:', error);
+      console.error("Error submitting shift swap:", error);
     }
   };
 
@@ -56,20 +56,20 @@ const ShiftSwapModal = ({ shift, onClose, onComplete }) => {
               Available Staff:
               <select
                 className="w-full p-2 border rounded"
-                value={selectedStaff || ''}
+                value={selectedStaff || ""}
                 onChange={(e) => setSelectedStaff(e.target.value)}
                 required
               >
                 <option value="">Select staff member</option>
-                {availableStaff.map(staff => (
+                {availableStaff.map((staff) => (
                   <option key={staff.id} value={staff.id}>
-                    {staff.name} ({staff.roles.join(', ')})
+                    {staff.name} ({staff.roles.join(", ")})
                   </option>
                 ))}
               </select>
             </label>
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2">
               Message:

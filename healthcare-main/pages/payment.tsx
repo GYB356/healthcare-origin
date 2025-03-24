@@ -16,7 +16,10 @@ const CheckoutForm = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { data } = await axios.post("/api/create-payment-intent", { amount: 5000, currency: "usd" });
+    const { data } = await axios.post("/api/create-payment-intent", {
+      amount: 5000,
+      currency: "usd",
+    });
     setPaymentIntentId(data.id);
 
     const result = await stripe?.confirmCardPayment(data.clientSecret, {
@@ -42,7 +45,9 @@ const CheckoutForm = () => {
     <div>
       <form onSubmit={handleSubmit}>
         <CardElement />
-        <button type="submit" disabled={!stripe || loading}>Pay</button>
+        <button type="submit" disabled={!stripe || loading}>
+          Pay
+        </button>
       </form>
       {paymentIntentId && (
         <div>

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   AlertDialog,
@@ -9,17 +9,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 
 interface ConfirmationDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
-  title: string
-  description: string
-  actionLabel?: string
-  cancelLabel?: string
-  variant?: "default" | "destructive"
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+  title: string;
+  description: string;
+  actionLabel?: string;
+  cancelLabel?: string;
+  variant?: "default" | "destructive";
 }
 
 export function ConfirmationDialog({
@@ -30,7 +30,7 @@ export function ConfirmationDialog({
   description,
   actionLabel = "Continue",
   cancelLabel = "Cancel",
-  variant = "default"
+  variant = "default",
 }: ConfirmationDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -43,16 +43,12 @@ export function ConfirmationDialog({
           <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className={
-              variant === "destructive"
-                ? "bg-red-600 hover:bg-red-700"
-                : undefined
-            }
+            className={variant === "destructive" ? "bg-red-600 hover:bg-red-700" : undefined}
           >
             {actionLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
-} 
+  );
+}

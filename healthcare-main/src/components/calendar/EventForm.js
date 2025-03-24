@@ -1,5 +1,3 @@
- 
-
 const EventForm = () => {
   return (
     <div>

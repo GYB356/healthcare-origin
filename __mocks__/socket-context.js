@@ -1,4 +1,4 @@
-const React = require('react');
+const React = require("react");
 
 // Mock SocketContext
 const mockSocketState = {
@@ -6,15 +6,15 @@ const mockSocketState = {
     on: jest.fn(),
     emit: jest.fn(),
     connect: jest.fn(),
-    disconnect: jest.fn()
+    disconnect: jest.fn(),
   },
   isConnected: true,
   connect: jest.fn(),
-  disconnect: jest.fn()
+  disconnect: jest.fn(),
 };
 
 const SocketContext = React.createContext(mockSocketState);
-SocketContext.displayName = 'SocketContext';
+SocketContext.displayName = "SocketContext";
 
 // Socket Provider component
 const SocketProvider = ({ children, value = mockSocketState }) => {
@@ -28,5 +28,5 @@ module.exports = {
   SocketContext,
   SocketProvider,
   useSocket,
-  mockSocketState
-}; 
+  mockSocketState,
+};

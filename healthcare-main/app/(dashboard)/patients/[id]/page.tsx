@@ -1,98 +1,98 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter, useParams } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { toast } from "sonner"
-import { format } from "date-fns"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter, useParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface Patient {
-  id: string
-  name: string
-  email: string
-  phone: string
-  dateOfBirth: string
-  gender: string
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  gender: string;
   patientProfile: {
-    bloodType: string | null
-    allergies: string | null
-    medications: string | null
-    chronicConditions: string | null
-  } | null
+    bloodType: string | null;
+    allergies: string | null;
+    medications: string | null;
+    chronicConditions: string | null;
+  } | null;
   emergencyContact: {
-    name: string
-    relationship: string
-    phone: string
-  } | null
+    name: string;
+    relationship: string;
+    phone: string;
+  } | null;
   insurance: {
-    provider: string
-    policyNumber: string
-    expirationDate: string
-  } | null
+    provider: string;
+    policyNumber: string;
+    expirationDate: string;
+  } | null;
   appointments: Array<{
-    id: string
-    date: string
-    status: string
-    reason: string
-    doctorId: string
+    id: string;
+    date: string;
+    status: string;
+    reason: string;
+    doctorId: string;
     doctor: {
-      name: string
-    }
-  }>
+      name: string;
+    };
+  }>;
   medicalRecords: Array<{
-    id: string
-    date: string
-    type: string
-    description: string
-    doctorId: string
+    id: string;
+    date: string;
+    type: string;
+    description: string;
+    doctorId: string;
     doctor: {
-      name: string
-    }
-  }>
+      name: string;
+    };
+  }>;
 }
 
 export default function PatientProfilePage() {
-  const { data: session } = useSession()
-  const router = useRouter()
-  const params = useParams()
-  const [patient, setPatient] = useState<Patient | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: session } = useSession();
+  const router = useRouter();
+  const params = useParams();
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (session?.user.role !== "DOCTOR") {
-      router.push("/dashboard")
-      return
+      router.push("/dashboard");
+      return;
     }
 
-    fetchPatient()
-  }, [session, router, params.id])
+    fetchPatient();
+  }, [session, router, params.id]);
 
   const fetchPatient = async () => {
     try {
-      const response = await fetch(`/api/patients/${params.id}`)
+      const response = await fetch(`/api/patients/${params.id}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch patient")
+        throw new Error("Failed to fetch patient");
       }
 
-      const data = await response.json()
-      setPatient(data)
+      const data = await response.json();
+      setPatient(data);
     } catch (error) {
-      console.error("Error fetching patient:", error)
-      toast.error("Failed to load patient profile")
+      console.error("Error fetching patient:", error);
+      toast.error("Failed to load patient profile");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (loading) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   if (!patient) {
-    return <div>Patient not found</div>
+    return <div>Patient not found</div>;
   }
 
   return (
@@ -129,10 +129,7 @@ export default function PatientProfilePage() {
                   </div>
                   <div>
                     <dt className="font-medium">Date of Birth</dt>
-                    <dd>
-                      {patient.dateOfBirth &&
-                        format(new Date(patient.dateOfBirth), "PPP")}
-                    </dd>
+                    <dd>{patient.dateOfBirth && format(new Date(patient.dateOfBirth), "PPP")}</dd>
                   </div>
                   <div>
                     <dt className="font-medium">Gender</dt>
@@ -158,16 +155,11 @@ export default function PatientProfilePage() {
                   </div>
                   <div>
                     <dt className="font-medium">Medications</dt>
-                    <dd>
-                      {patient.patientProfile?.medications || "None reported"}
-                    </dd>
+                    <dd>{patient.patientProfile?.medications || "None reported"}</dd>
                   </div>
                   <div>
                     <dt className="font-medium">Chronic Conditions</dt>
-                    <dd>
-                      {patient.patientProfile?.chronicConditions ||
-                        "None reported"}
-                    </dd>
+                    <dd>{patient.patientProfile?.chronicConditions || "None reported"}</dd>
                   </div>
                 </dl>
               </CardContent>
@@ -216,12 +208,7 @@ export default function PatientProfilePage() {
                     </div>
                     <div>
                       <dt className="font-medium">Expiration Date</dt>
-                      <dd>
-                        {format(
-                          new Date(patient.insurance.expirationDate),
-                          "PPP"
-                        )}
-                      </dd>
+                      <dd>{format(new Date(patient.insurance.expirationDate), "PPP")}</dd>
                     </div>
                   </dl>
                 ) : (
@@ -246,15 +233,9 @@ export default function PatientProfilePage() {
                       className="flex items-center justify-between border-b pb-4"
                     >
                       <div>
-                        <p className="font-medium">
-                          {format(new Date(appointment.date), "PPP p")}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Doctor: {appointment.doctor.name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Reason: {appointment.reason}
-                        </p>
+                        <p className="font-medium">{format(new Date(appointment.date), "PPP p")}</p>
+                        <p className="text-sm text-gray-500">Doctor: {appointment.doctor.name}</p>
+                        <p className="text-sm text-gray-500">Reason: {appointment.reason}</p>
                       </div>
                       <div>
                         <span
@@ -262,8 +243,8 @@ export default function PatientProfilePage() {
                             appointment.status === "COMPLETED"
                               ? "bg-green-100 text-green-800"
                               : appointment.status === "CANCELLED"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-blue-100 text-blue-800"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-blue-100 text-blue-800"
                           }`}
                         >
                           {appointment.status}
@@ -293,15 +274,9 @@ export default function PatientProfilePage() {
                       className="flex items-center justify-between border-b pb-4"
                     >
                       <div>
-                        <p className="font-medium">
-                          {format(new Date(record.date), "PPP")}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Type: {record.type}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Doctor: {record.doctor.name}
-                        </p>
+                        <p className="font-medium">{format(new Date(record.date), "PPP")}</p>
+                        <p className="text-sm text-gray-500">Type: {record.type}</p>
+                        <p className="text-sm text-gray-500">Doctor: {record.doctor.name}</p>
                         <p className="mt-1">{record.description}</p>
                       </div>
                     </div>
@@ -315,5 +290,5 @@ export default function PatientProfilePage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
-} 
+  );
+}

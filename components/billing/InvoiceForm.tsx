@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { toast } from 'react-hot-toast';
+import React, { useState } from "react";
+import { useSession } from "next-auth/react";
+import { toast } from "react-hot-toast";
 
 interface InvoiceFormProps {
   patientId: string;
@@ -12,11 +12,11 @@ export default function InvoiceForm({ patientId, onSuccess, initialData }: Invoi
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    amount: initialData?.amount || '',
-    tax: initialData?.tax || '',
-    discount: initialData?.discount || '',
-    description: initialData?.description || '',
-    dueDate: initialData?.dueDate ? new Date(initialData.dueDate).toISOString().split('T')[0] : '',
+    amount: initialData?.amount || "",
+    tax: initialData?.tax || "",
+    discount: initialData?.discount || "",
+    description: initialData?.description || "",
+    dueDate: initialData?.dueDate ? new Date(initialData.dueDate).toISOString().split("T")[0] : "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,13 +26,13 @@ export default function InvoiceForm({ patientId, onSuccess, initialData }: Invoi
     try {
       const totalAmount = (
         parseFloat(formData.amount) +
-        parseFloat(formData.tax || '0') -
-        parseFloat(formData.discount || '0')
+        parseFloat(formData.tax || "0") -
+        parseFloat(formData.discount || "0")
       ).toFixed(2);
 
-      const response = await fetch('/api/invoices', {
-        method: initialData ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/invoices", {
+        method: initialData ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           id: initialData?.id,
@@ -42,14 +42,14 @@ export default function InvoiceForm({ patientId, onSuccess, initialData }: Invoi
       });
 
       if (response.ok) {
-        toast.success(`Invoice ${initialData ? 'updated' : 'created'} successfully`);
+        toast.success(`Invoice ${initialData ? "updated" : "created"} successfully`);
         if (onSuccess) onSuccess();
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Something went wrong');
+        toast.error(error.message || "Something went wrong");
       }
     } catch (error) {
-      toast.error('Failed to save invoice');
+      toast.error("Failed to save invoice");
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ export default function InvoiceForm({ patientId, onSuccess, initialData }: Invoi
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -135,9 +135,9 @@ export default function InvoiceForm({ patientId, onSuccess, initialData }: Invoi
           disabled={loading}
           className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
         >
-          {loading ? 'Saving...' : initialData ? 'Update Invoice' : 'Create Invoice'}
+          {loading ? "Saving..." : initialData ? "Update Invoice" : "Create Invoice"}
         </button>
       </div>
     </form>
   );
-} 
+}

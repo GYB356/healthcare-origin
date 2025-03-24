@@ -1,13 +1,13 @@
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   color?: string;
 }
 
-const LoadingSpinner = ({ size = 'md', color = 'white' }: LoadingSpinnerProps) => {
+const LoadingSpinner = ({ size = "md", color = "white" }: LoadingSpinnerProps) => {
   const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-5 w-5',
-    lg: 'h-6 w-6'
+    sm: "h-4 w-4",
+    md: "h-5 w-5",
+    lg: "h-6 w-6",
   };
 
   return (
@@ -17,14 +17,7 @@ const LoadingSpinner = ({ size = 'md', color = 'white' }: LoadingSpinnerProps) =
       fill="none"
       viewBox="0 0 24 24"
     >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path
         className="opacity-75"
         fill="currentColor"
@@ -34,4 +27,4 @@ const LoadingSpinner = ({ size = 'md', color = 'white' }: LoadingSpinnerProps) =
   );
 };
 
-export default LoadingSpinner; 
+export default LoadingSpinner;

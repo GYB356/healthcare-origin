@@ -1,30 +1,27 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
-import prisma from '../../../lib/prisma';
+import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
+import prisma from "../../../lib/prisma";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ message: 'Method not allowed' });
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ message: "Method not allowed" });
   }
 
   try {
     const session = await getSession({ req });
-    
+
     if (!session?.user?.email) {
-      return res.status(401).json({ message: 'Unauthorized' });
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     // Get user and their patient profile
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { patient: true }
+      include: { patient: true },
     });
 
     if (!user?.patient) {
-      return res.status(404).json({ message: 'Patient profile not found' });
+      return res.status(404).json({ message: "Patient profile not found" });
     }
 
     const { filter } = req.query;
@@ -34,14 +31,14 @@ export default async function handler(
       patientId: user.patient.id,
     };
 
-    if (filter === 'active') {
-      where.status = 'active';
+    if (filter === "active") {
+      where.status = "active";
       where.endDate = {
         gte: new Date(),
       };
-    } else if (filter === 'completed') {
+    } else if (filter === "completed") {
       where.OR = [
-        { status: 'completed' },
+        { status: "completed" },
         {
           endDate: {
             lt: new Date(),
@@ -62,13 +59,13 @@ export default async function handler(
         },
       },
       orderBy: {
-        startDate: 'desc',
+        startDate: "desc",
       },
     });
 
     return res.status(200).json(prescriptions);
   } catch (error) {
-    console.error('Error fetching prescriptions:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching prescriptions:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
-} 
+}

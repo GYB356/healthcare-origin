@@ -1,49 +1,51 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Client, NewClient } from '../../types/client'
-import ClientForm from '../../components/ClientForm'
-import ClientCard from '../../components/ClientCard'
+import { useState, useEffect } from "react";
+import { Client, NewClient } from "../../types/client";
+import ClientForm from "../../components/ClientForm";
+import ClientCard from "../../components/ClientCard";
 
-const STORAGE_KEY = 'roofing-tracker-clients'
+const STORAGE_KEY = "roofing-tracker-clients";
 
 export default function ClientsPage() {
-  const [showForm, setShowForm] = useState(false)
-  const [clients, setClients] = useState<Client[]>([])
-  const [editingClient, setEditingClient] = useState<Client | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [showForm, setShowForm] = useState(false);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Load clients from local storage on initial render
   useEffect(() => {
-    const savedClients = localStorage.getItem(STORAGE_KEY)
+    const savedClients = localStorage.getItem(STORAGE_KEY);
     if (savedClients) {
       try {
-        setClients(JSON.parse(savedClients))
+        setClients(JSON.parse(savedClients));
       } catch (error) {
-        console.error('Error loading clients:', error)
+        console.error("Error loading clients:", error);
       }
     }
-  }, [])
+  }, []);
 
   // Save clients to local storage whenever they change
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(clients))
-  }, [clients])
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+  }, [clients]);
 
   const handleSubmit = (clientData: NewClient) => {
     if (editingClient) {
       // Update existing client
-      setClients(clients.map(c => 
-        c.id === editingClient.id 
-          ? { 
-              ...clientData,
-              id: editingClient.id,
-              totalProjects: editingClient.totalProjects,
-              totalValue: editingClient.totalValue,
-              createdAt: editingClient.createdAt,
-            }
-          : c
-      ))
+      setClients(
+        clients.map((c) =>
+          c.id === editingClient.id
+            ? {
+                ...clientData,
+                id: editingClient.id,
+                totalProjects: editingClient.totalProjects,
+                totalValue: editingClient.totalValue,
+                createdAt: editingClient.createdAt,
+              }
+            : c,
+        ),
+      );
     } else {
       // Add new client
       const newClient: Client = {
@@ -52,35 +54,36 @@ export default function ClientsPage() {
         totalProjects: 0,
         totalValue: 0,
         createdAt: new Date().toISOString(),
-      }
-      setClients([...clients, newClient])
+      };
+      setClients([...clients, newClient]);
     }
-    handleCancel()
-  }
+    handleCancel();
+  };
 
   const handleEdit = (client: Client) => {
-    setEditingClient(client)
-    setShowForm(true)
-  }
+    setEditingClient(client);
+    setShowForm(true);
+  };
 
   const handleCancel = () => {
-    setShowForm(false)
-    setEditingClient(null)
-  }
+    setShowForm(false);
+    setEditingClient(null);
+  };
 
   const handleDelete = (clientId: string) => {
-    if (window.confirm('Are you sure you want to delete this client?')) {
-      setClients(clients.filter(c => c.id !== clientId))
+    if (window.confirm("Are you sure you want to delete this client?")) {
+      setClients(clients.filter((c) => c.id !== clientId));
     }
-  }
+  };
 
-  const filteredClients = clients.filter(client =>
-    searchQuery === '' ||
-    client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.phone.includes(searchQuery) ||
-    client.address.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredClients = clients.filter(
+    (client) =>
+      searchQuery === "" ||
+      client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      client.phone.includes(searchQuery) ||
+      client.address.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -111,7 +114,7 @@ export default function ClientsPage() {
       {showForm ? (
         <div className="bg-white shadow-md rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">
-            {editingClient ? 'Edit Client' : 'New Client'}
+            {editingClient ? "Edit Client" : "New Client"}
           </h2>
           <ClientForm
             onSubmit={handleSubmit}
@@ -121,7 +124,7 @@ export default function ClientsPage() {
         </div>
       ) : filteredClients.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredClients.map(client => (
+          {filteredClients.map((client) => (
             <ClientCard
               key={client.id}
               client={client}
@@ -135,10 +138,10 @@ export default function ClientsPage() {
           <p className="text-gray-500 text-center">
             {clients.length === 0
               ? 'No clients yet. Click "New Client" to add one.'
-              : 'No clients match your search criteria.'}
+              : "No clients match your search criteria."}
           </p>
         </div>
       )}
     </div>
-  )
-} 
+  );
+}

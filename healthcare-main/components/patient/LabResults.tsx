@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import {
   DocumentTextIcon,
   CalendarIcon,
   UserIcon,
   ChartBarIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 interface LabResult {
   id: string;
@@ -24,8 +24,8 @@ export default function LabResults() {
   const { data: session } = useSession();
   const [results, setResults] = useState<LabResult[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
-  const [filter, setFilter] = useState<string>('all'); // all, recent, past
+  const [error, setError] = useState<string>("");
+  const [filter, setFilter] = useState<string>("all"); // all, recent, past
 
   useEffect(() => {
     fetchLabResults();
@@ -36,33 +36,33 @@ export default function LabResults() {
       setLoading(true);
       const response = await fetch(`/api/patient/lab-results?filter=${filter}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch lab results');
+        throw new Error("Failed to fetch lab results");
       }
       const data = await response.json();
       setResults(data);
     } catch (error) {
-      console.error('Error fetching lab results:', error);
-      setError('Failed to load lab results');
+      console.error("Error fetching lab results:", error);
+      setError("Failed to load lab results");
     } finally {
       setLoading(false);
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const isResultAbnormal = (result: string, referenceRange: string | null) => {
     if (!referenceRange) return false;
-    
+
     // Simple comparison - in a real application, this would need more sophisticated logic
-    const [min, max] = referenceRange.split('-').map(Number);
+    const [min, max] = referenceRange.split("-").map(Number);
     const value = parseFloat(result);
-    
+
     return value < min || value > max;
   };
 
@@ -75,11 +75,7 @@ export default function LabResults() {
   }
 
   if (error) {
-    return (
-      <div className="text-red-500 text-center p-4">
-        {error}
-      </div>
-    );
+    return <div className="text-red-500 text-center p-4">{error}</div>;
   }
 
   return (
@@ -88,31 +84,31 @@ export default function LabResults() {
         <h2 className="text-2xl font-bold text-gray-900">Lab Results</h2>
         <div className="flex space-x-4">
           <button
-            onClick={() => setFilter('all')}
+            onClick={() => setFilter("all")}
             className={`px-4 py-2 rounded ${
-              filter === 'all'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              filter === "all"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             All Results
           </button>
           <button
-            onClick={() => setFilter('recent')}
+            onClick={() => setFilter("recent")}
             className={`px-4 py-2 rounded ${
-              filter === 'recent'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              filter === "recent"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Recent
           </button>
           <button
-            onClick={() => setFilter('past')}
+            onClick={() => setFilter("past")}
             className={`px-4 py-2 rounded ${
-              filter === 'past'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              filter === "past"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Past
@@ -137,9 +133,7 @@ export default function LabResults() {
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {result.testName}
-                  </h3>
+                  <h3 className="text-lg font-medium text-gray-900">{result.testName}</h3>
                   <div className="mt-1 flex items-center space-x-2">
                     <span className="text-sm font-medium text-gray-900">
                       Result: {result.result}
@@ -183,4 +177,4 @@ export default function LabResults() {
       )}
     </div>
   );
-} 
+}

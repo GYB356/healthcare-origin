@@ -1,4 +1,4 @@
-import api from './api';
+import api from "./api";
 
 const medicalRecordsService = {
   // Get medical records for current patient
@@ -7,17 +7,17 @@ const medicalRecordsService = {
       const response = await api.get(`/medical-records/${patientId}`);
       return response.data;
     } catch (error) {
-      throw new Error('Failed to fetch medical records');
+      throw new Error("Failed to fetch medical records");
     }
   },
 
   // Create new medical record
   createRecord: async (recordData) => {
     try {
-      const response = await api.post('/medical-records', recordData);
+      const response = await api.post("/medical-records", recordData);
       return response.data;
     } catch (error) {
-      throw new Error('Failed to create medical record');
+      throw new Error("Failed to create medical record");
     }
   },
 
@@ -27,7 +27,7 @@ const medicalRecordsService = {
       const response = await api.put(`/medical-records/${recordId}`, updates);
       return response.data;
     } catch (error) {
-      throw new Error('Failed to update medical record');
+      throw new Error("Failed to update medical record");
     }
   },
 
@@ -37,9 +37,9 @@ const medicalRecordsService = {
       await api.delete(`/medical-records/${recordId}`);
       return true;
     } catch (error) {
-      throw new Error('Failed to delete medical record');
+      throw new Error("Failed to delete medical record");
     }
-  }
+  },
 };
 
 export default medicalRecordsService;

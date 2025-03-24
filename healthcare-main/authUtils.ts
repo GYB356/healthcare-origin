@@ -23,4 +23,4 @@ export function verifyAccessToken(token: string) {
 // Verify Refresh Token
 export function verifyRefreshToken(token: string) {
   return jwt.verify(token, REFRESH_TOKEN_SECRET);
-} 
+}

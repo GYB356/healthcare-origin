@@ -1,34 +1,34 @@
-import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 interface NotificationProps {
   message: string;
-  type: 'info' | 'success' | 'error' | 'warning';
+  type: "info" | "success" | "error" | "warning";
   duration?: number;
   onClose?: () => void;
 }
 
 const typeToClassName = {
-  info: 'bg-blue-100 border-blue-500 text-blue-800',
-  success: 'bg-green-100 border-green-500 text-green-800',
-  error: 'bg-red-100 border-red-500 text-red-800',
-  warning: 'bg-yellow-100 border-yellow-500 text-yellow-800',
+  info: "bg-blue-100 border-blue-500 text-blue-800",
+  success: "bg-green-100 border-green-500 text-green-800",
+  error: "bg-red-100 border-red-500 text-red-800",
+  warning: "bg-yellow-100 border-yellow-500 text-yellow-800",
 };
 
 export const showNotification = (props: NotificationProps) => {
   const { message, type, duration = 3000, onClose } = props;
-  
+
   switch (type) {
-    case 'info':
+    case "info":
       toast.info(message, { autoClose: duration, onClose });
       break;
-    case 'success':
+    case "success":
       toast.success(message, { autoClose: duration, onClose });
       break;
-    case 'error':
+    case "error":
       toast.error(message, { autoClose: duration, onClose });
       break;
-    case 'warning':
+    case "warning":
       toast.warning(message, { autoClose: duration, onClose });
       break;
   }
@@ -56,7 +56,7 @@ export const InlineNotification = (props: NotificationProps) => {
         <div className="flex items-center">
           <span className="font-medium">{message}</span>
         </div>
-        <button 
+        <button
           onClick={() => {
             setVisible(false);
             onClose?.();
@@ -70,4 +70,4 @@ export const InlineNotification = (props: NotificationProps) => {
   );
 };
 
-export default InlineNotification; 
+export default InlineNotification;

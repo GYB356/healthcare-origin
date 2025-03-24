@@ -7,4 +7,4 @@ const InvoiceSchema = new mongoose.Schema({
   status: { type: String, enum: ["Pending", "Paid", "Cancelled"], default: "Pending" },
 });
 
-export default mongoose.model("Invoice", InvoiceSchema); 
+export default mongoose.model("Invoice", InvoiceSchema);

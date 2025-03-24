@@ -1,10 +1,10 @@
-import { createServer } from 'http';
-import { parse } from 'url';
-import next from 'next';
-import { initializeSocket } from './lib/socket';
+import { createServer } from "http";
+import { parse } from "url";
+import next from "next";
+import { initializeSocket } from "./lib/socket";
 
-const dev = process.env.NODE_ENV !== 'production';
-const hostname = 'localhost';
+const dev = process.env.NODE_ENV !== "production";
+const hostname = "localhost";
 const port = 3000;
 
 const app = next({ dev, hostname, port });
@@ -16,9 +16,9 @@ app.prepare().then(() => {
       const parsedUrl = parse(req.url!, true);
       await handle(req, res, parsedUrl);
     } catch (err) {
-      console.error('Error occurred handling', req.url, err);
+      console.error("Error occurred handling", req.url, err);
       res.statusCode = 500;
-      res.end('Internal server error');
+      res.end("Internal server error");
     }
   });
 
@@ -28,4 +28,4 @@ app.prepare().then(() => {
   server.listen(port, () => {
     console.log(`> Ready on http://${hostname}:${port}`);
   });
-}); 
+});

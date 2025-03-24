@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Appointment, BillingRecord, StaffSchedule } from '@/types';
+import { useEffect, useState } from "react";
+import { Appointment, BillingRecord, StaffSchedule } from "@/types";
 import {
   CalendarIcon,
   CreditCardIcon,
   ClipboardDocumentListIcon,
   UserGroupIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 export default function StaffDashboard() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -19,9 +19,9 @@ export default function StaffDashboard() {
     const fetchDashboardData = async () => {
       try {
         const [appointmentsRes, billingRecordsRes, staffScheduleRes] = await Promise.all([
-          fetch('/api/staff/appointments'),
-          fetch('/api/staff/billing'),
-          fetch('/api/staff/schedule'),
+          fetch("/api/staff/appointments"),
+          fetch("/api/staff/billing"),
+          fetch("/api/staff/schedule"),
         ]);
 
         if (appointmentsRes.ok) {
@@ -39,7 +39,7 @@ export default function StaffDashboard() {
           setStaffSchedule(data.schedule);
         }
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error("Error fetching dashboard data:", error);
       } finally {
         setLoading(false);
       }
@@ -65,12 +65,17 @@ export default function StaffDashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Today's Appointments</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Today's Appointments
+                  </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {appointments.filter(a => 
-                      a.status === 'scheduled' && 
-                      new Date(a.date).toDateString() === new Date().toDateString()
-                    ).length}
+                    {
+                      appointments.filter(
+                        (a) =>
+                          a.status === "scheduled" &&
+                          new Date(a.date).toDateString() === new Date().toDateString(),
+                      ).length
+                    }
                   </dd>
                 </dl>
               </div>
@@ -88,7 +93,7 @@ export default function StaffDashboard() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Pending Payments</dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {billingRecords.filter(b => b.status === 'pending').length}
+                    {billingRecords.filter((b) => b.status === "pending").length}
                   </dd>
                 </dl>
               </div>
@@ -106,10 +111,13 @@ export default function StaffDashboard() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Staff on Duty</dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {staffSchedule.filter(s => 
-                      s.status === 'scheduled' && 
-                      new Date(s.date).toDateString() === new Date().toDateString()
-                    ).length}
+                    {
+                      staffSchedule.filter(
+                        (s) =>
+                          s.status === "scheduled" &&
+                          new Date(s.date).toDateString() === new Date().toDateString(),
+                      ).length
+                    }
                   </dd>
                 </dl>
               </div>
@@ -127,7 +135,7 @@ export default function StaffDashboard() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Patients</dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {new Set(appointments.map(a => a.patientId)).size}
+                    {new Set(appointments.map((a) => a.patientId)).size}
                   </dd>
                 </dl>
               </div>
@@ -141,28 +149,28 @@ export default function StaffDashboard() {
           <div className="px-4 py-5 sm:p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900">Today's Schedule</h3>
             <div className="mt-5">
-              {appointments.filter(a => 
-                a.status === 'scheduled' && 
-                new Date(a.date).toDateString() === new Date().toDateString()
+              {appointments.filter(
+                (a) =>
+                  a.status === "scheduled" &&
+                  new Date(a.date).toDateString() === new Date().toDateString(),
               ).length > 0 ? (
                 <ul className="divide-y divide-gray-200">
                   {appointments
-                    .filter(a => 
-                      a.status === 'scheduled' && 
-                      new Date(a.date).toDateString() === new Date().toDateString()
+                    .filter(
+                      (a) =>
+                        a.status === "scheduled" &&
+                        new Date(a.date).toDateString() === new Date().toDateString(),
                     )
                     .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
                     .slice(0, 5)
-                    .map(appointment => (
+                    .map((appointment) => (
                       <li key={appointment.id} className="py-4">
                         <div className="flex items-center space-x-4">
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">
                               {appointment.type}
                             </p>
-                            <p className="text-sm text-gray-500">
-                              {appointment.time}
-                            </p>
+                            <p className="text-sm text-gray-500">{appointment.time}</p>
                           </div>
                         </div>
                       </li>
@@ -179,13 +187,13 @@ export default function StaffDashboard() {
           <div className="px-4 py-5 sm:p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900">Pending Payments</h3>
             <div className="mt-5">
-              {billingRecords.filter(b => b.status === 'pending').length > 0 ? (
+              {billingRecords.filter((b) => b.status === "pending").length > 0 ? (
                 <ul className="divide-y divide-gray-200">
                   {billingRecords
-                    .filter(b => b.status === 'pending')
+                    .filter((b) => b.status === "pending")
                     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
                     .slice(0, 5)
-                    .map(record => (
+                    .map((record) => (
                       <li key={record.id} className="py-4">
                         <div className="flex items-center space-x-4">
                           <div className="flex-1 min-w-0">
@@ -209,4 +217,4 @@ export default function StaffDashboard() {
       </div>
     </div>
   );
-} 
+}

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Doctor {
   id: string;
@@ -19,28 +19,28 @@ export default function BookAppointment() {
   const router = useRouter();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [selectedDoctor, setSelectedDoctor] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedDoctor, setSelectedDoctor] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     // Fetch departments
     const fetchDepartments = async () => {
       try {
-        const res = await fetch('/api/departments', {
-          credentials: 'include'
+        const res = await fetch("/api/departments", {
+          credentials: "include",
         });
         if (res.ok) {
           const data = await res.json();
           setDepartments(data.departments);
         }
       } catch (error) {
-        console.error('Error fetching departments:', error);
-        setError('Failed to load departments');
+        console.error("Error fetching departments:", error);
+        setError("Failed to load departments");
       }
     };
 
@@ -51,18 +51,18 @@ export default function BookAppointment() {
     // Fetch doctors when department is selected
     const fetchDoctors = async () => {
       if (!selectedDepartment) return;
-      
+
       try {
         const res = await fetch(`/api/doctors?department=${selectedDepartment}`, {
-          credentials: 'include'
+          credentials: "include",
         });
         if (res.ok) {
           const data = await res.json();
           setDoctors(data.doctors);
         }
       } catch (error) {
-        console.error('Error fetching doctors:', error);
-        setError('Failed to load doctors');
+        console.error("Error fetching doctors:", error);
+        setError("Failed to load doctors");
       }
     };
 
@@ -73,18 +73,21 @@ export default function BookAppointment() {
     // Fetch available slots when doctor and date are selected
     const fetchAvailableSlots = async () => {
       if (!selectedDoctor || !selectedDate) return;
-      
+
       try {
-        const res = await fetch(`/api/appointments/available-slots?doctorId=${selectedDoctor}&date=${selectedDate}`, {
-          credentials: 'include'
-        });
+        const res = await fetch(
+          `/api/appointments/available-slots?doctorId=${selectedDoctor}&date=${selectedDate}`,
+          {
+            credentials: "include",
+          },
+        );
         if (res.ok) {
           const data = await res.json();
           setAvailableSlots(data.slots);
         }
       } catch (error) {
-        console.error('Error fetching available slots:', error);
-        setError('Failed to load available time slots');
+        console.error("Error fetching available slots:", error);
+        setError("Failed to load available time slots");
       }
     };
 
@@ -94,15 +97,15 @@ export default function BookAppointment() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const res = await fetch('/api/appointments', {
-        method: 'POST',
+      const res = await fetch("/api/appointments", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           doctorId: selectedDoctor,
           date: selectedDate,
@@ -111,14 +114,14 @@ export default function BookAppointment() {
       });
 
       if (res.ok) {
-        router.push('/dashboard/patient?appointment=booked');
+        router.push("/dashboard/patient?appointment=booked");
       } else {
         const data = await res.json();
-        setError(data.error || 'Failed to book appointment');
+        setError(data.error || "Failed to book appointment");
       }
     } catch (error) {
-      console.error('Error booking appointment:', error);
-      setError('Failed to book appointment');
+      console.error("Error booking appointment:", error);
+      setError("Failed to book appointment");
     } finally {
       setLoading(false);
     }
@@ -187,7 +190,7 @@ export default function BookAppointment() {
             onChange={(e) => setSelectedDate(e.target.value)}
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md"
             required
-            min={new Date().toISOString().split('T')[0]}
+            min={new Date().toISOString().split("T")[0]}
           />
         </div>
 
@@ -225,10 +228,10 @@ export default function BookAppointment() {
             disabled={loading}
             className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
           >
-            {loading ? 'Booking...' : 'Book Appointment'}
+            {loading ? "Booking..." : "Book Appointment"}
           </button>
         </div>
       </form>
     </div>
   );
-} 
+}

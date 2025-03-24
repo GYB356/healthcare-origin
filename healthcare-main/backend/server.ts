@@ -2,10 +2,10 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
-import dotenv from 'dotenv';
-import CryptoJS from 'crypto-js';
-import mongoose from 'mongoose';
-import { errorMiddleware } from './utils/errorHandler';
+import dotenv from "dotenv";
+import CryptoJS from "crypto-js";
+import mongoose from "mongoose";
+import { errorMiddleware } from "./utils/errorHandler";
 
 // Regular imports
 import appointmentRoutes from "./routes/appointments";
@@ -21,9 +21,9 @@ import Notification from "./models/Notification";
 
 // Type safe imports, when TS files are available
 // For routes that are still in JS, use "require" as a fallback
-const authRoutes = require('./routes/authRoutes');
-const projectRoutes = require('./routes/projectRoutes');
-const aiRoutes = require('./routes/aiRoutes');
+const authRoutes = require("./routes/authRoutes");
+const projectRoutes = require("./routes/projectRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
 // Load environment variables
 dotenv.config();
@@ -75,33 +75,33 @@ io.on("connection", (socket) => {
       const encryptedMessage = CryptoJS.AES.encrypt(message, SECRET_KEY).toString();
 
       // Save message to database
-      const newMessage = new Message({ 
-        chatId, 
-        senderId, 
-        receiverId, 
-        message: encryptedMessage 
+      const newMessage = new Message({
+        chatId,
+        senderId,
+        receiverId,
+        message: encryptedMessage,
       });
       await newMessage.save();
 
       // Update or create chat
       await Chat.findByIdAndUpdate(
         chatId,
-        { 
-          $set: { 
-            lastMessage: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
-            lastMessageTime: new Date()
+        {
+          $set: {
+            lastMessage: message.substring(0, 50) + (message.length > 50 ? "..." : ""),
+            lastMessageTime: new Date(),
           },
-          $setOnInsert: { participants: [senderId, receiverId] }
+          $setOnInsert: { participants: [senderId, receiverId] },
         },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       );
 
       // Emit message to chat room
-      io.to(chatId).emit("receiveMessage", { 
+      io.to(chatId).emit("receiveMessage", {
         id: newMessage._id,
-        senderId, 
+        senderId,
         message: encryptedMessage,
-        createdAt: newMessage.createdAt
+        createdAt: newMessage.createdAt,
       });
 
       // Send notification to receiver if they're not in the chat
@@ -110,8 +110,8 @@ io.on("connection", (socket) => {
         message: `You have a new message`,
         data: {
           chatId,
-          senderId
-        }
+          senderId,
+        },
       });
 
       console.log(`Message sent in chat ${chatId}`);
@@ -196,12 +196,12 @@ export const sendUserNotification = (userId: string, message: string) => {
 };
 
 // Connect to MongoDB
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/roofing-tracker';
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/roofing-tracker";
 
 mongoose
   .connect(MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 // Define port
 const PORT = process.env.PORT || 5000;

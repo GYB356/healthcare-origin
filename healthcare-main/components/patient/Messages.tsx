@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
-import { useSession } from 'next-auth/react';
-import io, { Socket } from 'socket.io-client';
-import { toast } from 'react-hot-toast';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import { useSession } from "next-auth/react";
+import io, { Socket } from "socket.io-client";
+import { toast } from "react-hot-toast";
 
 interface Message {
   id: string;
@@ -10,7 +10,7 @@ interface Message {
   createdAt: string;
   senderId: string;
   senderName: string;
-  senderRole: 'patient' | 'doctor';
+  senderRole: "patient" | "doctor";
   read: boolean;
 }
 
@@ -28,7 +28,7 @@ export default function Messages() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -39,23 +39,23 @@ export default function Messages() {
   useEffect(() => {
     if (!session?.user?.id) return;
 
-    socketRef.current = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+    socketRef.current = io(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000");
 
     // Authenticate user
-    socketRef.current.emit('authenticate', session.user.id);
+    socketRef.current.emit("authenticate", session.user.id);
 
     // Handle new messages
-    socketRef.current.on('newMessage', (message: Message) => {
+    socketRef.current.on("newMessage", (message: Message) => {
       if (message.conversationId === selectedConversation) {
-        setMessages(prev => [...prev, message]);
+        setMessages((prev) => [...prev, message]);
         if (shouldAutoScroll.current) {
           scrollToBottom();
         }
       }
-      
+
       // Update conversations list with new message
-      setConversations(prev =>
-        prev.map(conv =>
+      setConversations((prev) =>
+        prev.map((conv) =>
           conv.id === message.conversationId
             ? {
                 ...conv,
@@ -63,8 +63,8 @@ export default function Messages() {
                 lastMessageTime: message.createdAt,
                 unreadCount: conv.unreadCount + 1,
               }
-            : conv
-        )
+            : conv,
+        ),
       );
 
       // Show notification for new message
@@ -74,18 +74,16 @@ export default function Messages() {
     });
 
     // Handle message read status
-    socketRef.current.on('messageRead', (messageId: string) => {
-      setMessages(prev =>
-        prev.map(msg =>
-          msg.id === messageId ? { ...msg, read: true } : msg
-        )
+    socketRef.current.on("messageRead", (messageId: string) => {
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === messageId ? { ...msg, read: true } : msg)),
       );
     });
 
     // Handle unread count updates
-    socketRef.current.on('unreadCount', (count: number) => {
+    socketRef.current.on("unreadCount", (count: number) => {
       // Update the unread count in the UI if needed
-      console.log('Unread count updated:', count);
+      console.log("Unread count updated:", count);
     });
 
     return () => {
@@ -103,19 +101,19 @@ export default function Messages() {
 
   const scrollToBottom = useCallback(() => {
     if (messagesEndRef.current && shouldAutoScroll.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
 
   // Fetch conversations
   const fetchConversations = async () => {
     try {
-      const response = await fetch('/api/patient/conversations');
-      if (!response.ok) throw new Error('Failed to fetch conversations');
+      const response = await fetch("/api/patient/conversations");
+      if (!response.ok) throw new Error("Failed to fetch conversations");
       const data = await response.json();
       setConversations(data);
     } catch (err) {
-      setError('Failed to load conversations');
+      setError("Failed to load conversations");
       console.error(err);
     } finally {
       setLoading(false);
@@ -126,15 +124,15 @@ export default function Messages() {
   const fetchMessages = async (conversationId: string) => {
     try {
       const response = await fetch(`/api/patient/messages?conversationId=${conversationId}`);
-      if (!response.ok) throw new Error('Failed to fetch messages');
+      if (!response.ok) throw new Error("Failed to fetch messages");
       const data = await response.json();
       setMessages(data);
       setSelectedConversation(conversationId);
-      
+
       // Mark messages as read
       await markMessagesAsRead(conversationId);
     } catch (err) {
-      setError('Failed to load messages');
+      setError("Failed to load messages");
       console.error(err);
     }
   };
@@ -142,23 +140,23 @@ export default function Messages() {
   // Mark messages as read
   const markMessagesAsRead = async (conversationId: string) => {
     try {
-      const response = await fetch('/api/patient/messages/read', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/patient/messages/read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversationId }),
       });
-      
-      if (!response.ok) throw new Error('Failed to mark messages as read');
-      
+
+      if (!response.ok) throw new Error("Failed to mark messages as read");
+
       // Emit read status through WebSocket
       if (socketRef.current && session?.user?.id) {
-        socketRef.current.emit('markAsRead', {
+        socketRef.current.emit("markAsRead", {
           conversationId,
           userId: session.user.id,
         });
       }
     } catch (err) {
-      console.error('Error marking messages as read:', err);
+      console.error("Error marking messages as read:", err);
     }
   };
 
@@ -170,18 +168,18 @@ export default function Messages() {
     try {
       // Emit message through WebSocket
       if (socketRef.current) {
-        socketRef.current.emit('sendMessage', {
+        socketRef.current.emit("sendMessage", {
           conversationId: selectedConversation,
           content: newMessage.trim(),
           senderId: session.user.id,
           senderName: session.user.name,
-          senderRole: 'patient',
+          senderRole: "patient",
         });
       }
 
-      setNewMessage('');
+      setNewMessage("");
     } catch (err) {
-      setError('Failed to send message');
+      setError("Failed to send message");
       console.error(err);
     }
   };
@@ -207,7 +205,7 @@ export default function Messages() {
             key={conv.id}
             onClick={() => fetchMessages(conv.id)}
             className={`p-4 cursor-pointer hover:bg-gray-50 ${
-              selectedConversation === conv.id ? 'bg-blue-50' : ''
+              selectedConversation === conv.id ? "bg-blue-50" : ""
             }`}
           >
             <div className="flex justify-between items-start">
@@ -233,24 +231,19 @@ export default function Messages() {
       <div className="flex-1 flex flex-col">
         {selectedConversation ? (
           <>
-            <div
-              className="flex-1 overflow-y-auto p-4 space-y-4"
-              onScroll={handleScroll}
-            >
+            <div className="flex-1 overflow-y-auto p-4 space-y-4" onScroll={handleScroll}>
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${
-                    message.senderId === session?.user?.id
-                      ? 'justify-end'
-                      : 'justify-start'
+                    message.senderId === session?.user?.id ? "justify-end" : "justify-start"
                   }`}
                 >
                   <div
                     className={`max-w-[70%] rounded-lg p-3 ${
                       message.senderId === session?.user?.id
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100'
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100"
                     }`}
                   >
                     <p className="text-sm">{message.content}</p>
@@ -290,4 +283,4 @@ export default function Messages() {
       </div>
     </div>
   );
-} 
+}

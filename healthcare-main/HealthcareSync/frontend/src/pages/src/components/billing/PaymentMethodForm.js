@@ -1,32 +1,34 @@
-import React from 'react';
-import { FiLock } from 'react-icons/fi';
-import LoadingSpinner from '../LoadingSpinner';
+import React from "react";
+import { FiLock } from "react-icons/fi";
+import LoadingSpinner from "../LoadingSpinner";
 
 const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }) => {
   return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const paymentData = {
-        cardType: formData.get('cardType'),
-        cardNumber: formData.get('cardNumber'),
-        lastFour: formData.get('cardNumber').slice(-4),
-        expiryMonth: formData.get('expiryMonth'),
-        expiryYear: formData.get('expiryYear'),
-        cvv: formData.get('cvv'),
-        billingName: formData.get('billingName'),
-        billingAddress: {
-          line1: formData.get('addressLine1'),
-          line2: formData.get('addressLine2') || '',
-          city: formData.get('city'),
-          state: formData.get('state'),
-          zipCode: formData.get('zipCode'),
-          country: formData.get('country')
-        },
-        isDefault: formData.get('isDefault') === 'on'
-      };
-      onSubmit(paymentData);
-    }}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const paymentData = {
+          cardType: formData.get("cardType"),
+          cardNumber: formData.get("cardNumber"),
+          lastFour: formData.get("cardNumber").slice(-4),
+          expiryMonth: formData.get("expiryMonth"),
+          expiryYear: formData.get("expiryYear"),
+          cvv: formData.get("cvv"),
+          billingName: formData.get("billingName"),
+          billingAddress: {
+            line1: formData.get("addressLine1"),
+            line2: formData.get("addressLine2") || "",
+            city: formData.get("city"),
+            state: formData.get("state"),
+            zipCode: formData.get("zipCode"),
+            country: formData.get("country"),
+          },
+          isDefault: formData.get("isDefault") === "on",
+        };
+        onSubmit(paymentData);
+      }}
+    >
       <div className="px-6 py-4 space-y-4">
         <div>
           <label htmlFor="cardType" className="block text-sm font-medium text-gray-700">
@@ -35,11 +37,13 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
           <select
             id="cardType"
             name="cardType"
-            defaultValue={editingPaymentMethod?.cardType || ''}
+            defaultValue={editingPaymentMethod?.cardType || ""}
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
             required
           >
-            <option value="" disabled>Select card type</option>
+            <option value="" disabled>
+              Select card type
+            </option>
             <option value="Visa">Visa</option>
             <option value="Mastercard">Mastercard</option>
             <option value="American Express">American Express</option>
@@ -54,7 +58,9 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
             type="text"
             id="cardNumber"
             name="cardNumber"
-            defaultValue={editingPaymentMethod ? `************${editingPaymentMethod.lastFour}` : ''}
+            defaultValue={
+              editingPaymentMethod ? `************${editingPaymentMethod.lastFour}` : ""
+            }
             placeholder="•••• •••• •••• ••••"
             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             required
@@ -70,13 +76,15 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
             <select
               id="expiryMonth"
               name="expiryMonth"
-              defaultValue={editingPaymentMethod?.expiryMonth || ''}
+              defaultValue={editingPaymentMethod?.expiryMonth || ""}
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
               required
             >
-              <option value="" disabled>Month</option>
+              <option value="" disabled>
+                Month
+              </option>
               {Array.from({ length: 12 }, (_, i) => {
-                const month = (i + 1).toString().padStart(2, '0');
+                const month = (i + 1).toString().padStart(2, "0");
                 return (
                   <option key={month} value={month}>
                     {month}
@@ -92,11 +100,13 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
             <select
               id="expiryYear"
               name="expiryYear"
-              defaultValue={editingPaymentMethod?.expiryYear || ''}
+              defaultValue={editingPaymentMethod?.expiryYear || ""}
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
               required
             >
-              <option value="" disabled>Year</option>
+              <option value="" disabled>
+                Year
+              </option>
               {Array.from({ length: 10 }, (_, i) => {
                 const year = (new Date().getFullYear() + i).toString();
                 return (
@@ -116,7 +126,7 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
             type="text"
             id="cvv"
             name="cvv"
-            defaultValue={editingPaymentMethod ? '***' : ''}
+            defaultValue={editingPaymentMethod ? "***" : ""}
             placeholder="•••"
             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             required
@@ -132,7 +142,7 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
             type="text"
             id="billingName"
             name="billingName"
-            defaultValue={editingPaymentMethod?.billingName || ''}
+            defaultValue={editingPaymentMethod?.billingName || ""}
             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             required
           />
@@ -145,7 +155,7 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
             type="text"
             id="addressLine1"
             name="addressLine1"
-            defaultValue={editingPaymentMethod?.billingAddress?.line1 || ''}
+            defaultValue={editingPaymentMethod?.billingAddress?.line1 || ""}
             placeholder="Street address"
             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             required
@@ -156,7 +166,7 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
             type="text"
             id="addressLine2"
             name="addressLine2"
-            defaultValue={editingPaymentMethod?.billingAddress?.line2 || ''}
+            defaultValue={editingPaymentMethod?.billingAddress?.line2 || ""}
             placeholder="Apt, suite, etc. (optional)"
             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
           />
@@ -167,7 +177,7 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
               type="text"
               id="city"
               name="city"
-              defaultValue={editingPaymentMethod?.billingAddress?.city || ''}
+              defaultValue={editingPaymentMethod?.billingAddress?.city || ""}
               placeholder="City"
               className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
               required
@@ -178,7 +188,7 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
               type="text"
               id="state"
               name="state"
-              defaultValue={editingPaymentMethod?.billingAddress?.state || ''}
+              defaultValue={editingPaymentMethod?.billingAddress?.state || ""}
               placeholder="State/Province"
               className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
               required
@@ -191,7 +201,7 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
               type="text"
               id="zipCode"
               name="zipCode"
-              defaultValue={editingPaymentMethod?.billingAddress?.zipCode || ''}
+              defaultValue={editingPaymentMethod?.billingAddress?.zipCode || ""}
               placeholder="ZIP / Postal code"
               className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
               required
@@ -202,7 +212,7 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
               type="text"
               id="country"
               name="country"
-              defaultValue={editingPaymentMethod?.billingAddress?.country || ''}
+              defaultValue={editingPaymentMethod?.billingAddress?.country || ""}
               placeholder="Country"
               className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
               required
@@ -223,7 +233,8 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
         </div>
         <div className="text-xs text-gray-500">
           <FiLock className="inline-block mr-1" />
-          Your payment information is encrypted and securely stored in compliance with HIPAA regulations.
+          Your payment information is encrypted and securely stored in compliance with HIPAA
+          regulations.
         </div>
       </div>
       <div className="px-6 py-4 bg-gray-50 flex justify-end space-x-2 rounded-b-lg">
@@ -245,7 +256,7 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
               Saving...
             </>
           ) : (
-            'Save'
+            "Save"
           )}
         </button>
       </div>
@@ -253,4 +264,4 @@ const PaymentMethodForm = ({ editingPaymentMethod, onSubmit, onCancel, loading }
   );
 };
 
-export default PaymentMethodForm; 
+export default PaymentMethodForm;

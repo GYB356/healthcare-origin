@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { getCache, setCache, CACHE_KEYS } from '../lib/redis';
+import { Request, Response, NextFunction } from "express";
+import { getCache, setCache, CACHE_KEYS } from "../lib/redis";
 
 const DEFAULT_TTL = 300; // 5 minutes
 const CACHE_SIZE_LIMIT = 1000; // Maximum number of cache entries
@@ -11,10 +11,10 @@ interface CacheOptions {
 }
 
 // Cache middleware factory with enhanced error handling and optimization
-export function cacheMiddleware({ 
-  keyPrefix, 
+export function cacheMiddleware({
+  keyPrefix,
   ttl = DEFAULT_TTL,
-  condition = (req) => req.method === 'GET' && req.isAuthenticated()
+  condition = (req) => req.method === "GET" && req.isAuthenticated(),
 }: CacheOptions) {
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!condition(req)) {
@@ -30,25 +30,25 @@ export function cacheMiddleware({
 
       if (cachedData) {
         // Add cache hit headers for debugging
-        res.setHeader('X-Cache', 'HIT');
+        res.setHeader("X-Cache", "HIT");
         return res.json(cachedData);
       }
 
-      res.setHeader('X-Cache', 'MISS');
+      res.setHeader("X-Cache", "MISS");
 
       // Store original json method
       const originalJson = res.json.bind(res);
 
       // Override json method to cache the response
-      res.json = function(data: any) {
+      res.json = function (data: any) {
         // Don't cache error responses
         if (res.statusCode >= 400) {
           return originalJson(data);
         }
 
         // Cache the data before sending response
-        setCache(cacheKey, data, ttl).catch(error => {
-          console.error('Cache middleware error:', error);
+        setCache(cacheKey, data, ttl).catch((error) => {
+          console.error("Cache middleware error:", error);
         });
 
         return originalJson(data);
@@ -56,7 +56,7 @@ export function cacheMiddleware({
 
       next();
     } catch (error) {
-      console.error('Cache middleware error:', error);
+      console.error("Cache middleware error:", error);
       // On cache error, continue without caching
       next();
     }
@@ -67,13 +67,13 @@ export function cacheMiddleware({
 export const adminStatsCache = cacheMiddleware({
   keyPrefix: CACHE_KEYS.ADMIN_STATS,
   ttl: 30, // 30 seconds TTL for frequently changing stats
-  condition: (req) => req.method === 'GET' && req.isAuthenticated() && req.user?.role === 'admin'
+  condition: (req) => req.method === "GET" && req.isAuthenticated() && req.user?.role === "admin",
 });
 
 export const staffStatsCache = cacheMiddleware({
   keyPrefix: CACHE_KEYS.STAFF_STATS,
   ttl: 30,
-  condition: (req) => req.method === 'GET' && req.isAuthenticated() && req.user?.role === 'staff'
+  condition: (req) => req.method === "GET" && req.isAuthenticated() && req.user?.role === "staff",
 });
 
 export const userDataCache = cacheMiddleware({
@@ -90,8 +90,10 @@ export const medicalRecordsCache = cacheMiddleware({
   keyPrefix: CACHE_KEYS.MEDICAL_RECORDS,
   ttl: 600, // 10 minutes TTL for medical records
   condition: (req) => {
-    return req.method === 'GET' && 
-           req.isAuthenticated() && 
-           ['staff', 'admin', 'doctor'].includes(req.user?.role || '');
-  }
+    return (
+      req.method === "GET" &&
+      req.isAuthenticated() &&
+      ["staff", "admin", "doctor"].includes(req.user?.role || "")
+    );
+  },
 });

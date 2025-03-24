@@ -1,21 +1,21 @@
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
-import Messages from '../../components/patient/Messages';
-import Layout from '../../components/Layout';
-import ProtectedRoute from '../../components/ProtectedRoute';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import Messages from "../../components/patient/Messages";
+import Layout from "../../components/Layout";
+import ProtectedRoute from "../../components/ProtectedRoute";
 
 export default function PatientDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
     }
   }, [status, router]);
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return <div>Loading...</div>;
   }
 
@@ -24,7 +24,7 @@ export default function PatientDashboard() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={['patient']}>
+    <ProtectedRoute allowedRoles={["patient"]}>
       <Layout>
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-8">Patient Dashboard</h1>
@@ -54,4 +54,4 @@ export default function PatientDashboard() {
       </Layout>
     </ProtectedRoute>
   );
-} 
+}

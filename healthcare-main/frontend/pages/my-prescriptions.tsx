@@ -80,22 +80,25 @@ MEDICAL PRESCRIPTION
 
 Doctor: ${prescription.doctor.name}
 Date: ${new Date(prescription.createdAt).toLocaleDateString()}
-${prescription.signature ? `\n${prescription.signature}` : ''}
+${prescription.signature ? `\n${prescription.signature}` : ""}
 
 MEDICATIONS:
-${prescription.medications.map(med => 
-  `- ${med.name} (${med.dosage})
+${prescription.medications
+  .map(
+    (med) =>
+      `- ${med.name} (${med.dosage})
    Take: ${med.frequency}
-   Duration: ${med.duration}`
-).join('\n\n')}
+   Duration: ${med.duration}`,
+  )
+  .join("\n\n")}
 
 This prescription was generated on ${new Date().toLocaleString()}
     `;
 
     // Create a blob and download it
-    const blob = new Blob([prescriptionText], { type: 'text/plain' });
+    const blob = new Blob([prescriptionText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `prescription-${prescription._id}.txt`;
     document.body.appendChild(a);
@@ -154,8 +157,8 @@ This prescription was generated on ${new Date().toLocaleString()}
             ) : (
               <div className="space-y-4">
                 {prescriptions.map((prescription) => (
-                  <div 
-                    key={prescription._id} 
+                  <div
+                    key={prescription._id}
                     className="bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow"
                   >
                     <div className="flex justify-between items-start mb-3">
@@ -167,14 +170,14 @@ This prescription was generated on ${new Date().toLocaleString()}
                           {new Date(prescription.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <span 
+                      <span
                         className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          prescription.signedByDoctor 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
+                          prescription.signedByDoctor
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
-                        {prescription.signedByDoctor ? '✓ Signed' : '⚠ Awaiting Signature'}
+                        {prescription.signedByDoctor ? "✓ Signed" : "⚠ Awaiting Signature"}
                       </span>
                     </div>
 
@@ -183,7 +186,8 @@ This prescription was generated on ${new Date().toLocaleString()}
                       <ul className="space-y-1 pl-2">
                         {prescription.medications.map((med, index) => (
                           <li key={index} className="text-sm">
-                            <span className="font-medium">{med.name}</span> - {med.dosage}, {med.frequency}, {med.duration}
+                            <span className="font-medium">{med.name}</span> - {med.dosage},{" "}
+                            {med.frequency}, {med.duration}
                           </li>
                         ))}
                       </ul>
@@ -201,8 +205,8 @@ This prescription was generated on ${new Date().toLocaleString()}
                         disabled={!prescription.signedByDoctor}
                         className={`px-3 py-1 text-sm rounded ${
                           prescription.signedByDoctor
-                            ? 'bg-green-500 hover:bg-green-600 text-white'
-                            : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            ? "bg-green-500 hover:bg-green-600 text-white"
+                            : "bg-gray-200 text-gray-500 cursor-not-allowed"
                         }`}
                       >
                         Download
@@ -217,4 +221,4 @@ This prescription was generated on ${new Date().toLocaleString()}
       </div>
     </Layout>
   );
-} 
+}

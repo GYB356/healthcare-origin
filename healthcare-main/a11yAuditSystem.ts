@@ -1,6 +1,6 @@
-import { A11yAppScanner } from './utils/a11yAppScanner';
-import { A11yAuditService } from './a11yAuditService';
-import { A11yScanResult, A11ySeverity } from '../types/a11y';
+import { A11yAppScanner } from "./utils/a11yAppScanner";
+import { A11yAuditService } from "./a11yAuditService";
+import { A11yScanResult, A11ySeverity } from "../types/a11y";
 
 export class A11yAuditSystem {
   private static instance: A11yAuditSystem;
@@ -27,9 +27,12 @@ export class A11yAuditSystem {
       this.stopPeriodicScanning();
     }
 
-    this.scanInterval = setInterval(async () => {
-      await this.runComprehensiveScan();
-    }, intervalMinutes * 60 * 1000);
+    this.scanInterval = setInterval(
+      async () => {
+        await this.runComprehensiveScan();
+      },
+      intervalMinutes * 60 * 1000,
+    );
   }
 
   /**
@@ -47,7 +50,7 @@ export class A11yAuditSystem {
    */
   async runComprehensiveScan(): Promise<A11yScanResult> {
     const scanResult = await A11yAppScanner.scanApplication();
-    
+
     // Report results
     await A11yAuditService.reportScanResults(scanResult);
 
@@ -63,18 +66,18 @@ export class A11yAuditSystem {
    */
   private notifyOnCriticalIssues(scanResult: A11yScanResult): void {
     const criticalIssues = scanResult.issues.filter(
-      issue => issue.severity === A11ySeverity.CRITICAL
+      (issue) => issue.severity === A11ySeverity.CRITICAL,
     );
 
     if (criticalIssues.length > 0) {
       // Could integrate with email, Slack, or other notification systems
-      console.warn('Critical Accessibility Issues Detected:', criticalIssues);
-      
+      console.warn("Critical Accessibility Issues Detected:", criticalIssues);
+
       // Example of how you might send a notification
       this.sendNotification({
-        title: 'Critical A11y Issues Found',
+        title: "Critical A11y Issues Found",
         message: `${criticalIssues.length} critical accessibility issues detected`,
-        issues: criticalIssues
+        issues: criticalIssues,
       });
     }
   }
@@ -83,14 +86,10 @@ export class A11yAuditSystem {
    * Send notification about accessibility issues
    * @param notification Notification details
    */
-  private sendNotification(notification: {
-    title: string;
-    message: string;
-    issues?: any[];
-  }): void {
+  private sendNotification(notification: { title: string; message: string; issues?: any[] }): void {
     // Placeholder for actual notification logic
     // Could integrate with services like Slack, email, or internal notification system
-    console.log('Accessibility Notification:', notification);
+    console.log("Accessibility Notification:", notification);
   }
 
   /**
@@ -107,13 +106,17 @@ Accessibility Compliance Report
 Current Accessibility Score: ${currentScore}%
 
 Historical Scan Results:
-${historicalResults.map((result, index) => `
+${historicalResults
+  .map(
+    (result, index) => `
 Scan ${index + 1}:
 - Timestamp: ${result.timestamp}
 - Total Issues: ${result.totalIssues}
 - Critical Issues: ${result.criticalIssues}
 - Score: ${result.score}%
-`).join('\n')}
+`,
+  )
+  .join("\n")}
 
 Recommendations:
 1. Address critical and high-severity issues promptly

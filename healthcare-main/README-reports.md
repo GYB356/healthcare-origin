@@ -11,6 +11,7 @@ The medical reports feature allows doctors to generate AI-powered medical report
 The following components have been created:
 
 1. **Backend**:
+
    - `backend/models/Report.js`: MongoDB schema for storing reports
    - `backend/routes/reports.js`: API routes for creating and retrieving reports
    - `backend/utils/ai.js`: Utility functions for generating reports using AI
@@ -24,14 +25,16 @@ The following components have been created:
 ### Backend Integration
 
 1. **Register the reports route in server.js**:
+
    ```javascript
-   import reportRoutes from './routes/reports';
+   import reportRoutes from "./routes/reports";
    // ...
    app.use("/api/reports", reportRoutes);
    ```
 
 2. **Set up environment variables**:
    Add the following to your `.env` file:
+
    ```
    OPENAI_API_KEY=your_openai_api_key
    ```
@@ -45,12 +48,15 @@ The following components have been created:
 ### Frontend Integration
 
 1. **Add a link to the reports page from the appointments page**:
+
    ```jsx
-   import Link from 'next/link';
+   import Link from "next/link";
    // ...
    <Link href={`/appointments/${appointment._id}/reports`}>
-     <Button colorScheme="blue" size="sm">View Reports</Button>
-   </Link>
+     <Button colorScheme="blue" size="sm">
+       View Reports
+     </Button>
+   </Link>;
    ```
 
 2. **Update the navigation menu**:
@@ -61,7 +67,7 @@ The following components have been created:
    // In _app.tsx or your auth protection logic
    const protectedRoutes = [
      // ... existing routes
-     "/appointments/[id]/reports"
+     "/appointments/[id]/reports",
    ];
    ```
 
@@ -87,4 +93,4 @@ For detailed API documentation, refer to `backend/docs/reports-api.md`.
 
 - Implement report editing functionality
 - Add PDF export for reports
-- Implement email notifications for new reports 
+- Implement email notifications for new reports

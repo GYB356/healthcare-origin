@@ -1,8 +1,8 @@
 // src/components/clients/ClientForm.js
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import api from '../../services/api';
-import DashboardLayout from '../layout/DashboardLayout';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../../services/api";
+import DashboardLayout from "../layout/DashboardLayout";
 
 const ClientForm = () => {
   const { id } = useParams();
@@ -11,14 +11,14 @@ const ClientForm = () => {
   const [fetchLoading, setFetchLoading] = useState(false);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    notes: ''
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    notes: "",
   });
 
   useEffect(() => {
@@ -34,35 +34,35 @@ const ClientForm = () => {
       setFormData(response.data);
       setFetchLoading(false);
     } catch (err) {
-      console.error('Error fetching client:', err);
-      setError('Failed to load client details. Please try again.');
+      console.error("Error fetching client:", err);
+      setError("Failed to load client details. Please try again.");
       setFetchLoading(false);
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       if (id) {
         // Update existing client
         await api.put(`/clients/${id}`, formData);
       } else {
         // Create new client
-        await api.post('/clients', formData);
+        await api.post("/clients", formData);
       }
-      
-      navigate('/clients');
+
+      navigate("/clients");
     } catch (err) {
-      console.error('Error saving client:', err);
-      setError(err.response?.data?.message || 'Failed to save client. Please try again.');
+      console.error("Error saving client:", err);
+      setError(err.response?.data?.message || "Failed to save client. Please try again.");
       setLoading(false);
     }
   };
@@ -81,7 +81,7 @@ const ClientForm = () => {
     <DashboardLayout>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">
-          {id ? 'Edit Client' : 'Add New Client'}
+          {id ? "Edit Client" : "Add New Client"}
         </h1>
       </div>
 
@@ -95,9 +95,7 @@ const ClientForm = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Client Name*
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Client Name*</label>
               <input
                 type="text"
                 name="name"
@@ -109,9 +107,7 @@ const ClientForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address*
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address*</label>
               <input
                 type="email"
                 name="email"
@@ -123,9 +119,7 @@ const ClientForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number*
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number*</label>
               <input
                 type="tel"
                 name="phone"
@@ -137,9 +131,7 @@ const ClientForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address*
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Address*</label>
               <input
                 type="text"
                 name="address"
@@ -151,9 +143,7 @@ const ClientForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                City*
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">City*</label>
               <input
                 type="text"
                 name="city"
@@ -165,9 +155,7 @@ const ClientForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                State*
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">State*</label>
               <input
                 type="text"
                 name="state"
@@ -179,9 +167,7 @@ const ClientForm = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Zip Code*
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Zip Code*</label>
               <input
                 type="text"
                 name="zipCode"
@@ -193,9 +179,7 @@ const ClientForm = () => {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notes
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
               <textarea
                 name="notes"
                 rows="4"
@@ -209,7 +193,7 @@ const ClientForm = () => {
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={() => navigate('/clients')}
+              onClick={() => navigate("/clients")}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Cancel
@@ -219,7 +203,7 @@ const ClientForm = () => {
               disabled={loading}
               className="px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
             >
-              {loading ? 'Saving...' : id ? 'Update Client' : 'Save Client'}
+              {loading ? "Saving..." : id ? "Update Client" : "Save Client"}
             </button>
           </div>
         </form>

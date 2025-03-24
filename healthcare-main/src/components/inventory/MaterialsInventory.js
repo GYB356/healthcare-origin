@@ -1,10 +1,10 @@
 // src/components/inventory/MaterialsInventory.js
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../../services/api';
-import DashboardLayout from '../layout/DashboardLayout';
-import MaterialsTable from './MaterialsTable';
-import MaterialForm from './MaterialForm';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import api from "../../services/api";
+import DashboardLayout from "../layout/DashboardLayout";
+import MaterialsTable from "./MaterialsTable";
+import MaterialForm from "./MaterialForm";
 
 const MaterialsInventory = () => {
   const [materials, setMaterials] = useState([]);
@@ -12,8 +12,8 @@ const MaterialsInventory = () => {
   const [error, setError] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchMaterials();
@@ -23,27 +23,27 @@ const MaterialsInventory = () => {
   const fetchMaterials = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/materials', {
+      const response = await api.get("/materials", {
         params: {
-          category: selectedCategory !== 'all' ? selectedCategory : undefined,
-          search: searchTerm || undefined
-        }
+          category: selectedCategory !== "all" ? selectedCategory : undefined,
+          search: searchTerm || undefined,
+        },
       });
       setMaterials(response.data);
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching materials:', err);
-      setError('Failed to load materials. Please try again.');
+      console.error("Error fetching materials:", err);
+      setError("Failed to load materials. Please try again.");
       setLoading(false);
     }
   };
 
   const fetchCategories = async () => {
     try {
-      const response = await api.get('/materials/categories');
+      const response = await api.get("/materials/categories");
       setCategories(response.data);
     } catch (err) {
-      console.error('Error fetching categories:', err);
+      console.error("Error fetching categories:", err);
     }
   };
 
@@ -54,12 +54,12 @@ const MaterialsInventory = () => {
 
   const handleAddMaterial = async (materialData) => {
     try {
-      await api.post('/materials', materialData);
+      await api.post("/materials", materialData);
       setShowAddForm(false);
       fetchMaterials();
     } catch (err) {
-      console.error('Error adding material:', err);
-      return err.response?.data?.message || 'Failed to add material. Please try again.';
+      console.error("Error adding material:", err);
+      return err.response?.data?.message || "Failed to add material. Please try again.";
     }
   };
 
@@ -67,29 +67,29 @@ const MaterialsInventory = () => {
     try {
       await api.patch(`/materials/${id}/quantity`, { quantity: newQuantity });
       // Update local state
-      setMaterials(prevMaterials => 
-        prevMaterials.map(material => 
-          material.id === id ? { ...material, quantity: newQuantity } : material
-        )
+      setMaterials((prevMaterials) =>
+        prevMaterials.map((material) =>
+          material.id === id ? { ...material, quantity: newQuantity } : material,
+        ),
       );
     } catch (err) {
-      console.error('Error updating quantity:', err);
-      return err.response?.data?.message || 'Failed to update quantity. Please try again.';
+      console.error("Error updating quantity:", err);
+      return err.response?.data?.message || "Failed to update quantity. Please try again.";
     }
   };
 
   const handleDeleteMaterial = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this material?')) {
+    if (!window.confirm("Are you sure you want to delete this material?")) {
       return;
     }
-    
+
     try {
       await api.delete(`/materials/${id}`);
       // Update local state
-      setMaterials(prevMaterials => prevMaterials.filter(material => material.id !== id));
+      setMaterials((prevMaterials) => prevMaterials.filter((material) => material.id !== id));
     } catch (err) {
-      console.error('Error deleting material:', err);
-      alert(err.response?.data?.message || 'Failed to delete material. Please try again.');
+      console.error("Error deleting material:", err);
+      alert(err.response?.data?.message || "Failed to delete material. Please try again.");
     }
   };
 
@@ -101,16 +101,16 @@ const MaterialsInventory = () => {
           onClick={() => setShowAddForm(!showAddForm)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          {showAddForm ? 'Cancel' : 'Add New Material'}
+          {showAddForm ? "Cancel" : "Add New Material"}
         </button>
       </div>
 
       {showAddForm && (
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Add New Material</h2>
-          <MaterialForm 
-            categories={categories} 
-            onSubmit={handleAddMaterial} 
+          <MaterialForm
+            categories={categories}
+            onSubmit={handleAddMaterial}
             onCancel={() => setShowAddForm(false)}
           />
         </div>
@@ -130,7 +130,7 @@ const MaterialsInventory = () => {
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Categories</option>
-              {categories.map(category => (
+              {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
@@ -173,8 +173,8 @@ const MaterialsInventory = () => {
                 <p className="text-gray-500">Add new materials or adjust your search criteria.</p>
               </div>
             ) : (
-              <MaterialsTable 
-                materials={materials} 
+              <MaterialsTable
+                materials={materials}
                 onUpdateQuantity={handleUpdateQuantity}
                 onDelete={handleDeleteMaterial}
               />

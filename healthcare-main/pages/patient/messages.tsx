@@ -1,20 +1,20 @@
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import PatientLayout from '@/components/layouts/PatientLayout';
-import Messages from '@/components/patient/Messages';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import PatientLayout from "@/components/layouts/PatientLayout";
+import Messages from "@/components/patient/Messages";
 
 export default function PatientMessagesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
     }
   }, [status, router]);
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <PatientLayout>
         <div className="flex items-center justify-center min-h-screen">
@@ -40,4 +40,4 @@ export default function PatientMessagesPage() {
       </div>
     </PatientLayout>
   );
-} 
+}

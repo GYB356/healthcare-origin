@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 
 interface DecodedToken {
   userId: string;
@@ -10,17 +10,17 @@ interface DecodedToken {
 
 // Define permission structure for time tracking
 export const TimeTrackingPermissions = {
-  VIEW_OWN_TIME: 'time:view:own',
-  CREATE_OWN_TIME: 'time:create:own',
-  EDIT_OWN_TIME: 'time:edit:own',
-  DELETE_OWN_TIME: 'time:delete:own',
-  VIEW_TEAM_TIME: 'time:view:team',
-  EDIT_TEAM_TIME: 'time:edit:team',
-  APPROVE_TIME: 'time:approve',
-  VIEW_ALL_TIME: 'time:view:all',
-  EDIT_ALL_TIME: 'time:edit:all',
-  MANAGE_RATES: 'time:rates:manage',
-  VIEW_REPORTS: 'time:reports:view',
+  VIEW_OWN_TIME: "time:view:own",
+  CREATE_OWN_TIME: "time:create:own",
+  EDIT_OWN_TIME: "time:edit:own",
+  DELETE_OWN_TIME: "time:delete:own",
+  VIEW_TEAM_TIME: "time:view:team",
+  EDIT_TEAM_TIME: "time:edit:team",
+  APPROVE_TIME: "time:approve",
+  VIEW_ALL_TIME: "time:view:all",
+  EDIT_ALL_TIME: "time:edit:all",
+  MANAGE_RATES: "time:rates:manage",
+  VIEW_REPORTS: "time:reports:view",
 };
 
 // Define role-based permissions
@@ -69,20 +69,20 @@ export const RolePermissions = {
 // Middleware to authenticate user via JWT
 export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader) {
-    return res.status(401).json({ error: 'Authorization header is required' });
+    return res.status(401).json({ error: "Authorization header is required" });
   }
-  
-  const token = authHeader.split(' ')[1];
-  
+
+  const token = authHeader.split(" ")[1];
+
   if (!token) {
-    return res.status(401).json({ error: 'Invalid authorization token' });
+    return res.status(401).json({ error: "Invalid authorization token" });
   }
-  
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
-    
+
     // Attach user info to request for use in route handlers
     req.user = {
       id: decoded.userId,
@@ -90,10 +90,10 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
       role: decoded.role,
       permissions: decoded.permissions || RolePermissions[decoded.role] || [],
     };
-    
+
     next();
   } catch (error) {
-    return res.status(401).json({ error: 'Invalid authorization token' });
+    return res.status(401).json({ error: "Invalid authorization token" });
   }
 };
 
@@ -101,15 +101,15 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
 export const requirePermission = (permission: string) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return res.status(401).json({ error: "Authentication required" });
     }
-    
+
     const { permissions } = req.user;
-    
+
     if (!permissions.includes(permission)) {
-      return res.status(403).json({ error: 'Insufficient permissions' });
+      return res.status(403).json({ error: "Insufficient permissions" });
     }
-    
+
     next();
   };
 };
@@ -118,56 +118,60 @@ export const requirePermission = (permission: string) => {
 export const authorizeRole = (roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return res.status(401).json({ error: "Authentication required" });
     }
-    
+
     const { role } = req.user;
-    
+
     if (!roles.includes(role)) {
-      return res.status(403).json({ error: 'Insufficient permissions' });
+      return res.status(403).json({ error: "Insufficient permissions" });
     }
-    
+
     next();
   };
 };
 
 // Middleware to check if user is accessing their own resource
-export const checkResourceOwnership = (
-  resourceField: string = 'userId'
-) => {
+export const checkResourceOwnership = (resourceField: string = "userId") => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return res.status(401).json({ error: "Authentication required" });
     }
-    
+
     const resourceId = req.params.id;
-    
+
     // If the resource ID is in the query parameters
-    if (resourceId && req.method !== 'GET') {
+    if (resourceId && req.method !== "GET") {
       // Fetch the resource from the database to check ownership
       // This is a placeholder - in a real implementation,
       // you would query your database for the resource
       // const resource = await YourModel.findById(resourceId);
-      
+
       // For demonstration purposes, assuming the resource is already loaded
       const resource = req.resource;
-      
+
       if (!resource) {
-        return res.status(404).json({ error: 'Resource not found' });
+        return res.status(404).json({ error: "Resource not found" });
       }
-      
+
       // Check if the user is the owner of the resource
       if (resource[resourceField] !== req.user.id) {
         // Check if the user has permission to modify others' resources
-        const hasTeamPermission = req.user.permissions.includes(TimeTrackingPermissions.EDIT_TEAM_TIME);
-        const hasAllPermission = req.user.permissions.includes(TimeTrackingPermissions.EDIT_ALL_TIME);
-        
+        const hasTeamPermission = req.user.permissions.includes(
+          TimeTrackingPermissions.EDIT_TEAM_TIME,
+        );
+        const hasAllPermission = req.user.permissions.includes(
+          TimeTrackingPermissions.EDIT_ALL_TIME,
+        );
+
         if (!hasTeamPermission && !hasAllPermission) {
-          return res.status(403).json({ error: 'You do not have permission to modify this resource' });
+          return res
+            .status(403)
+            .json({ error: "You do not have permission to modify this resource" });
         }
       }
     }
-    
+
     next();
   };
 };
@@ -175,10 +179,10 @@ export const checkResourceOwnership = (
 // Set up permissions for time tracking routes
 export const setupTimeTrackingRoutes = (router: any) => {
   // Get time entries - different permissions for own, team, and all
-  router.get('/entries', authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
+  router.get("/entries", authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
     // Check if requesting own entries, team entries, or all entries
     const { userId, projectId, teamId } = req.query;
-    
+
     if (userId && userId === req.user.id) {
       // User is requesting their own entries
       requirePermission(TimeTrackingPermissions.VIEW_OWN_TIME)(req, res, next);
@@ -190,78 +194,84 @@ export const setupTimeTrackingRoutes = (router: any) => {
       requirePermission(TimeTrackingPermissions.VIEW_ALL_TIME)(req, res, next);
     }
   });
-  
+
   // Create time entry - requires CREATE_OWN_TIME permission
-  router.post('/entries', 
-    authenticateJWT, 
-    requirePermission(TimeTrackingPermissions.CREATE_OWN_TIME)
+  router.post(
+    "/entries",
+    authenticateJWT,
+    requirePermission(TimeTrackingPermissions.CREATE_OWN_TIME),
   );
-  
+
   // Update time entry - requires permissions and ownership check
-  router.put('/entries/:id', 
-    authenticateJWT, 
+  router.put(
+    "/entries/:id",
+    authenticateJWT,
     checkResourceOwnership(),
     (req: Request, res: Response, next: NextFunction) => {
       // Determine which permission to check based on ownership
       const resource = req.resource;
-      
+
       if (resource && resource.userId === req.user.id) {
         requirePermission(TimeTrackingPermissions.EDIT_OWN_TIME)(req, res, next);
       } else {
         // Check team or all permissions
-        const hasTeamPermission = req.user.permissions.includes(TimeTrackingPermissions.EDIT_TEAM_TIME);
-        const hasAllPermission = req.user.permissions.includes(TimeTrackingPermissions.EDIT_ALL_TIME);
-        
+        const hasTeamPermission = req.user.permissions.includes(
+          TimeTrackingPermissions.EDIT_TEAM_TIME,
+        );
+        const hasAllPermission = req.user.permissions.includes(
+          TimeTrackingPermissions.EDIT_ALL_TIME,
+        );
+
         if (hasTeamPermission || hasAllPermission) {
           next();
         } else {
-          res.status(403).json({ error: 'Insufficient permissions' });
+          res.status(403).json({ error: "Insufficient permissions" });
         }
       }
-    }
+    },
   );
-  
+
   // Delete time entry - requires permissions and ownership check
-  router.delete('/entries/:id', 
-    authenticateJWT, 
+  router.delete(
+    "/entries/:id",
+    authenticateJWT,
     checkResourceOwnership(),
     (req: Request, res: Response, next: NextFunction) => {
       // Determine which permission to check based on ownership
       const resource = req.resource;
-      
+
       if (resource && resource.userId === req.user.id) {
         requirePermission(TimeTrackingPermissions.DELETE_OWN_TIME)(req, res, next);
       } else {
         // Check team or all permissions
-        const hasTeamPermission = req.user.permissions.includes(TimeTrackingPermissions.EDIT_TEAM_TIME);
-        const hasAllPermission = req.user.permissions.includes(TimeTrackingPermissions.EDIT_ALL_TIME);
-        
+        const hasTeamPermission = req.user.permissions.includes(
+          TimeTrackingPermissions.EDIT_TEAM_TIME,
+        );
+        const hasAllPermission = req.user.permissions.includes(
+          TimeTrackingPermissions.EDIT_ALL_TIME,
+        );
+
         if (hasTeamPermission || hasAllPermission) {
           next();
         } else {
-          res.status(403).json({ error: 'Insufficient permissions' });
+          res.status(403).json({ error: "Insufficient permissions" });
         }
       }
-    }
+    },
   );
-  
+
   // Approve time entries - requires APPROVE_TIME permission
-  router.post('/entries/approve', 
-    authenticateJWT, 
-    requirePermission(TimeTrackingPermissions.APPROVE_TIME)
+  router.post(
+    "/entries/approve",
+    authenticateJWT,
+    requirePermission(TimeTrackingPermissions.APPROVE_TIME),
   );
-  
+
   // Get reports - requires VIEW_REPORTS permission
-  router.get('/reports', 
-    authenticateJWT, 
-    requirePermission(TimeTrackingPermissions.VIEW_REPORTS)
-  );
-  
+  router.get("/reports", authenticateJWT, requirePermission(TimeTrackingPermissions.VIEW_REPORTS));
+
   // Manage rates - requires MANAGE_RATES permission
-  router.all('/rates*', 
-    authenticateJWT, 
-    requirePermission(TimeTrackingPermissions.MANAGE_RATES)
-  );
-  
+  router.all("/rates*", authenticateJWT, requirePermission(TimeTrackingPermissions.MANAGE_RATES));
+
   return router;
-}; 
+};

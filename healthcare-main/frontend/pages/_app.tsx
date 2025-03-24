@@ -5,7 +5,14 @@ import { AuthProvider, useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import socket from "../utils/socket";
 
-const protectedRoutes = ["/dashboard", "/patients", "/reports", "/appointments", "/my-prescriptions", "/projects"];
+const protectedRoutes = [
+  "/dashboard",
+  "/patients",
+  "/reports",
+  "/appointments",
+  "/my-prescriptions",
+  "/projects",
+];
 
 function AppContent({ Component, pageProps }) {
   const { user } = useAuth();
@@ -21,9 +28,9 @@ function AppContent({ Component, pageProps }) {
   useEffect(() => {
     if (user) {
       // Join a room with the user's ID for receiving notifications
-      socket.emit('joinRoom', user.id);
+      socket.emit("joinRoom", user.id);
       console.log(`User joined room: ${user.id}`);
-      
+
       return () => {
         // No need to disconnect, socket will handle reconnection automatically
       };
@@ -31,7 +38,7 @@ function AppContent({ Component, pageProps }) {
   }, [user]);
 
   // Determine if the current route should use the layout
-  const isPublicPage = ['/login', '/register'].includes(router.pathname);
+  const isPublicPage = ["/login", "/register"].includes(router.pathname);
 
   if (isPublicPage) {
     return <Component {...pageProps} />;
@@ -50,4 +57,4 @@ export default function MyApp({ Component, pageProps }) {
       <AppContent Component={Component} pageProps={pageProps} />
     </AuthProvider>
   );
-} 
+}

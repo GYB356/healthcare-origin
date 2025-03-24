@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { FiClock, FiAlertCircle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useState, useEffect } from "react";
+import { FiClock, FiAlertCircle, FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { useAuth } from "../../contexts/AuthContext";
 
 const BAAVersionHistory = ({ baaId, onCompareClick }) => {
   const { currentUser } = useAuth();
   const [versions, setVersions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [expandedVersion, setExpandedVersion] = useState(null);
   const [selectedVersions, setSelectedVersions] = useState([]);
   const [compareEnabled, setCompareEnabled] = useState(false);
@@ -20,19 +20,19 @@ const BAAVersionHistory = ({ baaId, onCompareClick }) => {
       setLoading(true);
       const response = await fetch(`/api/hipaa/baa/${baaId}/versions`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch BAA version history');
+        throw new Error("Failed to fetch BAA version history");
       }
 
       const data = await response.json();
       setVersions(data);
     } catch (err) {
-      console.error('Error fetching BAA version history:', err);
-      setError('Failed to load version history');
+      console.error("Error fetching BAA version history:", err);
+      setError("Failed to load version history");
     } finally {
       setLoading(false);
     }
@@ -44,13 +44,13 @@ const BAAVersionHistory = ({ baaId, onCompareClick }) => {
 
   const getChangeDescription = (changes) => {
     const descriptions = [];
-    if (changes.terms) descriptions.push('Terms updated');
+    if (changes.terms) descriptions.push("Terms updated");
     if (changes.status) descriptions.push(`Status changed to ${changes.status}`);
-    if (changes.expirationDate) descriptions.push('Expiration date modified');
-    return descriptions.join(', ');
+    if (changes.expirationDate) descriptions.push("Expiration date modified");
+    return descriptions.join(", ");
   };
 
-  if (!currentUser || currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== "admin") {
     return (
       <div className="p-4">
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
@@ -71,8 +71,8 @@ const BAAVersionHistory = ({ baaId, onCompareClick }) => {
 
   const handleVersionSelect = (version) => {
     // Toggle selection
-    if (selectedVersions.some(v => v.id === version.id)) {
-      setSelectedVersions(selectedVersions.filter(v => v.id !== version.id));
+    if (selectedVersions.some((v) => v.id === version.id)) {
+      setSelectedVersions(selectedVersions.filter((v) => v.id !== version.id));
     } else {
       // Limit to 2 selections
       if (selectedVersions.length < 2) {
@@ -105,7 +105,7 @@ const BAAVersionHistory = ({ baaId, onCompareClick }) => {
         <button
           onClick={handleCompareClick}
           disabled={!compareEnabled}
-          className={`px-3 py-1 rounded text-sm ${compareEnabled ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+          className={`px-3 py-1 rounded text-sm ${compareEnabled ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
         >
           Compare Selected ({selectedVersions.length}/2)
         </button>
@@ -132,28 +132,31 @@ const BAAVersionHistory = ({ baaId, onCompareClick }) => {
         <div className="border-t border-gray-200">
           <ul className="divide-y divide-gray-200">
             {versions.map((version) => (
-              <li key={version.id} className={`hover:bg-gray-50 ${selectedVersions.some(v => v.id === version.id) ? 'bg-blue-50' : ''}`}>
+              <li
+                key={version.id}
+                className={`hover:bg-gray-50 ${selectedVersions.some((v) => v.id === version.id) ? "bg-blue-50" : ""}`}
+              >
                 <div className="absolute left-4 top-4">
                   <input
                     type="checkbox"
-                    checked={selectedVersions.some(v => v.id === version.id)}
+                    checked={selectedVersions.some((v) => v.id === version.id)}
                     onChange={() => handleVersionSelect(version)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                 </div>
                 <div className="px-4 py-4 sm:px-6">
-                  <div 
+                  <div
                     className="flex items-center justify-between cursor-pointer"
-                    onClick={() => setExpandedVersion(expandedVersion === version.id ? null : version.id)}
+                    onClick={() =>
+                      setExpandedVersion(expandedVersion === version.id ? null : version.id)
+                    }
                   >
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-blue-600">
                           Version {version.versionNumber}
                         </p>
-                        <p className="text-sm text-gray-500">
-                          {formatDate(version.timestamp)}
-                        </p>
+                        <p className="text-sm text-gray-500">{formatDate(version.timestamp)}</p>
                       </div>
                       <div className="mt-2 text-sm text-gray-500">
                         <p>Modified by: {version.modifiedBy}</p>
@@ -177,7 +180,7 @@ const BAAVersionHistory = ({ baaId, onCompareClick }) => {
                               {field.charAt(0).toUpperCase() + field.slice(1)}
                             </div>
                             <div className="col-span-2 text-sm text-gray-900">
-                              {typeof value === 'object' ? JSON.stringify(value, null, 2) : value}
+                              {typeof value === "object" ? JSON.stringify(value, null, 2) : value}
                             </div>
                           </div>
                         ))}

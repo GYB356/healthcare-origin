@@ -1,14 +1,14 @@
-import React from 'react';
-import { FiImage, FiDownload, FiEye, FiFilter, FiShare2 } from 'react-icons/fi';
+import React from "react";
+import { FiImage, FiDownload, FiEye, FiFilter, FiShare2 } from "react-icons/fi";
 
 // Inline PageLayout component
-const PageLayout = ({ 
-  title, 
-  description, 
-  bgColor = "bg-blue-600", 
-  textColor = "text-blue-100", 
+const PageLayout = ({
+  title,
+  description,
+  bgColor = "bg-blue-600",
+  textColor = "text-blue-100",
   children,
-  actions
+  actions,
 }) => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-screen-xl">
@@ -19,18 +19,12 @@ const PageLayout = ({
               <h1 className="text-2xl font-bold">{title}</h1>
               <p className={`mt-2 ${textColor}`}>{description}</p>
             </div>
-            {actions && (
-              <div className="ml-4">
-                {actions}
-              </div>
-            )}
+            {actions && <div className="ml-4">{actions}</div>}
           </div>
         </div>
       </div>
-      
-      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">
-        {children}
-      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">{children}</div>
     </div>
   );
 };
@@ -52,41 +46,41 @@ const ImagingPage = () => {
   // Sample imaging studies
   const imagingStudies = [
     {
-      id: 'IMG-2024-003',
-      name: 'Chest X-Ray',
-      date: '2024-01-15',
-      provider: 'City General Hospital',
-      type: 'X-Ray',
-      bodyPart: 'Chest',
-      status: 'Available'
+      id: "IMG-2024-003",
+      name: "Chest X-Ray",
+      date: "2024-01-15",
+      provider: "City General Hospital",
+      type: "X-Ray",
+      bodyPart: "Chest",
+      status: "Available",
     },
     {
-      id: 'IMG-2023-018',
-      name: 'MRI - Right Knee',
-      date: '2023-11-22',
-      provider: 'Orthopedic Specialty Center',
-      type: 'MRI',
-      bodyPart: 'Knee',
-      status: 'Available'
+      id: "IMG-2023-018",
+      name: "MRI - Right Knee",
+      date: "2023-11-22",
+      provider: "Orthopedic Specialty Center",
+      type: "MRI",
+      bodyPart: "Knee",
+      status: "Available",
     },
     {
-      id: 'IMG-2023-012',
-      name: 'Abdominal Ultrasound',
-      date: '2023-10-05',
-      provider: 'City General Hospital',
-      type: 'Ultrasound',
-      bodyPart: 'Abdomen',
-      status: 'Available'
+      id: "IMG-2023-012",
+      name: "Abdominal Ultrasound",
+      date: "2023-10-05",
+      provider: "City General Hospital",
+      type: "Ultrasound",
+      bodyPart: "Abdomen",
+      status: "Available",
     },
     {
-      id: 'IMG-2023-009',
-      name: 'CT Scan - Head',
-      date: '2023-08-17',
-      provider: 'Neurology Center',
-      type: 'CT Scan',
-      bodyPart: 'Head',
-      status: 'Available'
-    }
+      id: "IMG-2023-009",
+      name: "CT Scan - Head",
+      date: "2023-08-17",
+      provider: "Neurology Center",
+      type: "CT Scan",
+      bodyPart: "Head",
+      status: "Available",
+    },
   ];
 
   return (
@@ -116,10 +110,13 @@ const ImagingPage = () => {
             </select>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
           {imagingStudies.map((study, index) => (
-            <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <div
+              key={index}
+              className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+            >
               <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
                 <div className="flex items-center">
                   <FiImage className="text-green-600 mr-2" />
@@ -161,7 +158,7 @@ const ImagingPage = () => {
           ))}
         </div>
       </div>
-      
+
       <div className="mt-8 bg-gray-50 dark:bg-gray-700 rounded-lg p-6 text-center">
         <p className="text-gray-600 dark:text-gray-300">
           This page is under development. Check back soon for more imaging management features.

@@ -1,20 +1,20 @@
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
-import PatientLayout from '../../components/layouts/PatientLayout';
-import PatientProfile from '../../components/patient/PatientProfile';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import PatientLayout from "../../components/layouts/PatientLayout";
+import PatientProfile from "../../components/patient/PatientProfile";
 
 export default function PatientProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
     }
   }, [status, router]);
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -30,12 +30,10 @@ export default function PatientProfilePage() {
     <PatientLayout>
       <div className="max-w-7xl mx-auto">
         <div className="px-4 py-6 sm:px-0">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            Patient Profile
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Patient Profile</h1>
           <PatientProfile />
         </div>
       </div>
     </PatientLayout>
   );
-} 
+}

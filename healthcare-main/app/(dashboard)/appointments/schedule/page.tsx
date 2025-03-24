@@ -1,125 +1,133 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Calendar } from "@/components/ui/calendar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { format } from "date-fns"
-import { toast } from "sonner"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface TimeSlot {
-  time: string
-  available: boolean
+  time: string;
+  available: boolean;
 }
 
 export default function ScheduleAppointment() {
-  const router = useRouter()
-  const [date, setDate] = useState<Date | undefined>(new Date())
-  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
-  const [selectedTime, setSelectedTime] = useState("")
-  const [patientName, setPatientName] = useState("")
-  const [patientEmail, setPatientEmail] = useState("")
-  const [reason, setReason] = useState("")
-  const [duration, setDuration] = useState("30")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const router = useRouter();
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
+  const [selectedTime, setSelectedTime] = useState("");
+  const [patientName, setPatientName] = useState("");
+  const [patientEmail, setPatientEmail] = useState("");
+  const [reason, setReason] = useState("");
+  const [duration, setDuration] = useState("30");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (date) {
-      fetchAvailableSlots(date)
+      fetchAvailableSlots(date);
     }
-  }, [date])
+  }, [date]);
 
   const fetchAvailableSlots = async (selectedDate: Date) => {
     try {
-      setLoading(true)
-      const response = await fetch(`/api/appointments/available-slots?date=${format(selectedDate, 'yyyy-MM-dd')}`)
-      const data = await response.json()
-      
+      setLoading(true);
+      const response = await fetch(
+        `/api/appointments/available-slots?date=${format(selectedDate, "yyyy-MM-dd")}`,
+      );
+      const data = await response.json();
+
       if (response.ok) {
-        setAvailableSlots(data.slots)
-        setError("")
+        setAvailableSlots(data.slots);
+        setError("");
       } else {
-        setError(data.error || "Failed to fetch available slots")
+        setError(data.error || "Failed to fetch available slots");
       }
     } catch (err) {
-      setError("Failed to fetch available time slots")
-      console.error(err)
+      setError("Failed to fetch available time slots");
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!validateForm()) {
-      return
+      return;
     }
 
     try {
-      setLoading(true)
-      const response = await fetch('/api/appointments', {
-        method: 'POST',
+      setLoading(true);
+      const response = await fetch("/api/appointments", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          date: format(date!, 'yyyy-MM-dd'),
+          date: format(date!, "yyyy-MM-dd"),
           time: selectedTime,
           patientName,
           patientEmail,
           reason,
           duration: parseInt(duration),
         }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        toast.success("Appointment scheduled successfully!")
-        router.push('/dashboard')
+        toast.success("Appointment scheduled successfully!");
+        router.push("/dashboard");
       } else {
-        setError(data.error || "Failed to schedule appointment")
-        toast.error(data.error || "Failed to schedule appointment")
+        setError(data.error || "Failed to schedule appointment");
+        toast.error(data.error || "Failed to schedule appointment");
       }
     } catch (err) {
-      setError("Failed to schedule appointment")
-      toast.error("Failed to schedule appointment")
-      console.error(err)
+      setError("Failed to schedule appointment");
+      toast.error("Failed to schedule appointment");
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const validateForm = () => {
     if (!date) {
-      toast.error("Please select a date")
-      return false
+      toast.error("Please select a date");
+      return false;
     }
     if (!selectedTime) {
-      toast.error("Please select a time slot")
-      return false
+      toast.error("Please select a time slot");
+      return false;
     }
     if (!patientName.trim()) {
-      toast.error("Please enter patient name")
-      return false
+      toast.error("Please enter patient name");
+      return false;
     }
     if (!patientEmail.trim()) {
-      toast.error("Please enter patient email")
-      return false
+      toast.error("Please enter patient email");
+      return false;
     }
     if (!reason.trim()) {
-      toast.error("Please enter appointment reason")
-      return false
+      toast.error("Please enter appointment reason");
+      return false;
     }
-    return true
-  }
+    return true;
+  };
 
   return (
     <div className="container mx-auto py-10">
@@ -138,7 +146,9 @@ export default function ScheduleAppointment() {
                     selected={date}
                     onSelect={setDate}
                     className="rounded-md border"
-                    disabled={(date) => date < new Date() || date.getDay() === 0 || date.getDay() === 6}
+                    disabled={(date) =>
+                      date < new Date() || date.getDay() === 0 || date.getDay() === 6
+                    }
                   />
                 </div>
 
@@ -216,11 +226,7 @@ export default function ScheduleAppointment() {
               </div>
             </div>
 
-            {error && (
-              <div className="bg-red-50 text-red-600 p-3 rounded-md">
-                {error}
-              </div>
-            )}
+            {error && <div className="bg-red-50 text-red-600 p-3 rounded-md">{error}</div>}
 
             <div className="flex justify-end">
               <Button type="submit" disabled={loading}>
@@ -231,5 +237,5 @@ export default function ScheduleAppointment() {
         </CardContent>
       </Card>
     </div>
-  )
-} 
+  );
+}

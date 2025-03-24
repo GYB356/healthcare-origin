@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -13,25 +13,25 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { toast } from "sonner"
-import { Upload, X, ArrowLeft } from "lucide-react"
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "sonner";
+import { Upload, X, ArrowLeft } from "lucide-react";
 
 const formSchema = z.object({
   recordType: z.string().min(1, "Record type is required"),
   description: z.string().min(1, "Description is required"),
-})
+});
 
 const recordTypes = [
   "Consultation",
@@ -41,33 +41,31 @@ const recordTypes = [
   "Surgery",
   "Vaccination",
   "Other",
-]
+];
 
 interface MedicalRecord {
-  id: string
-  patientName: string
-  patientEmail: string
-  doctorName: string
-  recordType: string
-  date: string
-  description: string
+  id: string;
+  patientName: string;
+  patientEmail: string;
+  doctorName: string;
+  recordType: string;
+  date: string;
+  description: string;
   attachments: {
-    id: string
-    name: string
-    url: string
-  }[]
+    id: string;
+    name: string;
+    url: string;
+  }[];
 }
 
 export default function EditMedicalRecordPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { data: session } = useSession()
-  const [record, setRecord] = useState<MedicalRecord | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [files, setFiles] = useState<File[]>([])
-  const [existingAttachments, setExistingAttachments] = useState<
-    MedicalRecord["attachments"]
-  >([])
+  const params = useParams();
+  const router = useRouter();
+  const { data: session } = useSession();
+  const [record, setRecord] = useState<MedicalRecord | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [files, setFiles] = useState<File[]>([]);
+  const [existingAttachments, setExistingAttachments] = useState<MedicalRecord["attachments"]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,57 +73,57 @@ export default function EditMedicalRecordPage() {
       recordType: "",
       description: "",
     },
-  })
+  });
 
   useEffect(() => {
     const fetchRecord = async () => {
       try {
-        const response = await fetch(`/api/medical-records/${params.id}`)
+        const response = await fetch(`/api/medical-records/${params.id}`);
         if (!response.ok) {
-          throw new Error("Failed to fetch record")
+          throw new Error("Failed to fetch record");
         }
-        const data = await response.json()
-        setRecord(data)
-        setExistingAttachments(data.attachments)
+        const data = await response.json();
+        setRecord(data);
+        setExistingAttachments(data.attachments);
         form.reset({
           recordType: data.recordType,
           description: data.description,
-        })
+        });
       } catch (error) {
-        console.error("Error fetching medical record:", error)
-        toast.error("Failed to load medical record")
+        console.error("Error fetching medical record:", error);
+        toast.error("Failed to load medical record");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchRecord()
-  }, [params.id, form])
+    fetchRecord();
+  }, [params.id, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       // First, upload any new files
       const uploadedFiles = await Promise.all(
         files.map(async (file) => {
-          const formData = new FormData()
-          formData.append("file", file)
+          const formData = new FormData();
+          formData.append("file", file);
 
           const response = await fetch("/api/upload", {
             method: "POST",
             body: formData,
-          })
+          });
 
           if (!response.ok) {
-            throw new Error("Failed to upload file")
+            throw new Error("Failed to upload file");
           }
 
-          const data = await response.json()
+          const data = await response.json();
           return {
             name: file.name,
             url: data.url,
-          }
-        })
-      )
+          };
+        }),
+      );
 
       // Then update the medical record with both existing and new attachments
       const response = await fetch(`/api/medical-records/${params.id}`, {
@@ -137,53 +135,50 @@ export default function EditMedicalRecordPage() {
           ...values,
           attachments: [...existingAttachments, ...uploadedFiles],
         }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to update medical record")
+        throw new Error("Failed to update medical record");
       }
 
-      toast.success("Medical record updated successfully")
-      router.push(`/medical-records/${params.id}`)
-      router.refresh()
+      toast.success("Medical record updated successfully");
+      router.push(`/medical-records/${params.id}`);
+      router.refresh();
     } catch (error) {
-      console.error("Error updating medical record:", error)
-      toast.error("Failed to update medical record")
+      console.error("Error updating medical record:", error);
+      toast.error("Failed to update medical record");
     }
-  }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles(Array.from(e.target.files))
+      setFiles(Array.from(e.target.files));
     }
-  }
+  };
 
   const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index))
-  }
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const removeExistingAttachment = (id: string) => {
-    setExistingAttachments((prev) => prev.filter((att) => att.id !== id))
-  }
+    setExistingAttachments((prev) => prev.filter((att) => att.id !== id));
+  };
 
   if (loading) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   if (!record) {
-    return <div>Record not found</div>
+    return <div>Record not found</div>;
   }
 
   if (session?.user.role !== "DOCTOR") {
-    return <div>Unauthorized</div>
+    return <div>Unauthorized</div>;
   }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Button
-        variant="ghost"
-        onClick={() => router.back()}
-      >
+      <Button variant="ghost" onClick={() => router.back()}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back
       </Button>
@@ -201,10 +196,7 @@ export default function EditMedicalRecordPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Record Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select record type" />
@@ -312,5 +304,5 @@ export default function EditMedicalRecordPage() {
         </CardContent>
       </Card>
     </div>
-  )
-} 
+  );
+}

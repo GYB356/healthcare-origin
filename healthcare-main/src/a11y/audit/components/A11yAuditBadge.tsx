@@ -1,6 +1,6 @@
 // src/a11y/audit/components/A11yAuditBadge.tsx
-import React, { useState } from 'react';
-import { A11yAuditResult } from '../a11yAudit';
+import React, { useState } from "react";
+import { A11yAuditResult } from "../a11yAudit";
 
 interface A11yAuditBadgeProps {
   results: A11yAuditResult | null;
@@ -8,7 +8,7 @@ interface A11yAuditBadgeProps {
   showDetails?: boolean;
   onRunAudit?: () => void;
   className?: string;
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
 }
 
 /**
@@ -18,79 +18,79 @@ interface A11yAuditBadgeProps {
 const A11yAuditBadge: React.FC<A11yAuditBadgeProps> = ({
   results,
   isAuditing = false,
-  showDetails = false, 
+  showDetails = false,
   onRunAudit,
-  className = '',
-  position = 'bottom-right',
+  className = "",
+  position = "bottom-right",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   // Get the count of violations by impact
   const getViolationCounts = () => {
     if (!results) return { total: 0, critical: 0, serious: 0 };
-    
-    const critical = results.violations.filter(v => v.impact === 'critical').length;
-    const serious = results.violations.filter(v => v.impact === 'serious').length;
-    
+
+    const critical = results.violations.filter((v) => v.impact === "critical").length;
+    const serious = results.violations.filter((v) => v.impact === "serious").length;
+
     return {
       total: results.violations.length,
       critical,
       serious,
     };
   };
-  
+
   const { total, critical, serious } = getViolationCounts();
-  
+
   // Determine badge status and color
   const getBadgeStatus = () => {
-    if (isAuditing) return 'auditing';
-    if (!results) return 'unknown';
-    if (total === 0) return 'passed';
-    if (critical > 0) return 'critical';
-    if (serious > 0) return 'serious';
-    return 'warning';
+    if (isAuditing) return "auditing";
+    if (!results) return "unknown";
+    if (total === 0) return "passed";
+    if (critical > 0) return "critical";
+    if (serious > 0) return "serious";
+    return "warning";
   };
-  
+
   const status = getBadgeStatus();
-  
+
   // Get badge title based on status
   const getBadgeTitle = () => {
     switch (status) {
-      case 'auditing':
-        return 'Running accessibility audit...';
-      case 'unknown':
-        return 'Accessibility audit not run';
-      case 'passed':
-        return 'Accessibility audit passed';
-      case 'critical':
+      case "auditing":
+        return "Running accessibility audit...";
+      case "unknown":
+        return "Accessibility audit not run";
+      case "passed":
+        return "Accessibility audit passed";
+      case "critical":
         return `${total} accessibility violations (${critical} critical)`;
-      case 'serious':
+      case "serious":
         return `${total} accessibility violations (${serious} serious)`;
-      case 'warning':
+      case "warning":
         return `${total} accessibility violations`;
       default:
-        return 'Accessibility status';
+        return "Accessibility status";
     }
   };
-  
+
   // Get badge label
   const getBadgeLabel = () => {
     switch (status) {
-      case 'auditing':
-        return 'Auditing...';
-      case 'unknown':
-        return 'Not Audited';
-      case 'passed':
-        return 'Passed';
-      case 'critical':
-      case 'serious':
-      case 'warning':
+      case "auditing":
+        return "Auditing...";
+      case "unknown":
+        return "Not Audited";
+      case "passed":
+        return "Passed";
+      case "critical":
+      case "serious":
+      case "warning":
         return total;
       default:
-        return '?';
+        return "?";
     }
   };
-  
+
   // Handle badge click
   const handleClick = () => {
     if (isAuditing) return;
@@ -100,7 +100,7 @@ const A11yAuditBadge: React.FC<A11yAuditBadgeProps> = ({
       onRunAudit();
     }
   };
-  
+
   // Handle run audit button click
   const handleRunAudit = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -108,11 +108,9 @@ const A11yAuditBadge: React.FC<A11yAuditBadgeProps> = ({
       onRunAudit();
     }
   };
-  
+
   return (
-    <div 
-      className={`a11y-audit-badge-container a11y-audit-badge-${position} ${className}`}
-    >
+    <div className={`a11y-audit-badge-container a11y-audit-badge-${position} ${className}`}>
       {/* Details panel (when expanded) */}
       {isExpanded && showDetails && (
         <div className="a11y-audit-badge-details">
@@ -126,7 +124,7 @@ const A11yAuditBadge: React.FC<A11yAuditBadgeProps> = ({
               ×
             </button>
           </div>
-          
+
           <div className="a11y-audit-badge-details-content">
             {!results ? (
               <p>No audit results available.</p>
@@ -146,14 +144,14 @@ const A11yAuditBadge: React.FC<A11yAuditBadgeProps> = ({
                     <span className="a11y-audit-badge-stat-value">{serious}</span>
                   </div>
                 </div>
-                
+
                 {total > 0 ? (
                   <div className="a11y-audit-badge-violations">
                     <h5>Violations</h5>
                     <ul className="a11y-audit-badge-violations-list">
                       {results.violations.map((violation) => (
-                        <li 
-                          key={violation.id} 
+                        <li
+                          key={violation.id}
                           className={`a11y-audit-badge-violation a11y-audit-badge-violation-${violation.impact}`}
                         >
                           <div className="a11y-audit-badge-violation-header">
@@ -187,7 +185,7 @@ const A11yAuditBadge: React.FC<A11yAuditBadgeProps> = ({
               </>
             )}
           </div>
-          
+
           <div className="a11y-audit-badge-details-footer">
             {onRunAudit && (
               <button
@@ -195,7 +193,7 @@ const A11yAuditBadge: React.FC<A11yAuditBadgeProps> = ({
                 onClick={handleRunAudit}
                 disabled={isAuditing}
               >
-                {isAuditing ? 'Auditing...' : 'Run Audit'}
+                {isAuditing ? "Auditing..." : "Run Audit"}
               </button>
             )}
             <button
@@ -207,7 +205,7 @@ const A11yAuditBadge: React.FC<A11yAuditBadgeProps> = ({
           </div>
         </div>
       )}
-      
+
       {/* Badge */}
       <button
         className={`a11y-audit-badge a11y-audit-badge-${status}`}
@@ -218,14 +216,12 @@ const A11yAuditBadge: React.FC<A11yAuditBadgeProps> = ({
         aria-expanded={isExpanded}
       >
         <span className="a11y-audit-badge-icon">
-          {status === 'passed' && '✓'}
-          {(status === 'critical' || status === 'serious' || status === 'warning') && '!'}
-          {status === 'unknown' && '?'}
-          {status === 'auditing' && '⟳'}
+          {status === "passed" && "✓"}
+          {(status === "critical" || status === "serious" || status === "warning") && "!"}
+          {status === "unknown" && "?"}
+          {status === "auditing" && "⟳"}
         </span>
-        <span className="a11y-audit-badge-label">
-          {getBadgeLabel()}
-        </span>
+        <span className="a11y-audit-badge-label">{getBadgeLabel()}</span>
       </button>
     </div>
   );

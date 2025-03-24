@@ -1,20 +1,20 @@
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
 export default function SignIn() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn("credentials", {
         redirect: false,
         email,
         password,
@@ -25,9 +25,9 @@ export default function SignIn() {
         return;
       }
 
-      router.push('/');
+      router.push("/");
     } catch (error) {
-      setError('An error occurred during sign in');
+      setError("An error occurred during sign in");
     }
   };
 
@@ -95,4 +95,4 @@ export default function SignIn() {
       </div>
     </div>
   );
-} 
+}

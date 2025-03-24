@@ -1,8 +1,8 @@
-const { faker } = require('@faker-js/faker');
+const { faker } = require("@faker-js/faker");
 
-const createUserData = (role = 'patient') => ({
+const createUserData = (role = "patient") => ({
   email: faker.internet.email(),
-  password: 'test123',
+  password: "test123",
   firstName: faker.person.firstName(),
   lastName: faker.person.lastName(),
   role,
@@ -16,8 +16,8 @@ const createAppointmentData = (doctorId, patientId) => ({
   patientId,
   date: faker.date.future().toISOString(),
   time: faker.date.recent().toISOString(),
-  status: 'scheduled',
-  type: faker.helpers.arrayElement(['checkup', 'consultation', 'follow-up']),
+  status: "scheduled",
+  type: faker.helpers.arrayElement(["checkup", "consultation", "follow-up"]),
   notes: faker.lorem.paragraph(),
 });
 
@@ -52,10 +52,10 @@ const createPrescriptionData = (doctorId, patientId, appointmentId) => ({
   appointmentId,
   medications: [
     {
-      name: faker.helpers.arrayElement(['Amoxicillin', 'Ibuprofen', 'Aspirin']),
-      dosage: faker.helpers.arrayElement(['500mg', '1000mg', '250mg']),
-      frequency: faker.helpers.arrayElement(['Once daily', 'Twice daily', 'Three times daily']),
-      duration: faker.helpers.arrayElement(['7 days', '14 days', '30 days']),
+      name: faker.helpers.arrayElement(["Amoxicillin", "Ibuprofen", "Aspirin"]),
+      dosage: faker.helpers.arrayElement(["500mg", "1000mg", "250mg"]),
+      frequency: faker.helpers.arrayElement(["Once daily", "Twice daily", "Three times daily"]),
+      duration: faker.helpers.arrayElement(["7 days", "14 days", "30 days"]),
     },
   ],
   notes: faker.lorem.paragraph(),
@@ -69,4 +69,4 @@ module.exports = {
   createMessageData,
   createNotificationData,
   createPrescriptionData,
-}; 
+};

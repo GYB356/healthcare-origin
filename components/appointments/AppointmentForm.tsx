@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
-import { format } from 'date-fns';
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
+import { format } from "date-fns";
 
 interface User {
   id: string;
@@ -42,17 +42,17 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
     setValue,
   } = useForm<AppointmentFormData>({
     defaultValues: appointment || {
-      title: '',
-      notes: '',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      startTime: '09:00',
-      endTime: '10:00',
+      title: "",
+      notes: "",
+      date: format(new Date(), "yyyy-MM-dd"),
+      startTime: "09:00",
+      endTime: "10:00",
       isVirtual: false,
-      status: 'SCHEDULED',
+      status: "SCHEDULED",
     },
   });
 
-  const isVirtual = watch('isVirtual');
+  const isVirtual = watch("isVirtual");
 
   useEffect(() => {
     fetchUsers();
@@ -61,19 +61,19 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
   const fetchUsers = async () => {
     try {
       // Fetch doctors
-      const doctorsResponse = await fetch('/api/users?role=DOCTOR');
-      if (!doctorsResponse.ok) throw new Error('Failed to fetch doctors');
+      const doctorsResponse = await fetch("/api/users?role=DOCTOR");
+      if (!doctorsResponse.ok) throw new Error("Failed to fetch doctors");
       const doctorsData = await doctorsResponse.json();
       setDoctors(doctorsData);
 
       // Fetch patients
-      const patientsResponse = await fetch('/api/users?role=PATIENT');
-      if (!patientsResponse.ok) throw new Error('Failed to fetch patients');
+      const patientsResponse = await fetch("/api/users?role=PATIENT");
+      if (!patientsResponse.ok) throw new Error("Failed to fetch patients");
       const patientsData = await patientsResponse.json();
       setPatients(patientsData);
     } catch (error) {
-      console.error('Error fetching users:', error);
-      toast.error('Failed to load users');
+      console.error("Error fetching users:", error);
+      toast.error("Failed to load users");
     }
   };
 
@@ -81,10 +81,10 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
     try {
       setLoading(true);
       await onSubmit(data);
-      toast.success('Appointment saved successfully');
+      toast.success("Appointment saved successfully");
     } catch (error) {
-      console.error('Error saving appointment:', error);
-      toast.error('Failed to save appointment');
+      console.error("Error saving appointment:", error);
+      toast.error("Failed to save appointment");
     } finally {
       setLoading(false);
     }
@@ -99,12 +99,10 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
         <input
           type="text"
           id="title"
-          {...register('title', { required: 'Title is required' })}
+          {...register("title", { required: "Title is required" })}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
-        {errors.title && (
-          <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-        )}
+        {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -115,12 +113,10 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
           <input
             type="date"
             id="date"
-            {...register('date', { required: 'Date is required' })}
+            {...register("date", { required: "Date is required" })}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
-          {errors.date && (
-            <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>
-          )}
+          {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>}
         </div>
 
         <div>
@@ -129,7 +125,7 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
           </label>
           <select
             id="status"
-            {...register('status')}
+            {...register("status")}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="SCHEDULED">Scheduled</option>
@@ -148,7 +144,7 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
           <input
             type="time"
             id="startTime"
-            {...register('startTime', { required: 'Start time is required' })}
+            {...register("startTime", { required: "Start time is required" })}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
           {errors.startTime && (
@@ -163,12 +159,10 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
           <input
             type="time"
             id="endTime"
-            {...register('endTime', { required: 'End time is required' })}
+            {...register("endTime", { required: "End time is required" })}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
-          {errors.endTime && (
-            <p className="mt-1 text-sm text-red-600">{errors.endTime.message}</p>
-          )}
+          {errors.endTime && <p className="mt-1 text-sm text-red-600">{errors.endTime.message}</p>}
         </div>
       </div>
 
@@ -179,7 +173,7 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
           </label>
           <select
             id="doctorId"
-            {...register('doctorId', { required: 'Doctor is required' })}
+            {...register("doctorId", { required: "Doctor is required" })}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="">Select a doctor</option>
@@ -200,7 +194,7 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
           </label>
           <select
             id="patientId"
-            {...register('patientId', { required: 'Patient is required' })}
+            {...register("patientId", { required: "Patient is required" })}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="">Select a patient</option>
@@ -221,7 +215,7 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
           <input
             type="checkbox"
             id="isVirtual"
-            {...register('isVirtual')}
+            {...register("isVirtual")}
             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <label htmlFor="isVirtual" className="ml-2 block text-sm text-gray-700">
@@ -237,11 +231,11 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
             <input
               type="url"
               id="virtualLink"
-              {...register('virtualLink', {
-                required: isVirtual ? 'Virtual meeting link is required' : false,
+              {...register("virtualLink", {
+                required: isVirtual ? "Virtual meeting link is required" : false,
                 pattern: {
                   value: /^https?:\/\/.+/i,
-                  message: 'Please enter a valid URL',
+                  message: "Please enter a valid URL",
                 },
               })}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -261,7 +255,7 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
         <textarea
           id="notes"
           rows={3}
-          {...register('notes')}
+          {...register("notes")}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
@@ -279,9 +273,9 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel }: App
           disabled={loading}
           className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
         >
-          {loading ? 'Saving...' : 'Save'}
+          {loading ? "Saving..." : "Save"}
         </button>
       </div>
     </form>
   );
-} 
+}

@@ -1,7 +1,7 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
-import { PrismaClient } from '@prisma/client';
-import { getIO } from '../../../lib/socket';
+import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
+import { PrismaClient } from "@prisma/client";
+import { getIO } from "../../../lib/socket";
 
 const prisma = new PrismaClient();
 
@@ -9,16 +9,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const session = await getSession({ req });
 
   if (!session?.user?.id) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     try {
       const { content, conversationId, receiverId } = req.body;
 
       // Validate input
       if (!content || !conversationId || !receiverId) {
-        return res.status(400).json({ error: 'Missing required fields' });
+        return res.status(400).json({ error: "Missing required fields" });
       }
 
       // Verify conversation exists and user is part of it
@@ -31,14 +31,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       if (!conversation) {
-        return res.status(404).json({ error: 'Conversation not found' });
+        return res.status(404).json({ error: "Conversation not found" });
       }
 
-      if (
-        conversation.doctorId !== session.user.id &&
-        conversation.patientId !== session.user.id
-      ) {
-        return res.status(403).json({ error: 'Not authorized to send messages in this conversation' });
+      if (conversation.doctorId !== session.user.id && conversation.patientId !== session.user.id) {
+        return res
+          .status(403)
+          .json({ error: "Not authorized to send messages in this conversation" });
       }
 
       // Create message
@@ -63,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Emit new message event through WebSocket
       const io = getIO();
       if (io) {
-        io.to(conversationId).emit('new_message', message);
+        io.to(conversationId).emit("new_message", message);
 
         // Update unread count for receiver
         const unreadCount = await prisma.message.count({
@@ -72,15 +71,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             read: false,
           },
         });
-        io.to(receiverId).emit('unread_count_update', unreadCount);
+        io.to(receiverId).emit("unread_count_update", unreadCount);
       }
 
       return res.status(201).json(message);
     } catch (error) {
-      console.error('Error creating message:', error);
-      return res.status(500).json({ error: 'Failed to create message' });
+      console.error("Error creating message:", error);
+      return res.status(500).json({ error: "Failed to create message" });
     }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
-} 
+  return res.status(405).json({ error: "Method not allowed" });
+}

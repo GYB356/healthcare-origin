@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
-import ReportViewer from '../components/ReportViewer';
-import { 
-  Box, 
-  Container, 
-  Heading, 
-  Text, 
-  Button, 
-  Flex, 
-  Spinner, 
-  Alert, 
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+import ReportViewer from "../components/ReportViewer";
+import {
+  Box,
+  Container,
+  Heading,
+  Text,
+  Button,
+  Flex,
+  Spinner,
+  Alert,
   AlertIcon,
   Divider,
   Badge,
-  HStack
-} from '@chakra-ui/react';
-import { ArrowBackIcon, CalendarIcon, TimeIcon, InfoIcon } from '@chakra-ui/icons';
+  HStack,
+} from "@chakra-ui/react";
+import { ArrowBackIcon, CalendarIcon, TimeIcon, InfoIcon } from "@chakra-ui/icons";
 
 interface Appointment {
   _id: string;
@@ -48,19 +48,19 @@ const AppointmentReports: React.FC = () => {
   useEffect(() => {
     const fetchAppointment = async () => {
       if (!appointmentId) return;
-      
+
       try {
         setLoading(true);
         const response = await axios.get(`/api/appointments/${appointmentId}`, {
           headers: {
-            'x-auth-token': token
-          }
+            "x-auth-token": token,
+          },
         });
         setAppointment(response.data);
         setError(null);
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to fetch appointment details');
-        console.error('Error fetching appointment:', err);
+        setError(err.response?.data?.message || "Failed to fetch appointment details");
+        console.error("Error fetching appointment:", err);
       } finally {
         setLoading(false);
       }
@@ -77,14 +77,14 @@ const AppointmentReports: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'completed':
-        return 'green';
-      case 'scheduled':
-        return 'blue';
-      case 'cancelled':
-        return 'red';
+      case "completed":
+        return "green";
+      case "scheduled":
+        return "blue";
+      case "cancelled":
+        return "red";
       default:
-        return 'gray';
+        return "gray";
     }
   };
 
@@ -154,7 +154,9 @@ const AppointmentReports: React.FC = () => {
 
         <Box mb={4}>
           <Text fontWeight="bold">Doctor:</Text>
-          <Text>{appointment.doctor.name} - {appointment.doctor.specialty}</Text>
+          <Text>
+            {appointment.doctor.name} - {appointment.doctor.specialty}
+          </Text>
         </Box>
 
         <Box mb={4}>
@@ -172,8 +174,8 @@ const AppointmentReports: React.FC = () => {
 
       <Divider my={6} />
 
-      {appointment.status.toLowerCase() === 'completed' ? (
-        <ReportViewer appointmentId={appointmentId || ''} />
+      {appointment.status.toLowerCase() === "completed" ? (
+        <ReportViewer appointmentId={appointmentId || ""} />
       ) : (
         <Alert status="info">
           <AlertIcon />

@@ -1,19 +1,19 @@
 // src/tests/components/auth/Login.test.js
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import Login from './Login';
-import { AuthContext } from '../../contexts/AuthContext';
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import Login from "./Login";
+import { AuthContext } from "../../contexts/AuthContext";
 
 const mockLogin = jest.fn();
 const mockNavigate = jest.fn();
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => mockNavigate,
 }));
 
-describe('Login Component', () => {
+describe("Login Component", () => {
   beforeEach(() => {
     mockLogin.mockClear();
     mockNavigate.mockClear();
@@ -25,180 +25,180 @@ describe('Login Component', () => {
         <BrowserRouter>
           <Login />
         </BrowserRouter>
-      </AuthContext.Provider>
+      </AuthContext.Provider>,
     );
   };
 
-  it('renders login form', () => {
+  it("renders login form", () => {
     renderLogin();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
   });
 
-  it('handles form submission', async () => {
+  it("handles form submission", async () => {
     renderLogin();
-    const email = 'test@example.com';
-    const password = 'password123';
+    const email = "test@example.com";
+    const password = "password123";
 
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: email } });
     fireEvent.change(screen.getByLabelText(/password/i), { target: { value: password } });
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith(email, password);
     });
   });
 
-  it('shows error message on invalid submission', async () => {
-    mockLogin.mockRejectedValueOnce(new Error('Invalid credentials'));
+  it("shows error message on invalid submission", async () => {
+    mockLogin.mockRejectedValueOnce(new Error("Invalid credentials"));
     renderLogin();
 
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
     });
   });
 
-  it('navigates to dashboard on successful login', async () => {
+  it("navigates to dashboard on successful login", async () => {
     mockLogin.mockResolvedValueOnce({ success: true });
     renderLogin();
 
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+      expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
     });
   });
 });
 
 // src/tests/components/auth/ForgotPassword.test.js
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import ForgotPassword from '../../../components/auth/ForgotPassword';
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import ForgotPassword from "../../../components/auth/ForgotPassword";
 
 // Mock the AuthContext
 const mockResetPassword = jest.fn();
-jest.mock('../../../contexts/AuthContext', () => ({
+jest.mock("../../../contexts/AuthContext", () => ({
   useAuth: () => ({
-    resetPassword: mockResetPassword
-  })
+    resetPassword: mockResetPassword,
+  }),
 }));
 
-describe('ForgotPassword Component', () => {
+describe("ForgotPassword Component", () => {
   beforeEach(() => {
     mockResetPassword.mockClear();
   });
 
-  test('renders forgot password form correctly', () => {
+  test("renders forgot password form correctly", () => {
     render(
       <BrowserRouter>
         <ForgotPassword />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     expect(screen.getByText(/Reset Password/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Email address/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Send Reset Link/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Send Reset Link/i })).toBeInTheDocument();
     expect(screen.getByText(/Back to login/i)).toBeInTheDocument();
   });
 
-  test('shows validation error for empty email', async () => {
+  test("shows validation error for empty email", async () => {
     render(
       <BrowserRouter>
         <ForgotPassword />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /Send Reset Link/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Send Reset Link/i }));
 
     expect(await screen.findByText(/Please enter your email address/i)).toBeInTheDocument();
   });
 
-  test('calls resetPassword with correct email', async () => {
+  test("calls resetPassword with correct email", async () => {
     mockResetPassword.mockResolvedValueOnce({ success: true });
 
     render(
       <BrowserRouter>
         <ForgotPassword />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     fireEvent.change(screen.getByPlaceholderText(/Email address/i), {
-      target: { value: 'test@example.com' }
+      target: { value: "test@example.com" },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Send Reset Link/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Send Reset Link/i }));
 
     await waitFor(() => {
-      expect(mockResetPassword).toHaveBeenCalledWith('test@example.com');
+      expect(mockResetPassword).toHaveBeenCalledWith("test@example.com");
     });
   });
 
-  test('shows success message after sending reset link', async () => {
+  test("shows success message after sending reset link", async () => {
     mockResetPassword.mockResolvedValueOnce({ success: true });
 
     render(
       <BrowserRouter>
         <ForgotPassword />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     fireEvent.change(screen.getByPlaceholderText(/Email address/i), {
-      target: { value: 'test@example.com' }
+      target: { value: "test@example.com" },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Send Reset Link/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Send Reset Link/i }));
 
     expect(await screen.findByText(/Reset link sent!/i)).toBeInTheDocument();
     expect(screen.getByText(/Didn't receive an email?/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Resend Email/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Resend Email/i })).toBeInTheDocument();
   });
 
-  test('handles reset password error correctly', async () => {
-    const errorMessage = 'Email not found';
+  test("handles reset password error correctly", async () => {
+    const errorMessage = "Email not found";
     mockResetPassword.mockRejectedValueOnce(new Error(errorMessage));
 
     render(
       <BrowserRouter>
         <ForgotPassword />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     fireEvent.change(screen.getByPlaceholderText(/Email address/i), {
-      target: { value: 'test@example.com' }
+      target: { value: "test@example.com" },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Send Reset Link/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Send Reset Link/i }));
 
     expect(await screen.findByText(errorMessage)).toBeInTheDocument();
   });
 });
 
 // src/tests/components/auth/ResetPassword.test.js
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import ResetPassword from '../../../components/auth/ResetPassword';
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import ResetPassword from "../../../components/auth/ResetPassword";
 
 // Mock the useParams hook to provide a token
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useParams: () => ({ token: 'test-token' }),
-  useNavigate: () => jest.fn()
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useParams: () => ({ token: "test-token" }),
+  useNavigate: () => jest.fn(),
 }));
 
 // Mock the AuthContext
 const mockConfirmPasswordReset = jest.fn();
-jest.mock('../../../contexts/AuthContext', () => ({
+jest.mock("../../../contexts/AuthContext", () => ({
   useAuth: () => ({
-    confirmPasswordReset: mockConfirmPasswordReset
-  })
+    confirmPasswordReset: mockConfirmPasswordReset,
+  }),
 }));
 
-describe('ResetPassword Component', () => {
+describe("ResetPassword Component", () => {
   beforeEach(() => {
     mockConfirmPasswordReset.mockClear();
     jest.useFakeTimers();
@@ -208,194 +208,192 @@ describe('ResetPassword Component', () => {
     jest.useRealTimers();
   });
 
-  test('renders reset password form correctly', () => {
+  test("renders reset password form correctly", () => {
     render(
       <BrowserRouter>
         <ResetPassword />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     expect(screen.getByText(/Create New Password/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/New password/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Confirm new password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Reset Password/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Reset Password/i })).toBeInTheDocument();
     expect(screen.getByText(/Back to login/i)).toBeInTheDocument();
   });
 
-  test('validates password and confirmation must match', async () => {
+  test("validates password and confirmation must match", async () => {
     render(
       <BrowserRouter>
         <ResetPassword />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     fireEvent.change(screen.getByPlaceholderText(/New password/i), {
-      target: { value: 'Password123!' }
+      target: { value: "Password123!" },
     });
 
     fireEvent.change(screen.getByPlaceholderText(/Confirm new password/i), {
-      target: { value: 'DifferentPassword!' }
+      target: { value: "DifferentPassword!" },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Reset Password/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Reset Password/i }));
 
     expect(await screen.findByText(/Passwords do not match/i)).toBeInTheDocument();
   });
 
-  test('validates password minimum length', async () => {
+  test("validates password minimum length", async () => {
     render(
       <BrowserRouter>
         <ResetPassword />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     fireEvent.change(screen.getByPlaceholderText(/New password/i), {
-      target: { value: 'short' }
+      target: { value: "short" },
     });
 
     fireEvent.change(screen.getByPlaceholderText(/Confirm new password/i), {
-      target: { value: 'short' }
+      target: { value: "short" },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Reset Password/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Reset Password/i }));
 
-    expect(await screen.findByText(/Password must be at least 8 characters long/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Password must be at least 8 characters long/i),
+    ).toBeInTheDocument();
   });
 
-  test('calls confirmPasswordReset with correct data', async () => {
+  test("calls confirmPasswordReset with correct data", async () => {
     mockConfirmPasswordReset.mockResolvedValueOnce({ success: true });
 
     render(
       <BrowserRouter>
         <ResetPassword />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     fireEvent.change(screen.getByPlaceholderText(/New password/i), {
-      target: { value: 'NewSecurePassword123!' }
+      target: { value: "NewSecurePassword123!" },
     });
 
     fireEvent.change(screen.getByPlaceholderText(/Confirm new password/i), {
-      target: { value: 'NewSecurePassword123!' }
+      target: { value: "NewSecurePassword123!" },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Reset Password/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Reset Password/i }));
 
     await waitFor(() => {
-      expect(mockConfirmPasswordReset).toHaveBeenCalledWith(
-        'test-token',
-        'NewSecurePassword123!'
-      );
+      expect(mockConfirmPasswordReset).toHaveBeenCalledWith("test-token", "NewSecurePassword123!");
     });
   });
 
-  test('shows success message after password reset', async () => {
+  test("shows success message after password reset", async () => {
     mockConfirmPasswordReset.mockResolvedValueOnce({ success: true });
 
     render(
       <BrowserRouter>
         <ResetPassword />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     fireEvent.change(screen.getByPlaceholderText(/New password/i), {
-      target: { value: 'NewSecurePassword123!' }
+      target: { value: "NewSecurePassword123!" },
     });
 
     fireEvent.change(screen.getByPlaceholderText(/Confirm new password/i), {
-      target: { value: 'NewSecurePassword123!' }
+      target: { value: "NewSecurePassword123!" },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Reset Password/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Reset Password/i }));
 
     expect(await screen.findByText(/Password successfully reset/i)).toBeInTheDocument();
   });
 
-  test('handles password reset error correctly', async () => {
-    const errorMessage = 'Invalid or expired token';
+  test("handles password reset error correctly", async () => {
+    const errorMessage = "Invalid or expired token";
     mockConfirmPasswordReset.mockRejectedValueOnce(new Error(errorMessage));
 
     render(
       <BrowserRouter>
         <ResetPassword />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     fireEvent.change(screen.getByPlaceholderText(/New password/i), {
-      target: { value: 'NewSecurePassword123!' }
+      target: { value: "NewSecurePassword123!" },
     });
 
     fireEvent.change(screen.getByPlaceholderText(/Confirm new password/i), {
-      target: { value: 'NewSecurePassword123!' }
+      target: { value: "NewSecurePassword123!" },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Reset Password/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Reset Password/i }));
 
     expect(await screen.findByText(errorMessage)).toBeInTheDocument();
   });
 });
 
 // src/tests/hooks/useFormValidation.test.js
-import { renderHook, act } from '@testing-library/react-hooks';
-import useFormValidation from '../../../hooks/useFormValidation';
+import { renderHook, act } from "@testing-library/react-hooks";
+import useFormValidation from "../../../hooks/useFormValidation";
 
-describe('useFormValidation Hook', () => {
+describe("useFormValidation Hook", () => {
   const initialValues = {
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   };
 
   const validate = (values) => {
     const errors = {};
-    
+
     if (!values.email) {
-      errors.email = 'Email is required';
+      errors.email = "Email is required";
     }
-    
+
     if (!values.password) {
-      errors.password = 'Password is required';
+      errors.password = "Password is required";
     }
-    
+
     return errors;
   };
 
   const onSubmit = jest.fn();
 
-  test('initializes with correct values and state', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialValues, validate, onSubmit)
-    );
+  test("initializes with correct values and state", () => {
+    const { result } = renderHook(() => useFormValidation(initialValues, validate, onSubmit));
 
     expect(result.current.values).toEqual(initialValues);
-    expect(result.current.errors).toEqual({ email: 'Email is required', password: 'Password is required' });
+    expect(result.current.errors).toEqual({
+      email: "Email is required",
+      password: "Password is required",
+    });
     expect(result.current.touched).toEqual({});
     expect(result.current.isSubmitting).toBe(false);
     expect(result.current.isValid).toBe(false);
   });
 
-  test('updates values correctly on change', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialValues, validate, onSubmit)
-    );
+  test("updates values correctly on change", () => {
+    const { result } = renderHook(() => useFormValidation(initialValues, validate, onSubmit));
 
     act(() => {
       result.current.handleChange({
-        target: { name: 'email', value: 'test@example.com' }
+        target: { name: "email", value: "test@example.com" },
       });
     });
 
-    expect(result.current.values.email).toBe('test@example.com');
-    expect(result.current.errors).toEqual({ password: 'Password is required' });
+    expect(result.current.values.email).toBe("test@example.com");
+    expect(result.current.errors).toEqual({ password: "Password is required" });
   });
 
-  test('marks all fields as touched and submits when valid', async () => {
+  test("marks all fields as touched and submits when valid", async () => {
     const validInitialValues = {
-      email: 'test@example.com',
-      password: 'password123'
+      email: "test@example.com",
+      password: "password123",
     };
 
-    const { result, waitForNextUpdate } = renderHook(() => 
-      useFormValidation(validInitialValues, validate, onSubmit)
+    const { result, waitForNextUpdate } = renderHook(() =>
+      useFormValidation(validInitialValues, validate, onSubmit),
     );
 
     act(() => {
@@ -406,16 +404,14 @@ describe('useFormValidation Hook', () => {
 
     expect(result.current.touched).toEqual({
       email: true,
-      password: true
+      password: true,
     });
     expect(result.current.isValid).toBe(true);
     expect(onSubmit).toHaveBeenCalledWith(validInitialValues);
   });
 
-  test('does not submit when invalid', async () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialValues, validate, onSubmit)
-    );
+  test("does not submit when invalid", async () => {
+    const { result } = renderHook(() => useFormValidation(initialValues, validate, onSubmit));
 
     act(() => {
       result.current.handleSubmit();
@@ -425,24 +421,22 @@ describe('useFormValidation Hook', () => {
 
     expect(result.current.touched).toEqual({
       email: true,
-      password: true
+      password: true,
     });
     expect(result.current.isValid).toBe(false);
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  test('resets form correctly', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialValues, validate, onSubmit)
-    );
+  test("resets form correctly", () => {
+    const { result } = renderHook(() => useFormValidation(initialValues, validate, onSubmit));
 
     act(() => {
       result.current.handleChange({
-        target: { name: 'email', value: 'test@example.com' }
+        target: { name: "email", value: "test@example.com" },
       });
-      
+
       result.current.handleBlur({
-        target: { name: 'email' }
+        target: { name: "email" },
       });
     });
 
@@ -455,302 +449,298 @@ describe('useFormValidation Hook', () => {
     expect(result.current.isSubmitting).toBe(false);
   });
 
-  test('sets field value directly', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialValues, validate, onSubmit)
-    );
+  test("sets field value directly", () => {
+    const { result } = renderHook(() => useFormValidation(initialValues, validate, onSubmit));
 
     act(() => {
-      result.current.setFieldValue('email', 'test@example.com');
+      result.current.setFieldValue("email", "test@example.com");
     });
 
-    expect(result.current.values.email).toBe('test@example.com');
+    expect(result.current.values.email).toBe("test@example.com");
     expect(result.current.touched.email).toBe(true);
   });
 
-  test('correctly determines if error should be shown', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialValues, validate, onSubmit)
-    );
+  test("correctly determines if error should be shown", () => {
+    const { result } = renderHook(() => useFormValidation(initialValues, validate, onSubmit));
 
-    expect(result.current.shouldShowError('email')).toBe(false);
+    expect(result.current.shouldShowError("email")).toBe(false);
 
     act(() => {
       result.current.handleBlur({
-        target: { name: 'email' }
+        target: { name: "email" },
       });
     });
 
-    expect(result.current.shouldShowError('email')).toBe(true);
+    expect(result.current.shouldShowError("email")).toBe(true);
   });
 });
 
 // src/tests/services/authService.test.js
-import authService from '../../../services/authService';
-import api from '../../../services/api';
+import authService from "../../../services/authService";
+import api from "../../../services/api";
 
 // Mock the api module
-jest.mock('../../../services/api');
+jest.mock("../../../services/api");
 
-describe('authService', () => {
+describe("authService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('login', () => {
-    test('successfully logs in a user', async () => {
-      const mockResponse = { 
-        data: { 
-          user: { id: '123', email: 'test@example.com' },
-          token: 'fake-token'
-        } 
+  describe("login", () => {
+    test("successfully logs in a user", async () => {
+      const mockResponse = {
+        data: {
+          user: { id: "123", email: "test@example.com" },
+          token: "fake-token",
+        },
       };
-      
+
       api.post.mockResolvedValueOnce(mockResponse);
 
-      const result = await authService.login('test@example.com', 'password123', 'patient');
-      
-      expect(api.post).toHaveBeenCalledWith('/auth/login', {
-        email: 'test@example.com',
-        password: 'password123',
-        role: 'patient'
+      const result = await authService.login("test@example.com", "password123", "patient");
+
+      expect(api.post).toHaveBeenCalledWith("/auth/login", {
+        email: "test@example.com",
+        password: "password123",
+        role: "patient",
       });
-      
+
       expect(result).toEqual(mockResponse.data);
     });
 
-    test('handles login error correctly', async () => {
+    test("handles login error correctly", async () => {
       const errorResponse = {
         response: {
           status: 401,
-          data: { message: 'Invalid credentials' }
-        }
+          data: { message: "Invalid credentials" },
+        },
       };
-      
+
       api.post.mockRejectedValueOnce(errorResponse);
 
-      await expect(authService.login('test@example.com', 'wrong-password', 'patient'))
-        .rejects
-        .toThrow('Invalid credentials. Please check your email and password.');
+      await expect(
+        authService.login("test@example.com", "wrong-password", "patient"),
+      ).rejects.toThrow("Invalid credentials. Please check your email and password.");
     });
   });
 
-  describe('register', () => {
-    test('successfully registers a new user', async () => {
+  describe("register", () => {
+    test("successfully registers a new user", async () => {
       const userData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john@example.com',
-        password: 'password123',
-        role: 'patient'
+        firstName: "John",
+        lastName: "Doe",
+        email: "john@example.com",
+        password: "password123",
+        role: "patient",
       };
-      
-      const mockResponse = { 
-        data: { 
+
+      const mockResponse = {
+        data: {
           success: true,
-          message: 'Registration successful'
-        } 
+          message: "Registration successful",
+        },
       };
-      
+
       api.post.mockResolvedValueOnce(mockResponse);
 
       const result = await authService.register(userData);
-      
-      expect(api.post).toHaveBeenCalledWith('/auth/register', userData);
+
+      expect(api.post).toHaveBeenCalledWith("/auth/register", userData);
       expect(result).toEqual(mockResponse.data);
     });
 
-    test('handles registration error correctly', async () => {
+    test("handles registration error correctly", async () => {
       const userData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'existing@example.com',
-        password: 'password123',
-        role: 'patient'
+        firstName: "John",
+        lastName: "Doe",
+        email: "existing@example.com",
+        password: "password123",
+        role: "patient",
       };
-      
+
       const errorResponse = {
         response: {
           status: 409,
-          data: { message: 'Email already exists' }
-        }
+          data: { message: "Email already exists" },
+        },
       };
-      
+
       api.post.mockRejectedValueOnce(errorResponse);
 
-      await expect(authService.register(userData))
-        .rejects
-        .toThrow('Account already exists with this email address.');
+      await expect(authService.register(userData)).rejects.toThrow(
+        "Account already exists with this email address.",
+      );
     });
   });
 
-  describe('resetPassword', () => {
-    test('successfully requests password reset', async () => {
-      const mockResponse = { 
-        data: { 
+  describe("resetPassword", () => {
+    test("successfully requests password reset", async () => {
+      const mockResponse = {
+        data: {
           success: true,
-          message: 'Reset link sent to your email'
-        } 
+          message: "Reset link sent to your email",
+        },
       };
-      
+
       api.post.mockResolvedValueOnce(mockResponse);
 
-      const result = await authService.resetPassword('test@example.com');
-      
-      expect(api.post).toHaveBeenCalledWith('/auth/reset-password', { email: 'test@example.com' });
+      const result = await authService.resetPassword("test@example.com");
+
+      expect(api.post).toHaveBeenCalledWith("/auth/reset-password", { email: "test@example.com" });
       expect(result).toEqual(mockResponse.data);
     });
 
-    test('handles reset password error correctly', async () => {
+    test("handles reset password error correctly", async () => {
       const errorResponse = {
         response: {
           status: 404,
-          data: { message: 'Email not found' }
-        }
+          data: { message: "Email not found" },
+        },
       };
-      
+
       api.post.mockRejectedValueOnce(errorResponse);
 
-      await expect(authService.resetPassword('nonexistent@example.com'))
-        .rejects
-        .toThrow('Account not found. Please check your details or register.');
+      await expect(authService.resetPassword("nonexistent@example.com")).rejects.toThrow(
+        "Account not found. Please check your details or register.",
+      );
     });
   });
 
-  describe('confirmPasswordReset', () => {
-    test('successfully resets password', async () => {
-      const mockResponse = { 
-        data: { 
+  describe("confirmPasswordReset", () => {
+    test("successfully resets password", async () => {
+      const mockResponse = {
+        data: {
           success: true,
-          message: 'Password reset successful'
-        } 
+          message: "Password reset successful",
+        },
       };
-      
+
       api.post.mockResolvedValueOnce(mockResponse);
 
-      const result = await authService.confirmPasswordReset('valid-token', 'newPassword123');
-      
-      expect(api.post).toHaveBeenCalledWith('/auth/reset-password/confirm', {
-        token: 'valid-token',
-        newPassword: 'newPassword123'
+      const result = await authService.confirmPasswordReset("valid-token", "newPassword123");
+
+      expect(api.post).toHaveBeenCalledWith("/auth/reset-password/confirm", {
+        token: "valid-token",
+        newPassword: "newPassword123",
       });
-      
+
       expect(result).toEqual(mockResponse.data);
     });
 
-    test('handles invalid token error correctly', async () => {
+    test("handles invalid token error correctly", async () => {
       const errorResponse = {
         response: {
           status: 400,
-          data: { message: 'Invalid or expired token' }
-        }
+          data: { message: "Invalid or expired token" },
+        },
       };
-      
+
       api.post.mockRejectedValueOnce(errorResponse);
 
-      await expect(authService.confirmPasswordReset('invalid-token', 'newPassword123'))
-        .rejects
-        .toThrow('Invalid or expired token');
+      await expect(
+        authService.confirmPasswordReset("invalid-token", "newPassword123"),
+      ).rejects.toThrow("Invalid or expired token");
     });
   });
 
-  describe('logout', () => {
-    test('successfully logs out user', async () => {
-      const mockResponse = { 
-        data: { 
+  describe("logout", () => {
+    test("successfully logs out user", async () => {
+      const mockResponse = {
+        data: {
           success: true,
-          message: 'Logged out successfully'
-        } 
+          message: "Logged out successfully",
+        },
       };
-      
+
       api.post.mockResolvedValueOnce(mockResponse);
 
       const result = await authService.logout();
-      
-      expect(api.post).toHaveBeenCalledWith('/auth/logout');
+
+      expect(api.post).toHaveBeenCalledWith("/auth/logout");
       expect(result).toEqual(mockResponse.data);
     });
   });
 
-  describe('getCurrentUser', () => {
-    test('successfully retrieves current user', async () => {
-      const mockResponse = { 
-        data: { 
-          id: '123',
-          email: 'test@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          role: 'patient'
-        } 
+  describe("getCurrentUser", () => {
+    test("successfully retrieves current user", async () => {
+      const mockResponse = {
+        data: {
+          id: "123",
+          email: "test@example.com",
+          firstName: "John",
+          lastName: "Doe",
+          role: "patient",
+        },
       };
-      
+
       api.get.mockResolvedValueOnce(mockResponse);
 
       const result = await authService.getCurrentUser();
-      
-      expect(api.get).toHaveBeenCalledWith('/auth/me');
+
+      expect(api.get).toHaveBeenCalledWith("/auth/me");
       expect(result).toEqual(mockResponse.data);
     });
 
-    test('handles unauthenticated error correctly', async () => {
+    test("handles unauthenticated error correctly", async () => {
       const errorResponse = {
         response: {
           status: 401,
-          data: { message: 'Unauthenticated' }
-        }
+          data: { message: "Unauthenticated" },
+        },
       };
-      
+
       api.get.mockRejectedValueOnce(errorResponse);
 
-      await expect(authService.getCurrentUser())
-        .rejects
-        .toThrow('Invalid credentials. Please check your email and password.');
+      await expect(authService.getCurrentUser()).rejects.toThrow(
+        "Invalid credentials. Please check your email and password.",
+      );
     });
   });
 });
 
 // src/tests/utils/validation.test.js
-import * as validation from '../../../utils/validation';
+import * as validation from "../../../utils/validation";
 
-describe('Validation Utilities', () => {
-  describe('isValidEmail', () => {
-    test('validates correct email formats', () => {
-      expect(validation.isValidEmail('test@example.com')).toBe(true);
-      expect(validation.isValidEmail('user.name+tag@example.co.uk')).toBe(true);
-      expect(validation.isValidEmail('user-name@domain.org')).toBe(true);
+describe("Validation Utilities", () => {
+  describe("isValidEmail", () => {
+    test("validates correct email formats", () => {
+      expect(validation.isValidEmail("test@example.com")).toBe(true);
+      expect(validation.isValidEmail("user.name+tag@example.co.uk")).toBe(true);
+      expect(validation.isValidEmail("user-name@domain.org")).toBe(true);
     });
 
-    test('rejects invalid email formats', () => {
-      expect(validation.isValidEmail('test')).toBe(false);
-      expect(validation.isValidEmail('test@')).toBe(false);
-      expect(validation.isValidEmail('test@domain')).toBe(false);
-      expect(validation.isValidEmail('@domain.com')).toBe(false);
-      expect(validation.isValidEmail('test@domain.')).toBe(false);
+    test("rejects invalid email formats", () => {
+      expect(validation.isValidEmail("test")).toBe(false);
+      expect(validation.isValidEmail("test@")).toBe(false);
+      expect(validation.isValidEmail("test@domain")).toBe(false);
+      expect(validation.isValidEmail("@domain.com")).toBe(false);
+      expect(validation.isValidEmail("test@domain.")).toBe(false);
     });
   });
 
-  describe('validatePassword', () => {
-    test('validates strong passwords', () => {
-      const result = validation.validatePassword('StrongP@ss123');
+  describe("validatePassword", () => {
+    test("validates strong passwords", () => {
+      const result = validation.validatePassword("StrongP@ss123");
       expect(result.isValid).toBe(true);
       expect(result.strength).toBe(5);
     });
 
-    test('identifies weak passwords', () => {
-      const result = validation.validatePassword('weak');
+    test("identifies weak passwords", () => {
+      const result = validation.validatePassword("weak");
       expect(result.isValid).toBe(false);
       expect(result.strength).toBeLessThan(3);
     });
 
-    test('provides correct feedback for missing requirements', () => {
-      const result = validation.validatePassword('onlyletters');
-      expect(result.requirements).toContain('At least one uppercase letter');
-      expect(result.requirements).toContain('At least one number');
-      expect(result.requirements).toContain('At least one special character');
+    test("provides correct feedback for missing requirements", () => {
+      const result = validation.validatePassword("onlyletters");
+      expect(result.requirements).toContain("At least one uppercase letter");
+      expect(result.requirements).toContain("At least one number");
+      expect(result.requirements).toContain("At least one special character");
     });
 
-    test('checks specific password characteristics', () => {
-      const result = validation.validatePassword('Abc123');
+    test("checks specific password characteristics", () => {
+      const result = validation.validatePassword("Abc123");
       expect(result.checks.minLength).toBe(false);
       expect(result.checks.hasUppercase).toBe(true);
       expect(result.checks.hasLowercase).toBe(true);
@@ -759,73 +749,73 @@ describe('Validation Utilities', () => {
     });
   });
 
-  describe('passwordsMatch', () => {
-    test('confirms matching passwords', () => {
-      expect(validation.passwordsMatch('password123', 'password123')).toBe(true);
+  describe("passwordsMatch", () => {
+    test("confirms matching passwords", () => {
+      expect(validation.passwordsMatch("password123", "password123")).toBe(true);
     });
 
-    test('detects non-matching passwords', () => {
-      expect(validation.passwordsMatch('password123', 'Password123')).toBe(false);
-    });
-  });
-
-  describe('isValidPhone', () => {
-    test('validates correct phone number formats', () => {
-      expect(validation.isValidPhone('(123) 456-7890')).toBe(true);
-      expect(validation.isValidPhone('123-456-7890')).toBe(true);
-      expect(validation.isValidPhone('123.456.7890')).toBe(true);
-      expect(validation.isValidPhone('1234567890')).toBe(true);
-    });
-
-    test('rejects invalid phone number formats', () => {
-      expect(validation.isValidPhone('123-456-789')).toBe(false);
-      expect(validation.isValidPhone('12345678901')).toBe(false);
-      expect(validation.isValidPhone('abc-def-ghij')).toBe(false);
-      expect(validation.isValidPhone('123 456 789')).toBe(false);
+    test("detects non-matching passwords", () => {
+      expect(validation.passwordsMatch("password123", "Password123")).toBe(false);
     });
   });
 
-  describe('isValidDate', () => {
-    test('validates correct date formats', () => {
-      expect(validation.isValidDate('2023-01-31')).toBe(true);
-      expect(validation.isValidDate('2020-02-29')).toBe(true); // Leap year
-      expect(validation.isValidDate('2023-12-31')).toBe(true);
+  describe("isValidPhone", () => {
+    test("validates correct phone number formats", () => {
+      expect(validation.isValidPhone("(123) 456-7890")).toBe(true);
+      expect(validation.isValidPhone("123-456-7890")).toBe(true);
+      expect(validation.isValidPhone("123.456.7890")).toBe(true);
+      expect(validation.isValidPhone("1234567890")).toBe(true);
     });
 
-    test('rejects invalid date formats', () => {
-      expect(validation.isValidDate('01/31/2023')).toBe(false);
-      expect(validation.isValidDate('2023-13-01')).toBe(false); // Invalid month
-      expect(validation.isValidDate('2023-02-31')).toBe(false); // Invalid day
-      expect(validation.isValidDate('2023-04-31')).toBe(false); // April has 30 days
-      expect(validation.isValidDate('2023-02-29')).toBe(false); // Not a leap year
+    test("rejects invalid phone number formats", () => {
+      expect(validation.isValidPhone("123-456-789")).toBe(false);
+      expect(validation.isValidPhone("12345678901")).toBe(false);
+      expect(validation.isValidPhone("abc-def-ghij")).toBe(false);
+      expect(validation.isValidPhone("123 456 789")).toBe(false);
     });
   });
 
-  describe('isValidCreditCard', () => {
-    test('validates correct credit card formats', () => {
+  describe("isValidDate", () => {
+    test("validates correct date formats", () => {
+      expect(validation.isValidDate("2023-01-31")).toBe(true);
+      expect(validation.isValidDate("2020-02-29")).toBe(true); // Leap year
+      expect(validation.isValidDate("2023-12-31")).toBe(true);
+    });
+
+    test("rejects invalid date formats", () => {
+      expect(validation.isValidDate("01/31/2023")).toBe(false);
+      expect(validation.isValidDate("2023-13-01")).toBe(false); // Invalid month
+      expect(validation.isValidDate("2023-02-31")).toBe(false); // Invalid day
+      expect(validation.isValidDate("2023-04-31")).toBe(false); // April has 30 days
+      expect(validation.isValidDate("2023-02-29")).toBe(false); // Not a leap year
+    });
+  });
+
+  describe("isValidCreditCard", () => {
+    test("validates correct credit card formats", () => {
       // Valid test numbers (these are test numbers, not real cards)
-      expect(validation.isValidCreditCard('4111 1111 1111 1111')).toBe(true); // Visa
-      expect(validation.isValidCreditCard('5555555555554444')).toBe(true); // Mastercard
-      expect(validation.isValidCreditCard('378282246310005')).toBe(true); // Amex
+      expect(validation.isValidCreditCard("4111 1111 1111 1111")).toBe(true); // Visa
+      expect(validation.isValidCreditCard("5555555555554444")).toBe(true); // Mastercard
+      expect(validation.isValidCreditCard("378282246310005")).toBe(true); // Amex
     });
 
-    test('rejects invalid credit card formats', () => {
-      expect(validation.isValidCreditCard('1234 5678 9012 3456')).toBe(false); // Invalid checksum
-      expect(validation.isValidCreditCard('123456789012')).toBe(false); // Too short
-      expect(validation.isValidCreditCard('12345678901234567890')).toBe(false); // Too long
-      expect(validation.isValidCreditCard('abcd efgh ijkl mnop')).toBe(false); // Not numeric
+    test("rejects invalid credit card formats", () => {
+      expect(validation.isValidCreditCard("1234 5678 9012 3456")).toBe(false); // Invalid checksum
+      expect(validation.isValidCreditCard("123456789012")).toBe(false); // Too short
+      expect(validation.isValidCreditCard("12345678901234567890")).toBe(false); // Too long
+      expect(validation.isValidCreditCard("abcd efgh ijkl mnop")).toBe(false); // Not numeric
     });
   });
 
-  describe('isRequired', () => {
-    test('validates non-empty values', () => {
-      expect(validation.isRequired('test')).toBe(true);
-      expect(validation.isRequired('0')).toBe(true);
+  describe("isRequired", () => {
+    test("validates non-empty values", () => {
+      expect(validation.isRequired("test")).toBe(true);
+      expect(validation.isRequired("0")).toBe(true);
     });
 
-    test('rejects empty values', () => {
-      expect(validation.isRequired('')).toBe(false);
-      expect(validation.isRequired('  ')).toBe(false);
+    test("rejects empty values", () => {
+      expect(validation.isRequired("")).toBe(false);
+      expect(validation.isRequired("  ")).toBe(false);
       expect(validation.isRequired(undefined)).toBe(false);
       expect(validation.isRequired(null)).toBe(false);
     });

@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import { AIHealthService, healthPredictionInputSchema } from '../services/ai-health';
-import { CacheService } from '../lib/cache';
-import { storage } from '../storage';
+import { Router } from "express";
+import { AIHealthService, healthPredictionInputSchema } from "../services/ai-health";
+import { CacheService } from "../lib/cache";
+import { storage } from "../storage";
 
 const router = Router();
 
@@ -13,13 +13,13 @@ const CACHE_KEYS = {
 
 const CACHE_TTL = {
   predictions: 3600, // 1 hour
-  insights: 1800,    // 30 minutes
+  insights: 1800, // 30 minutes
 };
 
 // Generate health predictions
-router.post('/predictions', async (req, res) => {
+router.post("/predictions", async (req, res) => {
   if (!req.user?.id) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
   try {
@@ -30,31 +30,27 @@ router.post('/predictions', async (req, res) => {
     const prediction = await AIHealthService.generateHealthPrediction(validatedInput);
 
     // Cache the prediction
-    await CacheService.set(
-      CACHE_KEYS.predictions(req.user.id),
-      prediction,
-      CACHE_TTL.predictions
-    );
+    await CacheService.set(CACHE_KEYS.predictions(req.user.id), prediction, CACHE_TTL.predictions);
 
     res.json(prediction);
   } catch (error: any) {
-    console.error('Health prediction error:', error);
+    console.error("Health prediction error:", error);
 
-    if (error.name === 'ZodError') {
-      return res.status(400).json({ 
-        message: 'Invalid input data',
-        errors: error.errors 
+    if (error.name === "ZodError") {
+      return res.status(400).json({
+        message: "Invalid input data",
+        errors: error.errors,
       });
     }
 
-    res.status(500).json({ message: 'Failed to generate health prediction' });
+    res.status(500).json({ message: "Failed to generate health prediction" });
   }
 });
 
 // Get health insights
-router.get('/insights/:patientId', async (req, res) => {
+router.get("/insights/:patientId", async (req, res) => {
   if (!req.user?.id) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
   const patientId = req.params.patientId;
@@ -71,33 +67,29 @@ router.get('/insights/:patientId', async (req, res) => {
     const medicalHistory = await storage.getMedicalHistory(patientId);
 
     const healthData = {
-      metrics: healthMetrics.map(metric => ({
+      metrics: healthMetrics.map((metric) => ({
         type: metric.type,
         value: metric.value,
         timestamp: metric.timestamp,
-        unit: metric.unit
+        unit: metric.unit,
       })),
-      history: medicalHistory.map(record => ({
+      history: medicalHistory.map((record) => ({
         condition: record.condition,
         diagnosis: record.diagnosis,
-        date: record.diagnosisDate
-      }))
+        date: record.diagnosisDate,
+      })),
     };
 
     // Generate insights
     const insights = await AIHealthService.getHealthInsights(patientId, healthData);
 
     // Cache the insights
-    await CacheService.set(
-      CACHE_KEYS.insights(patientId),
-      insights,
-      CACHE_TTL.insights
-    );
+    await CacheService.set(CACHE_KEYS.insights(patientId), insights, CACHE_TTL.insights);
 
     res.json(insights);
   } catch (error) {
-    console.error('Health insights error:', error);
-    res.status(500).json({ message: 'Failed to generate health insights' });
+    console.error("Health insights error:", error);
+    res.status(500).json({ message: "Failed to generate health insights" });
   }
 });
 

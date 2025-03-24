@@ -1,50 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { db } from '@/lib/db';
-import { createAuditLog, verifyPatientAccess } from '@/lib/hipaa';
-import { AuditAction, ResourceType, AuditSeverity, AuditStatus } from '@prisma/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { db } from "@/lib/db";
+import { createAuditLog, verifyPatientAccess } from "@/lib/hipaa";
+import { AuditAction, ResourceType, AuditSeverity, AuditStatus } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession();
-    
+
     if (!session?.user) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401 }
-      );
+      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
     const { id: userId, patientId, role } = session.user;
 
-    if (role !== 'PATIENT' || !patientId) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Access denied' }),
-        { status: 403 }
-      );
+    if (role !== "PATIENT" || !patientId) {
+      return new NextResponse(JSON.stringify({ error: "Access denied" }), { status: 403 });
     }
 
     // Verify access and create audit log
     const hasAccess = await verifyPatientAccess(userId, patientId);
-    
+
     if (!hasAccess) {
       await createAuditLog({
         userId,
         action: AuditAction.ACCESS_ATTEMPT,
         resourceType: ResourceType.PATIENT,
         resourceId: patientId,
-        details: 'Unauthorized attempt to access patient dashboard data',
+        details: "Unauthorized attempt to access patient dashboard data",
         severity: AuditSeverity.HIGH,
         status: AuditStatus.FAILURE,
         sessionId: session.sessionId,
-        ipAddress: req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for'),
-        userAgent: req.headers.get('user-agent'),
+        ipAddress: req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for"),
+        userAgent: req.headers.get("user-agent"),
       });
 
-      return new NextResponse(
-        JSON.stringify({ error: 'Access denied' }),
-        { status: 403 }
-      );
+      return new NextResponse(JSON.stringify({ error: "Access denied" }), { status: 403 });
     }
 
     // Fetch patient data
@@ -64,7 +55,7 @@ export async function GET(req: NextRequest) {
             },
           },
           orderBy: {
-            startTime: 'asc',
+            startTime: "asc",
           },
           take: 5,
           include: {
@@ -81,7 +72,7 @@ export async function GET(req: NextRequest) {
         },
         medicalRecords: {
           orderBy: {
-            date: 'desc',
+            date: "desc",
           },
           take: 5,
           include: {
@@ -100,10 +91,7 @@ export async function GET(req: NextRequest) {
     });
 
     if (!patient) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Patient not found' }),
-        { status: 404 }
-      );
+      return new NextResponse(JSON.stringify({ error: "Patient not found" }), { status: 404 });
     }
 
     // Log successful data access
@@ -112,19 +100,19 @@ export async function GET(req: NextRequest) {
       action: AuditAction.VIEW,
       resourceType: ResourceType.PATIENT,
       resourceId: patientId,
-      details: 'Patient dashboard data accessed',
+      details: "Patient dashboard data accessed",
       severity: AuditSeverity.LOW,
       status: AuditStatus.SUCCESS,
       sessionId: session.sessionId,
-      ipAddress: req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for'),
-      userAgent: req.headers.get('user-agent'),
+      ipAddress: req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for"),
+      userAgent: req.headers.get("user-agent"),
     });
 
     // Transform data for client
     const dashboardData = {
       name: patient.user.name,
       dateOfBirth: patient.dateOfBirth,
-      upcomingAppointments: patient.appointments.map(apt => ({
+      upcomingAppointments: patient.appointments.map((apt) => ({
         id: apt.id,
         providerId: apt.providerId,
         providerName: apt.provider.user.name,
@@ -133,8 +121,8 @@ export async function GET(req: NextRequest) {
         status: apt.status,
       })),
       recentAppointments: patient.appointments
-        .filter(apt => apt.startTime < new Date())
-        .map(apt => ({
+        .filter((apt) => apt.startTime < new Date())
+        .map((apt) => ({
           id: apt.id,
           providerId: apt.providerId,
           providerName: apt.provider.user.name,
@@ -147,16 +135,10 @@ export async function GET(req: NextRequest) {
       pendingBills: 0, // Implement billing count query
     };
 
-    return new NextResponse(
-      JSON.stringify(dashboardData),
-      { status: 200 }
-    );
+    return new NextResponse(JSON.stringify(dashboardData), { status: 200 });
   } catch (error) {
-    console.error('Failed to fetch patient dashboard data:', error);
-    
-    return new NextResponse(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500 }
-    );
+    console.error("Failed to fetch patient dashboard data:", error);
+
+    return new NextResponse(JSON.stringify({ error: "Internal server error" }), { status: 500 });
   }
-} 
+}

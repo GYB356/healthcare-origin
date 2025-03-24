@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { AuthContext } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { FiPlus, FiEdit, FiTrash } from 'react-icons/fi';
-import LoadingSpinner from '../LoadingSpinner';
+import React, { useContext, useEffect, useState, useCallback } from "react";
+import { AuthContext } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { FiPlus, FiEdit, FiTrash } from "react-icons/fi";
+import LoadingSpinner from "../LoadingSpinner";
 
 const StaffScheduling = () => {
   const navigate = useNavigate();
@@ -11,13 +11,13 @@ const StaffScheduling = () => {
   const [schedules, setSchedules] = useState([]);
   const [error, setError] = useState(null);
 
-  const isAdmin = user?.role === 'admin';
-  const isDoctor = user?.role === 'doctor';
+  const isAdmin = user?.role === "admin";
+  const isDoctor = user?.role === "doctor";
 
   const fetchWithSecurityHeaders = async (url, options = {}) => {
     const defaultHeaders = {
-      'Content-Security-Policy': "default-src 'self'; script-src 'self'; object-src 'none';",
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      "Content-Security-Policy": "default-src 'self'; script-src 'self'; object-src 'none';",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
     };
     const headers = { ...defaultHeaders, ...options.headers };
     return fetch(url, { ...options, headers });
@@ -26,7 +26,7 @@ const StaffScheduling = () => {
   const validateScheduleData = (scheduleData) => {
     const { title, date, time } = scheduleData;
     if (!title || !date || !time) {
-      throw new Error('All fields are required.');
+      throw new Error("All fields are required.");
     }
     // Additional validation rules can be added here
   };
@@ -34,10 +34,10 @@ const StaffScheduling = () => {
   const fetchSchedules = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetchWithSecurityHeaders('/api/schedules');
+      const response = await fetchWithSecurityHeaders("/api/schedules");
 
       if (!response.ok) {
-        throw new Error('Failed to fetch schedules');
+        throw new Error("Failed to fetch schedules");
       }
 
       const data = await response.json();
@@ -51,41 +51,41 @@ const StaffScheduling = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
     fetchSchedules();
 
     // Log access for HIPAA compliance
-    logHipaaAccess('view');
+    logHipaaAccess("view");
 
     // Socket event listeners for real-time updates
-    socket.on('schedule:update', handleScheduleUpdate);
-    socket.on('schedule:new', handleNewSchedule);
-    socket.on('schedule:delete', handleScheduleDelete);
+    socket.on("schedule:update", handleScheduleUpdate);
+    socket.on("schedule:new", handleNewSchedule);
+    socket.on("schedule:delete", handleScheduleDelete);
 
     return () => {
-      socket.off('schedule:update', handleScheduleUpdate);
-      socket.off('schedule:new', handleNewSchedule);
-      socket.off('schedule:delete', handleScheduleDelete);
+      socket.off("schedule:update", handleScheduleUpdate);
+      socket.off("schedule:new", handleNewSchedule);
+      socket.off("schedule:delete", handleScheduleDelete);
     };
   }, [isAuthenticated, fetchSchedules]);
 
   const logHipaaAccess = (action) => {
-    socket.emit('hipaa:log-access', {
-      resourceType: 'scheduling',
+    socket.emit("hipaa:log-access", {
+      resourceType: "scheduling",
       action,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   };
 
   const handleScheduleUpdate = (updatedSchedule) => {
-    setSchedules(prevSchedules => {
-      const exists = prevSchedules.some(schedule => schedule._id === updatedSchedule._id);
+    setSchedules((prevSchedules) => {
+      const exists = prevSchedules.some((schedule) => schedule._id === updatedSchedule._id);
       if (exists) {
-        return prevSchedules.map(schedule => 
-          schedule._id === updatedSchedule._id ? updatedSchedule : schedule
+        return prevSchedules.map((schedule) =>
+          schedule._id === updatedSchedule._id ? updatedSchedule : schedule,
         );
       } else {
         return [...prevSchedules, updatedSchedule];
@@ -94,35 +94,33 @@ const StaffScheduling = () => {
   };
 
   const handleNewSchedule = (newSchedule) => {
-    setSchedules(prevSchedules => [...prevSchedules, newSchedule]);
+    setSchedules((prevSchedules) => [...prevSchedules, newSchedule]);
   };
 
   const handleScheduleDelete = (deletedId) => {
-    setSchedules(prevSchedules => 
-      prevSchedules.filter(schedule => schedule._id !== deletedId)
-    );
+    setSchedules((prevSchedules) => prevSchedules.filter((schedule) => schedule._id !== deletedId));
   };
 
   const addSchedule = async (scheduleData) => {
     try {
       setLoading(true);
       validateScheduleData(scheduleData);
-      const response = await fetchWithSecurityHeaders('/api/schedules', {
-        method: 'POST',
+      const response = await fetchWithSecurityHeaders("/api/schedules", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(scheduleData)
+        body: JSON.stringify(scheduleData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to add schedule');
+        throw new Error("Failed to add schedule");
       }
 
       const newSchedule = await response.json();
-      setSchedules(prev => [...prev, newSchedule]);
-      logHipaaAccess('modify');
-      socket.emit('schedule:new', newSchedule);
+      setSchedules((prev) => [...prev, newSchedule]);
+      logHipaaAccess("modify");
+      socket.emit("schedule:new", newSchedule);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -135,25 +133,23 @@ const StaffScheduling = () => {
       setLoading(true);
       validateScheduleData(scheduleData);
       const response = await fetchWithSecurityHeaders(`/api/schedules/${scheduleData._id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(scheduleData)
+        body: JSON.stringify(scheduleData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update schedule');
+        throw new Error("Failed to update schedule");
       }
 
       const updatedSchedule = await response.json();
-      setSchedules(prev => 
-        prev.map(schedule => 
-          schedule._id === updatedSchedule._id ? updatedSchedule : schedule
-        )
+      setSchedules((prev) =>
+        prev.map((schedule) => (schedule._id === updatedSchedule._id ? updatedSchedule : schedule)),
       );
-      logHipaaAccess('modify');
-      socket.emit('schedule:update', updatedSchedule);
+      logHipaaAccess("modify");
+      socket.emit("schedule:update", updatedSchedule);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -165,16 +161,16 @@ const StaffScheduling = () => {
     try {
       setLoading(true);
       const response = await fetchWithSecurityHeaders(`/api/schedules/${id}`, {
-        method: 'DELETE'
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete schedule');
+        throw new Error("Failed to delete schedule");
       }
 
-      setSchedules(prev => prev.filter(schedule => schedule._id !== id));
-      logHipaaAccess('modify');
-      socket.emit('schedule:delete', id);
+      setSchedules((prev) => prev.filter((schedule) => schedule._id !== id));
+      logHipaaAccess("modify");
+      socket.emit("schedule:delete", id);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -205,22 +201,18 @@ const StaffScheduling = () => {
       {loading ? (
         <LoadingSpinner />
       ) : error ? (
-        <div className="text-red-500" role="alert">{error}</div>
+        <div className="text-red-500" role="alert">
+          {error}
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {schedules.map(schedule => (
+          {schedules.map((schedule) => (
             <div key={schedule._id} className="border border-gray-200 rounded-lg p-4 relative">
               <div className="flex items-center mb-2">
-                <span className="font-medium text-gray-900">
-                  {schedule.title}
-                </span>
+                <span className="font-medium text-gray-900">{schedule.title}</span>
               </div>
-              <p className="text-sm text-gray-500">
-                {schedule.date}
-              </p>
-              <p className="text-sm text-gray-500">
-                {schedule.time}
-              </p>
+              <p className="text-sm text-gray-500">{schedule.date}</p>
+              <p className="text-sm text-gray-500">{schedule.time}</p>
               <div className="mt-4 flex justify-end space-x-2">
                 {(isAdmin || isDoctor) && (
                   <>
@@ -251,4 +243,4 @@ const StaffScheduling = () => {
   );
 };
 
-export default StaffScheduling; 
+export default StaffScheduling;

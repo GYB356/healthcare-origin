@@ -1,16 +1,16 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
-import { verify } from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { verify } from "jsonwebtoken";
+import { cookies } from "next/headers";
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'patient') {
-      return new NextResponse('Unauthorized', { status: 401 });
+    if (!session || session.user.role !== "patient") {
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
     const appointments = await prisma.appointment.findMany({
@@ -26,49 +26,40 @@ export async function GET() {
         },
       },
       orderBy: {
-        date: 'asc',
+        date: "asc",
       },
     });
 
     return NextResponse.json({ appointments });
   } catch (error) {
-    console.error('Error fetching patient appointments:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    console.error("Error fetching patient appointments:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const token = cookies().get('token')?.value;
+    const token = cookies().get("token")?.value;
 
     if (!token) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     // Verify token
-    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as {
+    const decoded = verify(token, process.env.JWT_SECRET || "your-secret-key") as {
       userId: string;
       role: string;
     };
 
-    if (decoded.role !== 'PATIENT') {
-      return NextResponse.json(
-        { error: 'Not authorized' },
-        { status: 403 }
-      );
+    if (decoded.role !== "PATIENT") {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
     const { doctorId, date, time } = await request.json();
 
     // Validate input
     if (!doctorId || !date || !time) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     // Check if slot is available
@@ -77,15 +68,12 @@ export async function POST(request: Request) {
         doctorId,
         date: new Date(date),
         time,
-        status: 'SCHEDULED',
+        status: "SCHEDULED",
       },
     });
 
     if (existingAppointment) {
-      return NextResponse.json(
-        { error: 'This time slot is no longer available' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "This time slot is no longer available" }, { status: 400 });
     }
 
     // Create appointment
@@ -95,7 +83,7 @@ export async function POST(request: Request) {
         doctorId,
         date: new Date(date),
         time,
-        status: 'SCHEDULED',
+        status: "SCHEDULED",
       },
       include: {
         doctor: {
@@ -112,16 +100,13 @@ export async function POST(request: Request) {
         id: appointment.id,
         doctorName: appointment.doctor.name,
         department: appointment.doctor.department,
-        date: appointment.date.toISOString().split('T')[0],
+        date: appointment.date.toISOString().split("T")[0],
         time: appointment.time,
         status: appointment.status,
       },
     });
   } catch (error) {
-    console.error('Error creating appointment:', error);
-    return NextResponse.json(
-      { error: 'Error creating appointment' },
-      { status: 500 }
-    );
+    console.error("Error creating appointment:", error);
+    return NextResponse.json({ error: "Error creating appointment" }, { status: 500 });
   }
-} 
+}

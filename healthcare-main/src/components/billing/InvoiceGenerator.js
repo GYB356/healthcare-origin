@@ -1,41 +1,41 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { FiFileText, FiDollarSign, FiCalendar, FiAlertCircle } from 'react-icons/fi';
-import { HIPAAEncryptionService } from '../../utils/HIPAACompliance';
+import React, { useState } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { FiFileText, FiDollarSign, FiCalendar, FiAlertCircle } from "react-icons/fi";
+import { HIPAAEncryptionService } from "../../utils/HIPAACompliance";
 
 export default function InvoiceGenerator() {
   const { authAxios } = useAuth();
   const [formData, setFormData] = useState({
-    serviceDate: '',
-    description: '',
-    hcpcsCode: '',
-    amount: '',
+    serviceDate: "",
+    description: "",
+    hcpcsCode: "",
+    amount: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       // Encrypt sensitive billing data
       const encryptedData = HIPAAEncryptionService.encryptSensitiveData(formData);
 
-      const response = await authAxios.post('/api/billing/create', {
+      const response = await authAxios.post("/api/billing/create", {
         ...formData,
         encryptedData,
-        amount: parseFloat(formData.amount) * 100 // Convert to cents
+        amount: parseFloat(formData.amount) * 100, // Convert to cents
       });
 
-      setSuccess('Invoice created successfully. Payment URL: ' + response.data.paymentUrl);
-      setFormData({ serviceDate: '', description: '', hcpcsCode: '', amount: '' });
+      setSuccess("Invoice created successfully. Payment URL: " + response.data.paymentUrl);
+      setFormData({ serviceDate: "", description: "", hcpcsCode: "", amount: "" });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create invoice');
-      console.error('Billing error:', err);
+      setError(err.response?.data?.message || "Failed to create invoice");
+      console.error("Billing error:", err);
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ export default function InvoiceGenerator() {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -86,7 +86,7 @@ export default function InvoiceGenerator() {
               required
             />
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <FiFileText className="text-gray-400" />
             <input
@@ -136,7 +136,7 @@ export default function InvoiceGenerator() {
           disabled={loading}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
         >
-          {loading ? 'Generating Invoice...' : 'Create Invoice'}
+          {loading ? "Generating Invoice..." : "Create Invoice"}
         </button>
       </form>
     </div>

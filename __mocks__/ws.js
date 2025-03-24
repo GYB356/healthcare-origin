@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const EventEmitter = require("events");
 
 class WebSocket extends EventEmitter {
   constructor(url, options = {}) {
@@ -8,34 +8,42 @@ class WebSocket extends EventEmitter {
     this.bufferedAmount = 0;
   }
 
-  static get CONNECTING() { return 0; }
-  static get OPEN() { return 1; }
-  static get CLOSING() { return 2; }
-  static get CLOSED() { return 3; }
+  static get CONNECTING() {
+    return 0;
+  }
+  static get OPEN() {
+    return 1;
+  }
+  static get CLOSING() {
+    return 2;
+  }
+  static get CLOSED() {
+    return 3;
+  }
 
   send(data, callback) {
-    this.emit('send', data);
+    this.emit("send", data);
     if (callback) callback();
   }
 
   close(code, reason) {
     this.readyState = WebSocket.CLOSING;
-    this.emit('close', code, reason);
+    this.emit("close", code, reason);
   }
 
   // Test helpers
   connect() {
     this.readyState = WebSocket.OPEN;
-    this.emit('open');
+    this.emit("open");
   }
 
   disconnect() {
     this.readyState = WebSocket.CLOSED;
-    this.emit('close');
+    this.emit("close");
   }
 
   simulateMessage(data) {
-    this.emit('message', data);
+    this.emit("message", data);
   }
 }
 

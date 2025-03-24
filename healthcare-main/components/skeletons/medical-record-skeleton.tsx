@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface MedicalRecordListSkeletonProps {
-  count?: number
+  count?: number;
 }
 
 export function MedicalRecordSkeleton() {
@@ -32,7 +32,7 @@ export function MedicalRecordSkeleton() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export function MedicalRecordListSkeleton({ count = 3 }: MedicalRecordListSkeletonProps) {
@@ -61,5 +61,5 @@ export function MedicalRecordListSkeleton({ count = 3 }: MedicalRecordListSkelet
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

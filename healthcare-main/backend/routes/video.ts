@@ -13,4 +13,4 @@ router.post("/join", authenticate, (req, res) => {
   res.json({ token, room });
 });
 
-export default router; 
+export default router;

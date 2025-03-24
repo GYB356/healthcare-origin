@@ -1,34 +1,34 @@
-import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { 
-  FiX, 
-  FiFileText, 
-  FiCalendar, 
-  FiUser, 
-  FiEdit, 
-  FiTrash2, 
-  FiDownload, 
+import React from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import {
+  FiX,
+  FiFileText,
+  FiCalendar,
+  FiUser,
+  FiEdit,
+  FiTrash2,
+  FiDownload,
   FiShare2,
   FiAlertTriangle,
   FiCheckCircle,
   FiClock,
-  FiInfo
-} from 'react-icons/fi';
-import { formatDate } from '../../utils/dateUtils';
+  FiInfo,
+} from "react-icons/fi";
+import { formatDate } from "../../utils/dateUtils";
 
 const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
   const { currentUser } = useAuth();
-  const isDoctor = currentUser.role === 'doctor' || currentUser.role === 'admin';
-  
+  const isDoctor = currentUser.role === "doctor" || currentUser.role === "admin";
+
   const getUrgencyBadge = (urgency) => {
     switch (urgency) {
-      case 'stat':
+      case "stat":
         return (
           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
             STAT
           </span>
         );
-      case 'urgent':
+      case "urgent":
         return (
           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
             Urgent
@@ -42,7 +42,7 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
         );
     }
   };
-  
+
   const getStatusBadge = (lab) => {
     if (!lab.resultsAvailable) {
       return (
@@ -67,7 +67,7 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
       );
     }
   };
-  
+
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
@@ -83,16 +83,12 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
             <FiX className="h-6 w-6" />
           </button>
         </div>
-        
+
         <div className="px-6 py-4">
           <div className="flex flex-col md:flex-row justify-between mb-6">
             <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                {lab.testName}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {lab.testType}
-              </p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">{lab.testName}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{lab.testType}</p>
             </div>
             <div className="flex flex-col items-end mt-2 md:mt-0">
               <div className="flex space-x-2">
@@ -102,39 +98,35 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
               <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <FiCalendar className="flex-shrink-0 mr-1.5 h-4 w-4" />
                 <p>
-                  {formatDate(lab.testDate, { year: 'numeric', month: 'long', day: 'numeric' })}
+                  {formatDate(lab.testDate, { year: "numeric", month: "long", day: "numeric" })}
                 </p>
               </div>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                Patient
-              </h4>
+              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Patient</h4>
               <p className="text-base text-gray-900 dark:text-white flex items-center">
                 <FiUser className="mr-1.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                {lab.patient?.name || 'Unknown'}
+                {lab.patient?.name || "Unknown"}
               </p>
             </div>
-            
+
             <div>
               <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                 Ordered By
               </h4>
               <p className="text-base text-gray-900 dark:text-white flex items-center">
                 <FiUser className="mr-1.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                Dr. {lab.orderedBy?.name || 'Unknown'}
+                Dr. {lab.orderedBy?.name || "Unknown"}
               </p>
             </div>
           </div>
-          
+
           {lab.notes && (
             <div className="mb-6">
-              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                Notes
-              </h4>
+              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Notes</h4>
               <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
                 <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">
                   {lab.notes}
@@ -142,12 +134,10 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
               </div>
             </div>
           )}
-          
+
           <div className="mb-6">
-            <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-              Results
-            </h4>
-            
+            <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Results</h4>
+
             {!lab.resultsAvailable ? (
               <div className="bg-yellow-50 dark:bg-yellow-900 border-l-4 border-yellow-400 p-4">
                 <div className="flex">
@@ -172,23 +162,38 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                      >
                         Test
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                      >
                         Result
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                      >
                         Normal Range
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                      >
                         Status
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {lab.results.map((result, index) => (
-                      <tr key={index} className={result.isAbnormal ? 'bg-red-50 dark:bg-red-900/20' : ''}>
+                      <tr
+                        key={index}
+                        className={result.isAbnormal ? "bg-red-50 dark:bg-red-900/20" : ""}
+                      >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                           {result.name}
                         </td>
@@ -196,7 +201,7 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
                           {result.value}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                          {result.normalRange || 'N/A'}
+                          {result.normalRange || "N/A"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           {result.isAbnormal ? (
@@ -216,7 +221,7 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
               </div>
             )}
           </div>
-          
+
           {lab.hasAbnormalResults && lab.resultsAvailable && (
             <div className="mb-6">
               <div className="bg-red-50 dark:bg-red-900 border-l-4 border-red-500 p-4">
@@ -226,26 +231,27 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-red-700 dark:text-red-300">
-                      This lab result contains abnormal values. Please consult with your healthcare provider.
+                      This lab result contains abnormal values. Please consult with your healthcare
+                      provider.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
           )}
-          
+
           <div className="flex flex-wrap justify-end space-x-2 space-y-2 sm:space-y-0">
             <button
               onClick={() => {
                 // In a real app, this would download a PDF of the lab result
-                alert('Downloading lab result...');
+                alert("Downloading lab result...");
               }}
               className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <FiDownload className="mr-2" />
               Download
             </button>
-            
+
             <button
               onClick={onShare}
               className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -253,7 +259,7 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
               <FiShare2 className="mr-2" />
               Share
             </button>
-            
+
             {isDoctor && (
               <>
                 <button
@@ -263,7 +269,7 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
                   <FiEdit className="mr-2" />
                   Edit
                 </button>
-                
+
                 <button
                   onClick={onDelete}
                   className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-red-700 dark:text-red-400 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
@@ -280,4 +286,4 @@ const LabDetails = ({ lab, onClose, onEdit, onDelete, onShare }) => {
   );
 };
 
-export default LabDetails; 
+export default LabDetails;

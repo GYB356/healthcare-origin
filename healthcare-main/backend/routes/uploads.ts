@@ -29,18 +29,24 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Secure file upload (only for doctors & admins)
-router.post("/", authenticate, authorizeRoles(["doctor", "admin"]), upload.single("file"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: "No file uploaded" });
-  }
+router.post(
+  "/",
+  authenticate,
+  authorizeRoles(["doctor", "admin"]),
+  upload.single("file"),
+  (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
 
-  const filePath = `/uploads/${req.file.filename}`;
-  
-  // Emit event to notify patients & doctors
-  io.emit("newReport", { message: "New medical report uploaded", filePath });
+    const filePath = `/uploads/${req.file.filename}`;
 
-  res.json({ message: "File uploaded successfully", filePath });
-});
+    // Emit event to notify patients & doctors
+    io.emit("newReport", { message: "New medical report uploaded", filePath });
+
+    res.json({ message: "File uploaded successfully", filePath });
+  },
+);
 
 // Generate signed URL for file access
 router.get("/file/:filename", protect, (req, res) => {
@@ -78,35 +84,41 @@ router.get("/", authenticate, (req, res) => {
     if (err) {
       return res.status(500).json({ message: "Failed to fetch files" });
     }
-    
+
     // If admin or doctor, return all files
     if (req.user.role === "admin" || req.user.role === "doctor") {
       return res.json({ files });
     }
-    
+
     // If patient, return only their files
     if (req.user.role === "patient" && req.user.files) {
-      const userFiles = files.filter(file => req.user.files.includes(file));
+      const userFiles = files.filter((file) => req.user.files.includes(file));
       return res.json({ files: userFiles });
     }
-    
+
     // Default: return empty array if no access
     res.json({ files: [] });
   });
 });
 
 // Secure file upload (only for doctors & admins)
-router.post("/upload", protect, authorize("doctor", "admin"), multerUpload.single("file"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: "File upload failed" });
-  }
+router.post(
+  "/upload",
+  protect,
+  authorize("doctor", "admin"),
+  multerUpload.single("file"),
+  (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: "File upload failed" });
+    }
 
-  const filePath = `/uploads/${req.file.filename}`;
-  
-  // Emit event to notify patients & doctors
-  io.emit("newReport", { message: "New medical report uploaded", filePath });
+    const filePath = `/uploads/${req.file.filename}`;
 
-  res.json({ message: "File uploaded successfully", filePath });
-});
+    // Emit event to notify patients & doctors
+    io.emit("newReport", { message: "New medical report uploaded", filePath });
+
+    res.json({ message: "File uploaded successfully", filePath });
+  },
+);
 
 export default router;

@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -13,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import {
   Pagination,
   PaginationContent,
@@ -21,64 +21,64 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
-import { Search, Plus, UserPlus } from "lucide-react"
-import { toast } from "sonner"
-import Link from "next/link"
+} from "@/components/ui/pagination";
+import { Search, Plus, UserPlus } from "lucide-react";
+import { toast } from "sonner";
+import Link from "next/link";
 
 interface Patient {
-  id: string
-  name: string
-  email: string
-  phone: string
-  dateOfBirth: string
-  gender: string
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  gender: string;
   patientProfile: {
-    bloodType: string | null
-    allergies: string | null
-    medications: string | null
-    chronicConditions: string | null
-  } | null
+    bloodType: string | null;
+    allergies: string | null;
+    medications: string | null;
+    chronicConditions: string | null;
+  } | null;
   emergencyContact: {
-    name: string
-    relationship: string
-    phone: string
-  } | null
+    name: string;
+    relationship: string;
+    phone: string;
+  } | null;
   insurance: {
-    provider: string
-    policyNumber: string
-    expirationDate: string
-  } | null
+    provider: string;
+    policyNumber: string;
+    expirationDate: string;
+  } | null;
 }
 
 interface PaginationData {
-  total: number
-  pages: number
-  page: number
-  limit: number
+  total: number;
+  pages: number;
+  page: number;
+  limit: number;
 }
 
 export default function PatientsPage() {
-  const { data: session } = useSession()
-  const router = useRouter()
-  const [patients, setPatients] = useState<Patient[]>([])
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     pages: 0,
     page: 1,
     limit: 10,
-  })
-  const [search, setSearch] = useState("")
-  const [loading, setLoading] = useState(true)
+  });
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (session?.user.role !== "DOCTOR") {
-      router.push("/dashboard")
-      return
+      router.push("/dashboard");
+      return;
     }
 
-    fetchPatients()
-  }, [session, router, pagination.page, search])
+    fetchPatients();
+  }, [session, router, pagination.page, search]);
 
   const fetchPatients = async () => {
     try {
@@ -86,32 +86,32 @@ export default function PatientsPage() {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
         ...(search && { search }),
-      })
+      });
 
-      const response = await fetch(`/api/patients?${searchParams}`)
+      const response = await fetch(`/api/patients?${searchParams}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch patients")
+        throw new Error("Failed to fetch patients");
       }
 
-      const data = await response.json()
-      setPatients(data.patients)
-      setPagination(data.pagination)
+      const data = await response.json();
+      setPatients(data.patients);
+      setPagination(data.pagination);
     } catch (error) {
-      console.error("Error fetching patients:", error)
-      toast.error("Failed to load patients")
+      console.error("Error fetching patients:", error);
+      toast.error("Failed to load patients");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSearch = (value: string) => {
-    setSearch(value)
-    setPagination((prev) => ({ ...prev, page: 1 }))
-  }
+    setSearch(value);
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
 
   const handlePageChange = (page: number) => {
-    setPagination((prev) => ({ ...prev, page }))
-  }
+    setPagination((prev) => ({ ...prev, page }));
+  };
 
   return (
     <div className="space-y-6">
@@ -165,9 +165,7 @@ export default function PatientsPage() {
                         <TableCell>
                           <div>
                             <p className="font-medium">{patient.name}</p>
-                            <p className="text-sm text-gray-500">
-                              {patient.email}
-                            </p>
+                            <p className="text-sm text-gray-500">{patient.email}</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -187,9 +185,7 @@ export default function PatientsPage() {
                               {patient.dateOfBirth &&
                                 new Date(patient.dateOfBirth).toLocaleDateString()}
                             </p>
-                            <p className="text-sm text-gray-500">
-                              {patient.gender}
-                            </p>
+                            <p className="text-sm text-gray-500">{patient.gender}</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -205,14 +201,8 @@ export default function PatientsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                          >
-                            <Link href={`/patients/${patient.id}`}>
-                              View Profile
-                            </Link>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/patients/${patient.id}`}>View Profile</Link>
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -259,5 +249,5 @@ export default function PatientsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

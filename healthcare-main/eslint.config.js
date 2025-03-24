@@ -1,34 +1,34 @@
-const globals = require('globals');
-const js = require('@eslint/js');
-const tseslint = require('typescript-eslint');
+const globals = require("globals");
+const js = require("@eslint/js");
+const tseslint = require("typescript-eslint");
 
 module.exports = [
   // Base ESLint configuration
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  
+
   // Global settings for all files
   {
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'module',
+      sourceType: "module",
       globals: {
         ...globals.browser,
         ...globals.node,
-        ...globals.es2021
+        ...globals.es2021,
       },
     },
     linterOptions: {
       reportUnusedDisableDirectives: true,
     },
   },
-  
+
   // JavaScript files
   {
-    files: ['**/*.js', '**/*.jsx'],
+    files: ["**/*.js", "**/*.jsx"],
     plugins: {
-      'react': require('eslint-plugin-react'),
-      'react-hooks': require('eslint-plugin-react-hooks'),
+      react: require("eslint-plugin-react"),
+      "react-hooks": require("eslint-plugin-react-hooks"),
     },
     languageOptions: {
       parserOptions: {
@@ -39,25 +39,25 @@ module.exports = [
     },
     settings: {
       react: {
-        version: 'detect',
+        version: "detect",
       },
     },
     rules: {
-      'react/react-in-jsx-scope': 'off',
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
-      'no-unused-vars': 'warn',
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      "react/react-in-jsx-scope": "off",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+      "no-unused-vars": "warn",
+      "no-console": ["warn", { allow: ["warn", "error"] }],
     },
   },
-  
+
   // TypeScript files
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ["**/*.ts", "**/*.tsx"],
     plugins: {
-      'react': require('eslint-plugin-react'),
-      'react-hooks': require('eslint-plugin-react-hooks'),
-      '@typescript-eslint': tseslint.plugin,
+      react: require("eslint-plugin-react"),
+      "react-hooks": require("eslint-plugin-react-hooks"),
+      "@typescript-eslint": tseslint.plugin,
     },
     languageOptions: {
       parser: tseslint.parser,
@@ -65,23 +65,23 @@ module.exports = [
         ecmaFeatures: {
           jsx: true,
         },
-        project: ['./tsconfig.json', './*/tsconfig.json'],
+        project: ["./tsconfig.json", "./*/tsconfig.json"],
       },
     },
     settings: {
       react: {
-        version: 'detect',
+        version: "detect",
       },
     },
     rules: {
-      'react/react-in-jsx-scope': 'off',
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
-      '@typescript-eslint/no-unused-vars': 'warn',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      "react/react-in-jsx-scope": "off",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "no-console": ["warn", { allow: ["warn", "error"] }],
     },
   },
-]; 
+];

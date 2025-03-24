@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const InvoiceFilter = ({ filterStatus, setFilterStatus, searchTerm, setSearchTerm }) => {
   return (
@@ -23,4 +23,4 @@ const InvoiceFilter = ({ filterStatus, setFilterStatus, searchTerm, setSearchTer
   );
 };
 
-export default InvoiceFilter; 
+export default InvoiceFilter;

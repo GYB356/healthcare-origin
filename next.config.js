@@ -2,12 +2,13 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  // Disable SWC as replacement for Babel since you have a custom Babel config
   experimental: {
-    serverActions: true,
+    forceSwcTransforms: false,
   },
-  images: {
-    domains: ['avatars.githubusercontent.com'],
-  },
+  // Ensure conflicting page routes don't happen
+  useFileSystemPublicRoutes: true,
+  // Add any other configuration needed for your project
 }
 
-module.exports = nextConfig 
+module.exports = nextConfig;

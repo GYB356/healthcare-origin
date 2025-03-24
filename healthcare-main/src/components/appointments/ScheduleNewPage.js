@@ -1,15 +1,22 @@
-import React from 'react';
-import { FiCalendar, FiClock, FiUser, FiMapPin, FiMessageSquare, FiArrowLeft } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import React from "react";
+import {
+  FiCalendar,
+  FiClock,
+  FiUser,
+  FiMapPin,
+  FiMessageSquare,
+  FiArrowLeft,
+} from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 // Inline PageLayout component
-const PageLayout = ({ 
-  title, 
-  description, 
-  bgColor = "bg-blue-600", 
-  textColor = "text-blue-100", 
+const PageLayout = ({
+  title,
+  description,
+  bgColor = "bg-blue-600",
+  textColor = "text-blue-100",
   children,
-  actions
+  actions,
 }) => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-screen-xl">
@@ -20,25 +27,22 @@ const PageLayout = ({
               <h1 className="text-2xl font-bold">{title}</h1>
               <p className={`mt-2 ${textColor}`}>{description}</p>
             </div>
-            {actions && (
-              <div className="ml-4">
-                {actions}
-              </div>
-            )}
+            {actions && <div className="ml-4">{actions}</div>}
           </div>
         </div>
       </div>
-      
-      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">
-        {children}
-      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">{children}</div>
     </div>
   );
 };
 
 const ScheduleNewPage = () => {
   const actionButtons = (
-    <Link to="/appointments" className="bg-white text-blue-600 hover:bg-blue-50 font-medium px-4 py-2 rounded-lg flex items-center shadow-sm">
+    <Link
+      to="/appointments"
+      className="bg-white text-blue-600 hover:bg-blue-50 font-medium px-4 py-2 rounded-lg flex items-center shadow-sm"
+    >
       <FiArrowLeft className="mr-2" />
       Back to Appointments
     </Link>
@@ -46,20 +50,26 @@ const ScheduleNewPage = () => {
 
   // Sample provider options
   const providers = [
-    { id: 1, name: 'Dr. Sarah Johnson', specialty: 'Family Medicine', availableSoon: true },
-    { id: 2, name: 'Dr. Michael Lee', specialty: 'Internal Medicine', availableSoon: true },
-    { id: 3, name: 'Dr. Jennifer Williams', specialty: 'Cardiology', availableSoon: false },
-    { id: 4, name: 'Dr. Robert Chen', specialty: 'Endocrinology', availableSoon: true },
-    { id: 5, name: 'Dr. Emily Watson', specialty: 'Dermatology', availableSoon: false }
+    { id: 1, name: "Dr. Sarah Johnson", specialty: "Family Medicine", availableSoon: true },
+    { id: 2, name: "Dr. Michael Lee", specialty: "Internal Medicine", availableSoon: true },
+    { id: 3, name: "Dr. Jennifer Williams", specialty: "Cardiology", availableSoon: false },
+    { id: 4, name: "Dr. Robert Chen", specialty: "Endocrinology", availableSoon: true },
+    { id: 5, name: "Dr. Emily Watson", specialty: "Dermatology", availableSoon: false },
   ];
 
   // Sample appointment types
   const appointmentTypes = [
-    { id: 1, name: 'Annual Physical', duration: '30 min', inPerson: true, telehealth: false },
-    { id: 2, name: 'Follow-up Visit', duration: '15 min', inPerson: true, telehealth: true },
-    { id: 3, name: 'New Patient Consultation', duration: '45 min', inPerson: true, telehealth: true },
-    { id: 4, name: 'Prescription Refill', duration: '10 min', inPerson: false, telehealth: true },
-    { id: 5, name: 'Lab Results Review', duration: '15 min', inPerson: true, telehealth: true }
+    { id: 1, name: "Annual Physical", duration: "30 min", inPerson: true, telehealth: false },
+    { id: 2, name: "Follow-up Visit", duration: "15 min", inPerson: true, telehealth: true },
+    {
+      id: 3,
+      name: "New Patient Consultation",
+      duration: "45 min",
+      inPerson: true,
+      telehealth: true,
+    },
+    { id: 4, name: "Prescription Refill", duration: "10 min", inPerson: false, telehealth: true },
+    { id: 5, name: "Lab Results Review", duration: "15 min", inPerson: true, telehealth: true },
   ];
 
   return (
@@ -72,8 +82,10 @@ const ScheduleNewPage = () => {
     >
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Appointment Details</h2>
-          
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Appointment Details
+          </h2>
+
           <div className="space-y-6">
             {/* Appointment Type */}
             <div>
@@ -82,8 +94,8 @@ const ScheduleNewPage = () => {
               </label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {appointmentTypes.slice(0, 3).map((type) => (
-                  <div 
-                    key={type.id} 
+                  <div
+                    key={type.id}
                     className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-blue-500 dark:hover:border-blue-500 cursor-pointer transition-colors"
                   >
                     <div className="flex items-start">
@@ -92,9 +104,13 @@ const ScheduleNewPage = () => {
                       </div>
                       <div>
                         <h3 className="font-medium text-gray-900 dark:text-white">{type.name}</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Duration: {type.duration}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Duration: {type.duration}
+                        </p>
                         <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          Available: {type.inPerson && 'In-person'} {type.inPerson && type.telehealth && '/'} {type.telehealth && 'Telehealth'}
+                          Available: {type.inPerson && "In-person"}{" "}
+                          {type.inPerson && type.telehealth && "/"}{" "}
+                          {type.telehealth && "Telehealth"}
                         </div>
                       </div>
                     </div>
@@ -102,7 +118,7 @@ const ScheduleNewPage = () => {
                 ))}
               </div>
             </div>
-            
+
             {/* Provider Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -110,8 +126,8 @@ const ScheduleNewPage = () => {
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {providers.slice(0, 4).map((provider) => (
-                  <div 
-                    key={provider.id} 
+                  <div
+                    key={provider.id}
                     className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-blue-500 dark:hover:border-blue-500 cursor-pointer transition-colors"
                   >
                     <div className="flex items-center">
@@ -119,10 +135,16 @@ const ScheduleNewPage = () => {
                         <FiUser />
                       </div>
                       <div>
-                        <h3 className="font-medium text-gray-900 dark:text-white">{provider.name}</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{provider.specialty}</p>
+                        <h3 className="font-medium text-gray-900 dark:text-white">
+                          {provider.name}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {provider.specialty}
+                        </p>
                         {provider.availableSoon && (
-                          <span className="text-xs text-green-600 dark:text-green-400">Available this week</span>
+                          <span className="text-xs text-green-600 dark:text-green-400">
+                            Available this week
+                          </span>
                         )}
                       </div>
                     </div>
@@ -130,7 +152,7 @@ const ScheduleNewPage = () => {
                 ))}
               </div>
             </div>
-            
+
             {/* Visit Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -144,7 +166,9 @@ const ScheduleNewPage = () => {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900 dark:text-white">In-Person Visit</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Visit the clinic in person</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Visit the clinic in person
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -152,14 +176,18 @@ const ScheduleNewPage = () => {
                   <div className="flex items-center">
                     <div className="h-5 w-5 rounded-full border border-gray-300 flex-shrink-0 mr-3"></div>
                     <div>
-                      <h3 className="font-medium text-gray-900 dark:text-white">Telehealth Visit</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Virtual appointment via video</p>
+                      <h3 className="font-medium text-gray-900 dark:text-white">
+                        Telehealth Visit
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Virtual appointment via video
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             {/* Date Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -171,8 +199,8 @@ const ScheduleNewPage = () => {
                     <FiCalendar className="text-blue-500 mr-2" />
                     <h3 className="font-medium text-gray-900 dark:text-white">Date</h3>
                   </div>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200"
                     defaultValue="2024-03-10"
                   />
@@ -207,7 +235,7 @@ const ScheduleNewPage = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Reason for Visit */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -215,14 +243,14 @@ const ScheduleNewPage = () => {
               </label>
               <div className="flex items-start">
                 <FiMessageSquare className="text-blue-500 mt-1 mr-2" />
-                <textarea 
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200" 
+                <textarea
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200"
                   rows="3"
                   placeholder="Please provide any additional information or concerns about your visit"
                 ></textarea>
               </div>
             </div>
-            
+
             {/* Submit Button */}
             <div className="flex justify-end mt-8">
               <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg">

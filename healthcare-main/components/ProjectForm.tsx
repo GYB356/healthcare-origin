@@ -1,45 +1,47 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Project, NewProject } from '../types/project'
+import { useState, useEffect } from "react";
+import { Project, NewProject } from "../types/project";
 
 interface ProjectFormProps {
-  onSubmit: (project: NewProject) => void
-  onCancel: () => void
-  initialData?: Project
+  onSubmit: (project: NewProject) => void;
+  onCancel: () => void;
+  initialData?: Project;
 }
 
 export default function ProjectForm({ onSubmit, onCancel, initialData }: ProjectFormProps) {
   const [formData, setFormData] = useState<NewProject>({
-    name: '',
-    address: '',
-    clientName: '',
-    status: 'pending',
+    name: "",
+    address: "",
+    clientName: "",
+    status: "pending",
     estimatedCost: 0,
-    description: '',
-    startDate: '',
-    completionDate: '',
-  })
+    description: "",
+    startDate: "",
+    completionDate: "",
+  });
 
   // Load initial data when editing an existing project
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData)
+      setFormData(initialData);
     }
-  }, [initialData])
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
+    e.preventDefault();
+    onSubmit(formData);
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: name === 'estimatedCost' ? parseFloat(value) || 0 : value
-    }))
-  }
+      [name]: name === "estimatedCost" ? parseFloat(value) || 0 : value,
+    }));
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -176,9 +178,9 @@ export default function ProjectForm({ onSubmit, onCancel, initialData }: Project
           type="submit"
           className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
         >
-          {initialData ? 'Update Project' : 'Save Project'}
+          {initialData ? "Update Project" : "Save Project"}
         </button>
       </div>
     </form>
-  )
-} 
+  );
+}

@@ -1,6 +1,6 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
-import { PrismaClient } from '@prisma/client';
+import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -8,11 +8,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const session = await getSession({ req });
 
   if (!session?.user?.id) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
@@ -20,17 +20,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Validate input
     if (!doctorId || !patientId) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
     // Check if conversation already exists
     const existingConversation = await prisma.conversation.findFirst({
       where: {
-        AND: [
-          { doctorId },
-          { patientId }
-        ]
-      }
+        AND: [{ doctorId }, { patientId }],
+      },
     });
 
     if (existingConversation) {
@@ -49,22 +46,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             id: true,
             name: true,
             image: true,
-          }
+          },
         },
         patient: {
           select: {
             id: true,
             name: true,
             image: true,
-          }
+          },
         },
         messages: true,
-      }
+      },
     });
 
     return res.status(201).json(conversation);
   } catch (error) {
-    console.error('Error creating conversation:', error);
-    return res.status(500).json({ error: 'Failed to create conversation' });
+    console.error("Error creating conversation:", error);
+    return res.status(500).json({ error: "Failed to create conversation" });
   }
-} 
+}

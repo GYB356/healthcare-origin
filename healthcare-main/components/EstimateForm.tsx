@@ -1,93 +1,95 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Estimate, NewEstimate, EstimateItem } from '../types/estimate'
-import { Project } from '../types/project'
-import { Client } from '../types/client'
-import EstimateItemForm from './EstimateItemForm'
+import { useState, useEffect } from "react";
+import { Estimate, NewEstimate, EstimateItem } from "../types/estimate";
+import { Project } from "../types/project";
+import { Client } from "../types/client";
+import EstimateItemForm from "./EstimateItemForm";
 
 interface EstimateFormProps {
-  onSubmit: (estimate: NewEstimate) => void
-  onCancel: () => void
-  initialData?: Estimate
-  projects: Project[]
-  clients: Client[]
+  onSubmit: (estimate: NewEstimate) => void;
+  onCancel: () => void;
+  initialData?: Estimate;
+  projects: Project[];
+  clients: Client[];
 }
 
-export default function EstimateForm({ 
-  onSubmit, 
-  onCancel, 
+export default function EstimateForm({
+  onSubmit,
+  onCancel,
   initialData,
   projects,
   clients,
 }: EstimateFormProps) {
   const [formData, setFormData] = useState<NewEstimate>({
-    projectId: '',
-    clientId: '',
-    date: new Date().toISOString().split('T')[0],
+    projectId: "",
+    clientId: "",
+    date: new Date().toISOString().split("T")[0],
     items: [],
     taxRate: 0,
-    notes: '',
-    status: 'draft',
-    validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  })
+    notes: "",
+    status: "draft",
+    validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+  });
 
-  const [showItemForm, setShowItemForm] = useState(false)
+  const [showItemForm, setShowItemForm] = useState(false);
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData)
+      setFormData(initialData);
     }
-  }, [initialData])
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
+    e.preventDefault();
+    onSubmit(formData);
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: name === 'taxRate' ? parseFloat(value) || 0 : value
-    }))
-  }
+      [name]: name === "taxRate" ? parseFloat(value) || 0 : value,
+    }));
+  };
 
-  const handleAddItem = (item: Omit<EstimateItem, 'id'>) => {
+  const handleAddItem = (item: Omit<EstimateItem, "id">) => {
     const newItem: EstimateItem = {
       ...item,
       id: Date.now().toString(),
-    }
-    setFormData(prev => ({
+    };
+    setFormData((prev) => ({
       ...prev,
-      items: [...prev.items, newItem]
-    }))
-    setShowItemForm(false)
-  }
+      items: [...prev.items, newItem],
+    }));
+    setShowItemForm(false);
+  };
 
   const handleRemoveItem = (itemId: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      items: prev.items.filter(item => item.id !== itemId)
-    }))
-  }
+      items: prev.items.filter((item) => item.id !== itemId),
+    }));
+  };
 
   const calculateTotals = () => {
-    const subtotal = formData.items.reduce((sum, item) => sum + item.total, 0)
-    const taxAmount = subtotal * (formData.taxRate / 100)
-    const total = subtotal + taxAmount
-    return { subtotal, taxAmount, total }
-  }
+    const subtotal = formData.items.reduce((sum, item) => sum + item.total, 0);
+    const taxAmount = subtotal * (formData.taxRate / 100);
+    const total = subtotal + taxAmount;
+    return { subtotal, taxAmount, total };
+  };
 
-  const { subtotal, taxAmount, total } = calculateTotals()
+  const { subtotal, taxAmount, total } = calculateTotals();
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 2,
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -105,7 +107,7 @@ export default function EstimateForm({
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="">Select a project</option>
-            {projects.map(project => (
+            {projects.map((project) => (
               <option key={project.id} value={project.id}>
                 {project.name}
               </option>
@@ -126,7 +128,7 @@ export default function EstimateForm({
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="">Select a client</option>
-            {clients.map(client => (
+            {clients.map((client) => (
               <option key={client.id} value={client.id}>
                 {client.name}
               </option>
@@ -179,10 +181,7 @@ export default function EstimateForm({
 
         {showItemForm && (
           <div className="bg-gray-50 p-4 rounded-md">
-            <EstimateItemForm
-              onAdd={handleAddItem}
-              onCancel={() => setShowItemForm(false)}
-            />
+            <EstimateItemForm onAdd={handleAddItem} onCancel={() => setShowItemForm(false)} />
           </div>
         )}
 
@@ -209,7 +208,7 @@ export default function EstimateForm({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {formData.items.map(item => (
+                {formData.items.map((item) => (
                   <tr key={item.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {item.description}
@@ -302,9 +301,9 @@ export default function EstimateForm({
           type="submit"
           className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
         >
-          {initialData ? 'Update Estimate' : 'Create Estimate'}
+          {initialData ? "Update Estimate" : "Create Estimate"}
         </button>
       </div>
     </form>
-  )
-} 
+  );
+}

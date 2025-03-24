@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
-import { toast } from 'react-toastify';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { io } from "socket.io-client";
+import { toast } from "react-toastify";
 
 // Create context with default values
 const SocketContext = createContext({
@@ -17,36 +17,36 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     // Initialize socket connection
-    const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:5000', {
-      path: '/socket.io',
-      transports: ['websocket', 'polling'],
+    const newSocket = io(process.env.REACT_APP_API_URL || "http://localhost:5000", {
+      path: "/socket.io",
+      transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
 
     // Connection event handlers
-    newSocket.on('connect', () => {
+    newSocket.on("connect", () => {
       setSocket(newSocket);
       setConnected(true);
-      toast.success('Socket connected', { 
-        position: 'bottom-right', 
-        autoClose: 2000 
+      toast.success("Socket connected", {
+        position: "bottom-right",
+        autoClose: 2000,
       });
     });
 
-    newSocket.on('disconnect', () => {
+    newSocket.on("disconnect", () => {
       setConnected(false);
-      toast.warn('Socket disconnected', { 
-        position: 'bottom-right',
-        autoClose: 2000 
+      toast.warn("Socket disconnected", {
+        position: "bottom-right",
+        autoClose: 2000,
       });
     });
 
-    newSocket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
-      toast.error('Socket connection failed', { 
-        position: 'bottom-right' 
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+      toast.error("Socket connection failed", {
+        position: "bottom-right",
       });
     });
 
@@ -61,7 +61,7 @@ export const SocketProvider = ({ children }) => {
     if (socket && connected) {
       socket.emit(event, data);
     } else {
-      toast.error('Socket not connected');
+      toast.error("Socket not connected");
     }
   };
 
@@ -77,27 +77,25 @@ export const SocketProvider = ({ children }) => {
     socket,
     connected,
     emit,
-    subscribe
+    subscribe,
   };
 
-  return (
-    <SocketContext.Provider value={contextValue}>
-      {children}
-    </SocketContext.Provider>
-  );
+  return <SocketContext.Provider value={contextValue}>{children}</SocketContext.Provider>;
 };
 
 // Custom hook to use the socket context
 export const useSocket = () => {
   const context = useContext(SocketContext);
-  
+
   // Provide default values to prevent null destructuring
-  return context || {
-    socket: null,
-    connected: false,
-    emit: () => {},
-    subscribe: () => {}
-  };
+  return (
+    context || {
+      socket: null,
+      connected: false,
+      emit: () => {},
+      subscribe: () => {},
+    }
+  );
 };
 
 export default SocketContext;

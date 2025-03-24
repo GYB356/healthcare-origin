@@ -20,20 +20,22 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@/app/*": ["./app/*"],
-      "@/components/*": ["./components/*"],
-      "@/lib/*": ["./lib/*"],
-      "@/pages/*": ["./pages/*"],
-      "@/api/*": ["./app/api/*"]
-    }
+      "@/*": [
+        "./src/*",
+        "./*"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "jest.setup.js",
-    "jest.config.js"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

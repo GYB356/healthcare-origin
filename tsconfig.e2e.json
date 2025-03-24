@@ -9,4 +9,4 @@
     "types": ["node", "@playwright/test"]
   },
   "include": ["e2e/**/*", "playwright.config.ts"]
-} 
+}

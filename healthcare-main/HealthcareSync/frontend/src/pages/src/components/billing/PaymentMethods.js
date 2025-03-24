@@ -1,7 +1,15 @@
-import React from 'react';
-import { FiCreditCard, FiPlus } from 'react-icons/fi';
+import React from "react";
+import { FiCreditCard, FiPlus } from "react-icons/fi";
 
-const PaymentMethods = ({ paymentMethods, onAdd, onEdit, onDelete, onSetDefault, isPatient, isAdmin }) => {
+const PaymentMethods = ({
+  paymentMethods,
+  onAdd,
+  onEdit,
+  onDelete,
+  onSetDefault,
+  isPatient,
+  isAdmin,
+}) => {
   return (
     <div className="bg-white shadow rounded-lg p-6 mb-6">
       <div className="flex justify-between items-center mb-4">
@@ -23,7 +31,9 @@ const PaymentMethods = ({ paymentMethods, onAdd, onEdit, onDelete, onSetDefault,
           <FiCreditCard className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No payment methods</h3>
           <p className="mt-1 text-sm text-gray-500">
-            {isPatient ? 'Add a payment method to easily pay your invoices.' : 'This patient has no payment methods on file.'}
+            {isPatient
+              ? "Add a payment method to easily pay your invoices."
+              : "This patient has no payment methods on file."}
           </p>
           {isPatient && (
             <div className="mt-6">
@@ -39,7 +49,7 @@ const PaymentMethods = ({ paymentMethods, onAdd, onEdit, onDelete, onSetDefault,
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {paymentMethods.map(method => (
+          {paymentMethods.map((method) => (
             <div key={method._id} className="border border-gray-200 rounded-lg p-4 relative">
               {method.isDefault && (
                 <span className="absolute top-2 right-2 px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
@@ -48,9 +58,13 @@ const PaymentMethods = ({ paymentMethods, onAdd, onEdit, onDelete, onSetDefault,
               )}
               <div className="flex items-center mb-2">
                 <FiCreditCard className="mr-2 text-gray-500" />
-                <span className="font-medium text-gray-900">{method.cardType} •••• {method.lastFour}</span>
+                <span className="font-medium text-gray-900">
+                  {method.cardType} •••• {method.lastFour}
+                </span>
               </div>
-              <p className="text-sm text-gray-500">Expires: {method.expiryMonth}/{method.expiryYear}</p>
+              <p className="text-sm text-gray-500">
+                Expires: {method.expiryMonth}/{method.expiryYear}
+              </p>
               <p className="text-sm text-gray-500">{method.billingName}</p>
               {(isPatient || isAdmin) && (
                 <div className="mt-4 flex justify-end space-x-2">
@@ -90,4 +104,4 @@ const PaymentMethods = ({ paymentMethods, onAdd, onEdit, onDelete, onSetDefault,
   );
 };
 
-export default PaymentMethods; 
+export default PaymentMethods;

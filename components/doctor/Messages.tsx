@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from 'react';
-import { useSession } from 'next-auth/react';
-import { io, Socket } from 'socket.io-client';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import NewConversation from '../NewConversation';
+import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
+import { io, Socket } from "socket.io-client";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import NewConversation from "../NewConversation";
 
 interface Message {
   id: string;
@@ -32,7 +32,7 @@ export default function Messages() {
   const { data: session } = useSession();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -41,13 +41,13 @@ export default function Messages() {
     if (!session?.user?.id) return;
 
     // Initialize socket connection
-    socketRef.current = io(process.env.NEXTAUTH_URL || 'http://localhost:3000');
+    socketRef.current = io(process.env.NEXTAUTH_URL || "http://localhost:3000");
 
     // Listen for new messages
-    socketRef.current.on('new_message', (message: Message) => {
-      setConversations(prev => {
+    socketRef.current.on("new_message", (message: Message) => {
+      setConversations((prev) => {
         const updated = [...prev];
-        const conversation = updated.find(c => c.id === message.conversationId);
+        const conversation = updated.find((c) => c.id === message.conversationId);
         if (conversation) {
           conversation.messages.push(message);
         }
@@ -61,11 +61,11 @@ export default function Messages() {
     });
 
     // Listen for message read status updates
-    socketRef.current.on('message_read', (messageId: string) => {
-      setConversations(prev => {
+    socketRef.current.on("message_read", (messageId: string) => {
+      setConversations((prev) => {
         const updated = [...prev];
-        updated.forEach(conversation => {
-          conversation.messages.forEach(message => {
+        updated.forEach((conversation) => {
+          conversation.messages.forEach((message) => {
             if (message.id === messageId) {
               message.read = true;
             }
@@ -76,7 +76,7 @@ export default function Messages() {
     });
 
     // Listen for unread count updates
-    socketRef.current.on('unread_count_update', (count: number) => {
+    socketRef.current.on("unread_count_update", (count: number) => {
       setUnreadCount(count);
     });
 
@@ -92,18 +92,20 @@ export default function Messages() {
 
   const fetchConversations = async () => {
     try {
-      const response = await fetch('/api/conversations/doctor');
+      const response = await fetch("/api/conversations/doctor");
       const data = await response.json();
       setConversations(data);
-      
+
       // Calculate total unread messages
       const totalUnread = data.reduce((acc: number, conv: Conversation) => {
-        return acc + conv.messages.filter(m => !m.read && m.sender.id !== session?.user?.id).length;
+        return (
+          acc + conv.messages.filter((m) => !m.read && m.sender.id !== session?.user?.id).length
+        );
       }, 0);
       setUnreadCount(totalUnread);
     } catch (error) {
-      console.error('Error fetching conversations:', error);
-      toast.error('Failed to load conversations');
+      console.error("Error fetching conversations:", error);
+      toast.error("Failed to load conversations");
     }
   };
 
@@ -112,12 +114,12 @@ export default function Messages() {
     if (!newMessage.trim() || !selectedConversation) return;
 
     try {
-      const conversation = conversations.find(c => c.id === selectedConversation);
+      const conversation = conversations.find((c) => c.id === selectedConversation);
       if (!conversation) return;
 
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: newMessage,
           conversationId: selectedConversation,
@@ -125,31 +127,31 @@ export default function Messages() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to send message');
+      if (!response.ok) throw new Error("Failed to send message");
 
-      setNewMessage('');
+      setNewMessage("");
       scrollToBottom();
     } catch (error) {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message');
+      console.error("Error sending message:", error);
+      toast.error("Failed to send message");
     }
   };
 
   const markAsRead = async (messageId: string) => {
     try {
       const response = await fetch(`/api/messages/${messageId}/read`, {
-        method: 'PUT',
+        method: "PUT",
       });
 
-      if (!response.ok) throw new Error('Failed to mark message as read');
+      if (!response.ok) throw new Error("Failed to mark message as read");
     } catch (error) {
-      console.error('Error marking message as read:', error);
-      toast.error('Failed to mark message as read');
+      console.error("Error marking message as read:", error);
+      toast.error("Failed to mark message as read");
     }
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleConversationCreated = () => {
@@ -173,24 +175,25 @@ export default function Messages() {
           <NewConversation onConversationCreated={handleConversationCreated} />
         </div>
         <div className="flex-1 overflow-y-auto">
-          {conversations.map(conversation => (
+          {conversations.map((conversation) => (
             <div
               key={conversation.id}
               className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${
-                selectedConversation === conversation.id ? 'bg-gray-100' : ''
+                selectedConversation === conversation.id ? "bg-gray-100" : ""
               }`}
               onClick={() => setSelectedConversation(conversation.id)}
             >
               <div className="flex items-center">
                 <img
-                  src={conversation.patient.image || '/default-avatar.png'}
+                  src={conversation.patient.image || "/default-avatar.png"}
                   alt={conversation.patient.name}
                   className="w-10 h-10 rounded-full mr-3"
                 />
                 <div>
                   <h3 className="font-medium">{conversation.patient.name}</h3>
                   <p className="text-sm text-gray-500">
-                    {conversation.messages[conversation.messages.length - 1]?.content || 'No messages'}
+                    {conversation.messages[conversation.messages.length - 1]?.content ||
+                      "No messages"}
                   </p>
                 </div>
               </div>
@@ -205,24 +208,24 @@ export default function Messages() {
           <>
             <div className="p-4 border-b">
               <h2 className="text-xl font-semibold">
-                {conversations.find(c => c.id === selectedConversation)?.patient.name}
+                {conversations.find((c) => c.id === selectedConversation)?.patient.name}
               </h2>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
               {conversations
-                .find(c => c.id === selectedConversation)
-                ?.messages.map(message => (
+                .find((c) => c.id === selectedConversation)
+                ?.messages.map((message) => (
                   <div
                     key={message.id}
                     className={`mb-4 ${
-                      message.sender.id === session?.user?.id ? 'text-right' : 'text-left'
+                      message.sender.id === session?.user?.id ? "text-right" : "text-left"
                     }`}
                   >
                     <div
                       className={`inline-block p-3 rounded-lg ${
                         message.sender.id === session?.user?.id
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-100'
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-100"
                       }`}
                       onMouseEnter={() => {
                         if (!message.read && message.sender.id !== session?.user?.id) {
@@ -265,4 +268,4 @@ export default function Messages() {
       </div>
     </div>
   );
-} 
+}

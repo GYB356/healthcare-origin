@@ -16,7 +16,7 @@ const PrescriptionSchema = new mongoose.Schema(
     signedByDoctor: { type: Boolean, default: false },
     signature: { type: String }, // Store digital signature
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export default mongoose.model("Prescription", PrescriptionSchema); 
+export default mongoose.model("Prescription", PrescriptionSchema);

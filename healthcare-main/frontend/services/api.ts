@@ -1,19 +1,19 @@
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import { ApiResponse, Appointment, Report, User } from '../../types';
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
+import { ApiResponse, Appointment, Report, User } from "../../types";
 
 // Create axios instance
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Request interceptor to add auth token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
+    config.headers["Authorization"] = `Bearer ${token}`;
   }
   return config;
 });
@@ -24,22 +24,25 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     // Handle token expiration
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
       // Redirect to login if on client side
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // API service class
 export class ApiService {
   // Auth endpoints
-  static async login(email: string, password: string): Promise<ApiResponse<{ token: string; user: User }>> {
+  static async login(
+    email: string,
+    password: string,
+  ): Promise<ApiResponse<{ token: string; user: User }>> {
     try {
-      const response = await api.post('/users/login', { email, password });
+      const response = await api.post("/users/login", { email, password });
       return { success: true, data: response.data };
     } catch (error) {
       return this.handleError(error);
@@ -48,7 +51,7 @@ export class ApiService {
 
   static async register(userData: Partial<User>): Promise<ApiResponse<User>> {
     try {
-      const response = await api.post('/users/register', userData);
+      const response = await api.post("/users/register", userData);
       return { success: true, data: response.data };
     } catch (error) {
       return this.handleError(error);
@@ -58,7 +61,7 @@ export class ApiService {
   // Appointment endpoints
   static async getAppointments(): Promise<ApiResponse<Appointment[]>> {
     try {
-      const response = await api.get('/appointments');
+      const response = await api.get("/appointments");
       return { success: true, data: response.data };
     } catch (error) {
       return this.handleError(error);
@@ -74,9 +77,11 @@ export class ApiService {
     }
   }
 
-  static async createAppointment(appointmentData: Partial<Appointment>): Promise<ApiResponse<Appointment>> {
+  static async createAppointment(
+    appointmentData: Partial<Appointment>,
+  ): Promise<ApiResponse<Appointment>> {
     try {
-      const response = await api.post('/appointments', appointmentData);
+      const response = await api.post("/appointments", appointmentData);
       return { success: true, data: response.data };
     } catch (error) {
       return this.handleError(error);
@@ -102,9 +107,12 @@ export class ApiService {
     }
   }
 
-  static async createReport(appointmentId: string, transcript: string): Promise<ApiResponse<{ message: string; report: Report }>> {
+  static async createReport(
+    appointmentId: string,
+    transcript: string,
+  ): Promise<ApiResponse<{ message: string; report: Report }>> {
     try {
-      const response = await api.post('/reports', { appointmentId, transcript });
+      const response = await api.post("/reports", { appointmentId, transcript });
       return { success: true, data: response.data };
     } catch (error) {
       return this.handleError(error);
@@ -113,7 +121,7 @@ export class ApiService {
 
   // Private helper methods
   private static handleError(error: any): ApiResponse<never> {
-    const errorMessage = error.response?.data?.message || 'Something went wrong';
+    const errorMessage = error.response?.data?.message || "Something went wrong";
     return {
       success: false,
       error: errorMessage,

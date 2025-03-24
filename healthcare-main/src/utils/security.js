@@ -9,16 +9,16 @@ export const secureStorage = {
   // Simple encryption function (in production, use a real encryption library)
   _encrypt: (data) => {
     try {
-      if (typeof data === 'object') {
+      if (typeof data === "object") {
         data = JSON.stringify(data);
       }
       return btoa(data);
     } catch (error) {
-      console.error('Encryption error:', error);
+      console.error("Encryption error:", error);
       return null;
     }
   },
-  
+
   // Simple decryption function
   _decrypt: (encryptedData) => {
     try {
@@ -31,11 +31,11 @@ export const secureStorage = {
         return decoded;
       }
     } catch (error) {
-      console.error('Decryption error:', error);
+      console.error("Decryption error:", error);
       return null;
     }
   },
-  
+
   // Store item with encryption
   setItem: async (key, value) => {
     try {
@@ -46,11 +46,11 @@ export const secureStorage = {
       }
       return false;
     } catch (error) {
-      console.error('Error storing encrypted item:', error);
+      console.error("Error storing encrypted item:", error);
       return false;
     }
   },
-  
+
   // Retrieve and decrypt item
   getItem: async (key) => {
     try {
@@ -58,32 +58,32 @@ export const secureStorage = {
       if (!encryptedValue) return null;
       return secureStorage._decrypt(encryptedValue);
     } catch (error) {
-      console.error('Error retrieving encrypted item:', error);
+      console.error("Error retrieving encrypted item:", error);
       return null;
     }
   },
-  
+
   // Remove item
   removeItem: async (key) => {
     try {
       localStorage.removeItem(key);
       return true;
     } catch (error) {
-      console.error('Error removing item:', error);
+      console.error("Error removing item:", error);
       return false;
     }
   },
-  
+
   // Clear all items
   clear: async () => {
     try {
       localStorage.clear();
       return true;
     } catch (error) {
-      console.error('Error clearing storage:', error);
+      console.error("Error clearing storage:", error);
       return false;
     }
-  }
+  },
 };
 
 /**
@@ -111,5 +111,5 @@ export const hasPermission = (user, permission) => {
 export default {
   secureStorage,
   encryptData,
-  hasPermission
+  hasPermission,
 };

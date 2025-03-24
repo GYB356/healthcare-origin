@@ -1,21 +1,21 @@
 export enum A11ySeverity {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  CRITICAL = 'critical'
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+  CRITICAL = "critical",
 }
 
 export enum A11yIssueType {
-  MISSING_ALT_TEXT = 'missing-alt-text',
-  LOW_COLOR_CONTRAST = 'low-color-contrast',
-  MISSING_FORM_LABEL = 'missing-form-label',
-  MISSING_ARIA_LABEL = 'missing-aria-label',
-  KEYBOARD_NAVIGATION = 'keyboard-navigation',
-  SCREEN_READER_COMPATIBILITY = 'screen-reader-compatibility',
-  SEMANTIC_HTML = 'semantic-html',
-  FORM_ERROR = 'form-error',
-  HEADING_STRUCTURE = 'heading-structure',
-  LINK_PURPOSE = 'link-purpose'
+  MISSING_ALT_TEXT = "missing-alt-text",
+  LOW_COLOR_CONTRAST = "low-color-contrast",
+  MISSING_FORM_LABEL = "missing-form-label",
+  MISSING_ARIA_LABEL = "missing-aria-label",
+  KEYBOARD_NAVIGATION = "keyboard-navigation",
+  SCREEN_READER_COMPATIBILITY = "screen-reader-compatibility",
+  SEMANTIC_HTML = "semantic-html",
+  FORM_ERROR = "form-error",
+  HEADING_STRUCTURE = "heading-structure",
+  LINK_PURPOSE = "link-purpose",
 }
 
 export interface A11yIssue {
@@ -92,4 +92,4 @@ export interface A11yValidationRule {
   validate: (element: Element) => boolean;
   getSeverity: (element: Element) => A11ySeverity;
   getMessage: (element: Element) => string;
-} 
+}

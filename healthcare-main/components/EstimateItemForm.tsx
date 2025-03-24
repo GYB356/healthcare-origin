@@ -1,40 +1,40 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { EstimateItem } from '../types/estimate'
+import { useState } from "react";
+import { EstimateItem } from "../types/estimate";
 
 interface EstimateItemFormProps {
-  onAdd: (item: Omit<EstimateItem, 'id'>) => void
-  onCancel: () => void
+  onAdd: (item: Omit<EstimateItem, "id">) => void;
+  onCancel: () => void;
 }
 
 export default function EstimateItemForm({ onAdd, onCancel }: EstimateItemFormProps) {
   const [formData, setFormData] = useState({
-    description: '',
+    description: "",
     quantity: 1,
     unitPrice: 0,
-  })
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     onAdd({
       ...formData,
       total: formData.quantity * formData.unitPrice,
-    })
+    });
     setFormData({
-      description: '',
+      description: "",
       quantity: 1,
       unitPrice: 0,
-    })
-  }
+    });
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: name === 'description' ? value : parseFloat(value) || 0
-    }))
-  }
+      [name]: name === "description" ? value : parseFloat(value) || 0,
+    }));
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -105,5 +105,5 @@ export default function EstimateItemForm({ onAdd, onCancel }: EstimateItemFormPr
         </button>
       </div>
     </form>
-  )
-} 
+  );
+}

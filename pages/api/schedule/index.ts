@@ -1,20 +1,17 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
-import prisma from '@/lib/prisma';
+import { NextApiRequest, NextApiResponse } from "next";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]";
+import prisma from "@/lib/prisma";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
 
   if (!session) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   switch (req.method) {
-    case 'GET':
+    case "GET":
       try {
         const schedules = await prisma.schedule.findMany({
           where: {
@@ -24,21 +21,21 @@ export default async function handler(
             },
           },
           orderBy: {
-            startTime: 'asc',
+            startTime: "asc",
           },
         });
         return res.status(200).json({ schedules });
       } catch (error) {
-        return res.status(500).json({ error: 'Failed to fetch schedules' });
+        return res.status(500).json({ error: "Failed to fetch schedules" });
       }
 
-    case 'POST':
+    case "POST":
       try {
         const { startTime, endTime } = req.body;
 
         // Validate input
         if (!startTime || !endTime) {
-          return res.status(400).json({ error: 'Missing required fields' });
+          return res.status(400).json({ error: "Missing required fields" });
         }
 
         // Check for conflicts
@@ -63,7 +60,7 @@ export default async function handler(
         });
 
         if (conflictingSchedule) {
-          return res.status(409).json({ error: 'Time slot conflicts with existing schedule' });
+          return res.status(409).json({ error: "Time slot conflicts with existing schedule" });
         }
 
         const schedule = await prisma.schedule.create({
@@ -76,11 +73,11 @@ export default async function handler(
 
         return res.status(201).json(schedule);
       } catch (error) {
-        return res.status(500).json({ error: 'Failed to create schedule' });
+        return res.status(500).json({ error: "Failed to create schedule" });
       }
 
     default:
-      res.setHeader('Allow', ['GET', 'POST']);
+      res.setHeader("Allow", ["GET", "POST"]);
       return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
-} 
+}

@@ -9,7 +9,10 @@ export const generateMedicalReport = async (transcript: string) => {
     const response = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
-        { role: "system", content: "You are a medical AI assistant that generates structured consultation reports." },
+        {
+          role: "system",
+          content: "You are a medical AI assistant that generates structured consultation reports.",
+        },
         { role: "user", content: `Summarize this consultation: ${transcript}` },
       ],
     });
@@ -27,16 +30,17 @@ export const extractMedicalInfo = async (transcript: string) => {
     const response = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
-        { 
-          role: "system", 
-          content: "Extract key medical information from the consultation transcript in JSON format with the following fields: symptoms, diagnosis, recommendations, medications, followUpNeeded" 
+        {
+          role: "system",
+          content:
+            "Extract key medical information from the consultation transcript in JSON format with the following fields: symptoms, diagnosis, recommendations, medications, followUpNeeded",
         },
         { role: "user", content: transcript },
       ],
     });
 
     const content = response.choices[0].message?.content || "{}";
-    
+
     try {
       // Attempt to parse the response as JSON
       return JSON.parse(content);
@@ -47,7 +51,7 @@ export const extractMedicalInfo = async (transcript: string) => {
         diagnosis: "Unable to determine",
         recommendations: [],
         medications: [],
-        followUpNeeded: false
+        followUpNeeded: false,
       };
     }
   } catch (error) {
@@ -57,7 +61,7 @@ export const extractMedicalInfo = async (transcript: string) => {
       diagnosis: "Error processing transcript",
       recommendations: [],
       medications: [],
-      followUpNeeded: false
+      followUpNeeded: false,
     };
   }
 };
@@ -68,9 +72,10 @@ export const generateFollowUpQuestions = async (transcript: string) => {
     const response = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
-        { 
-          role: "system", 
-          content: "You are a medical assistant. Generate 3-5 important follow-up questions based on this consultation transcript." 
+        {
+          role: "system",
+          content:
+            "You are a medical assistant. Generate 3-5 important follow-up questions based on this consultation transcript.",
         },
         { role: "user", content: transcript },
       ],
@@ -81,4 +86,4 @@ export const generateFollowUpQuestions = async (transcript: string) => {
     console.error("AI Follow-up Questions Error:", error);
     return "Failed to generate follow-up questions.";
   }
-}; 
+};

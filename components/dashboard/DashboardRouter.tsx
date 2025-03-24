@@ -1,58 +1,40 @@
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
-import { UserRole } from '@prisma/client';
-import PatientDashboard from './PatientDashboard';
-import DoctorDashboard from './DoctorDashboard';
-import NurseDashboard from './NurseDashboard';
-import AdminDashboard from './AdminDashboard';
-import StaffDashboard from './StaffDashboard';
-import LoadingSpinner from '../LoadingSpinner';
+import React from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface SessionUser {
-  role: UserRole;
-}
+// Import dashboard components
+import AdminDashboard from "@/components/dashboard/AdminDashboard";
+import DoctorDashboard from "@/components/dashboard/DoctorDashboard";
+import PatientDashboard from "@/components/dashboard/PatientDashboard";
+import NurseDashboard from "@/components/dashboard/NurseDashboard";
+import StaffDashboard from "@/components/dashboard/StaffDashboard";
 
-interface ExtendedSession {
-  user?: SessionUser;
-}
+const DashboardRouter: React.FC = () => {
+  const { user } = useAuth();
 
-export default function DashboardRouter() {
-  const { data: session, status } = useSession() as { data: ExtendedSession | null, status: string };
-  const router = useRouter();
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
-    }
-  }, [status, router]);
-
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+  if (!user) {
+    return <div>Loading user data...</div>;
   }
 
-  if (!session?.user) {
-    return null;
-  }
-
-  // Determine which dashboard to show based on user role
-  switch (session.user.role) {
-    case UserRole.PATIENT:
-      return <PatientDashboard />;
-    case UserRole.DOCTOR:
-      return <DoctorDashboard />;
-    case UserRole.NURSE:
-      return <NurseDashboard />;
-    case UserRole.ADMIN:
+  // Return the appropriate dashboard based on user role
+  switch (user.role) {
+    case "admin":
       return <AdminDashboard />;
-    case UserRole.STAFF:
-      return <StaffDashboard />;
-    default:
-      // Default to patient dashboard if role is not recognized
+
+    case "doctor":
+      return <DoctorDashboard />;
+
+    case "patient":
       return <PatientDashboard />;
+
+    case "nurse":
+      return <NurseDashboard />;
+
+    case "staff":
+      return <StaffDashboard />;
+
+    default:
+      return <div>Invalid user role: {user.role}</div>;
   }
-}
+};
+
+export default DashboardRouter;

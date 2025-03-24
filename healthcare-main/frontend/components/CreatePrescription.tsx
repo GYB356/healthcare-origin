@@ -14,8 +14,14 @@ interface CreatePrescriptionProps {
   onPrescriptionCreated?: () => void;
 }
 
-export default function CreatePrescription({ appointmentId, patientId, onPrescriptionCreated }: CreatePrescriptionProps) {
-  const [medications, setMedications] = useState<Medication[]>([{ name: "", dosage: "", frequency: "", duration: "" }]);
+export default function CreatePrescription({
+  appointmentId,
+  patientId,
+  onPrescriptionCreated,
+}: CreatePrescriptionProps) {
+  const [medications, setMedications] = useState<Medication[]>([
+    { name: "", dosage: "", frequency: "", duration: "" },
+  ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const { token } = useAuth();
@@ -26,7 +32,8 @@ export default function CreatePrescription({ appointmentId, patientId, onPrescri
     setMedications(updatedMeds);
   };
 
-  const addMedication = () => setMedications([...medications, { name: "", dosage: "", frequency: "", duration: "" }]);
+  const addMedication = () =>
+    setMedications([...medications, { name: "", dosage: "", frequency: "", duration: "" }]);
 
   const removeMedication = (index: number) => {
     if (medications.length > 1) {
@@ -49,28 +56,28 @@ export default function CreatePrescription({ appointmentId, patientId, onPrescri
 
   const createPrescription = async () => {
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/prescriptions", {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json", 
-          Authorization: `Bearer ${token || localStorage.getItem("token")}` 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ appointmentId, patientId, medications }),
       });
 
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.message || "Failed to create prescription");
       }
-      
+
       if (onPrescriptionCreated) {
         onPrescriptionCreated();
       }
-      
+
       // Reset form after successful submission
       setMedications([{ name: "", dosage: "", frequency: "", duration: "" }]);
       alert(data.message);
@@ -85,20 +92,18 @@ export default function CreatePrescription({ appointmentId, patientId, onPrescri
   return (
     <div className="p-6 border rounded-lg bg-white shadow-sm">
       <h2 className="text-xl font-bold mb-4">Create Prescription</h2>
-      
+
       {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded">
-          {error}
-        </div>
+        <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded">{error}</div>
       )}
-      
+
       <div className="space-y-4">
         {medications.map((med, index) => (
           <div key={index} className="p-4 border rounded bg-gray-50">
             <div className="flex justify-between items-center mb-2">
               <h3 className="font-medium">Medication #{index + 1}</h3>
               {medications.length > 1 && (
-                <button 
+                <button
                   onClick={() => removeMedication(index)}
                   className="text-red-500 hover:text-red-700"
                 >
@@ -108,59 +113,61 @@ export default function CreatePrescription({ appointmentId, patientId, onPrescri
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Medication Name</label>
-                <input 
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Medication Name
+                </label>
+                <input
                   className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="e.g., Amoxicillin" 
-                  value={med.name} 
-                  onChange={(e) => handleChange(index, "name", e.target.value)} 
+                  placeholder="e.g., Amoxicillin"
+                  value={med.name}
+                  onChange={(e) => handleChange(index, "name", e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Dosage</label>
-                <input 
+                <input
                   className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="e.g., 500mg" 
-                  value={med.dosage} 
-                  onChange={(e) => handleChange(index, "dosage", e.target.value)} 
+                  placeholder="e.g., 500mg"
+                  value={med.dosage}
+                  onChange={(e) => handleChange(index, "dosage", e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
-                <input 
+                <input
                   className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="e.g., Twice daily" 
-                  value={med.frequency} 
-                  onChange={(e) => handleChange(index, "frequency", e.target.value)} 
+                  placeholder="e.g., Twice daily"
+                  value={med.frequency}
+                  onChange={(e) => handleChange(index, "frequency", e.target.value)}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
-                <input 
+                <input
                   className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="e.g., 7 days" 
-                  value={med.duration} 
-                  onChange={(e) => handleChange(index, "duration", e.target.value)} 
+                  placeholder="e.g., 7 days"
+                  value={med.duration}
+                  onChange={(e) => handleChange(index, "duration", e.target.value)}
                 />
               </div>
             </div>
           </div>
         ))}
       </div>
-      
+
       <div className="mt-4 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-        <button 
+        <button
           onClick={addMedication}
           className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-800 flex items-center justify-center"
         >
           <span className="mr-1">+</span> Add Medication
         </button>
-        <button 
+        <button
           onClick={createPrescription}
           disabled={isSubmitting}
-          className={`px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-md text-white flex items-center justify-center ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+          className={`px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-md text-white flex items-center justify-center ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
         >
-          {isSubmitting ? 'Creating...' : 'Create Prescription'}
+          {isSubmitting ? "Creating..." : "Create Prescription"}
         </button>
       </div>
     </div>

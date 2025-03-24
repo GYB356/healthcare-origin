@@ -1,12 +1,12 @@
-import { useEffect, useState, useRef } from 'react';
-import { useSession } from 'next-auth/react';
-import { io, Socket } from 'socket.io-client';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import NewConversation from '../NewConversation';
-import LoadingSpinner from '../LoadingSpinner';
-import { InlineNotification } from '../Notification';
-import { formatDate, timeAgo } from '../../lib/formatDate';
+import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
+import { io, Socket } from "socket.io-client";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import NewConversation from "../NewConversation";
+import LoadingSpinner from "../LoadingSpinner";
+import { InlineNotification } from "../Notification";
+import { formatDate, timeAgo } from "../../lib/formatDate";
 
 interface Message {
   id: string;
@@ -35,7 +35,7 @@ export default function Messages() {
   const { data: session } = useSession();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -46,13 +46,13 @@ export default function Messages() {
     if (!session?.user?.id) return;
 
     // Initialize socket connection
-    socketRef.current = io(process.env.NEXTAUTH_URL || 'http://localhost:3000');
+    socketRef.current = io(process.env.NEXTAUTH_URL || "http://localhost:3000");
 
     // Listen for new messages
-    socketRef.current.on('new_message', (message: Message) => {
-      setConversations(prev => {
+    socketRef.current.on("new_message", (message: Message) => {
+      setConversations((prev) => {
         const updated = [...prev];
-        const conversation = updated.find(c => c.id === message.conversationId);
+        const conversation = updated.find((c) => c.id === message.conversationId);
         if (conversation) {
           conversation.messages.push(message);
         }
@@ -66,11 +66,11 @@ export default function Messages() {
     });
 
     // Listen for message read status updates
-    socketRef.current.on('message_read', (messageId: string) => {
-      setConversations(prev => {
+    socketRef.current.on("message_read", (messageId: string) => {
+      setConversations((prev) => {
         const updated = [...prev];
-        updated.forEach(conversation => {
-          conversation.messages.forEach(message => {
+        updated.forEach((conversation) => {
+          conversation.messages.forEach((message) => {
             if (message.id === messageId) {
               message.read = true;
             }
@@ -81,7 +81,7 @@ export default function Messages() {
     });
 
     // Listen for unread count updates
-    socketRef.current.on('unread_count_update', (count: number) => {
+    socketRef.current.on("unread_count_update", (count: number) => {
       setUnreadCount(count);
     });
 
@@ -98,31 +98,33 @@ export default function Messages() {
   const fetchConversations = async () => {
     setIsLoading(true);
     setLoadingError(null);
-    
+
     try {
-      const response = await fetch('/api/conversations');
-      
+      const response = await fetch("/api/conversations");
+
       if (!response.ok) {
-        throw new Error('Failed to fetch conversations');
+        throw new Error("Failed to fetch conversations");
       }
-      
+
       const data = await response.json();
       setConversations(data);
-      
+
       // Calculate total unread messages
       const totalUnread = data.reduce((acc: number, conv: Conversation) => {
-        return acc + conv.messages.filter(m => !m.read && m.sender.id !== session?.user?.id).length;
+        return (
+          acc + conv.messages.filter((m) => !m.read && m.sender.id !== session?.user?.id).length
+        );
       }, 0);
       setUnreadCount(totalUnread);
-      
+
       // Select first conversation if none selected and there are conversations
       if (data.length > 0 && !selectedConversation) {
         setSelectedConversation(data[0].id);
       }
     } catch (error) {
-      console.error('Error fetching conversations:', error);
-      setLoadingError('Failed to load conversations. Please try again later.');
-      toast.error('Failed to load conversations');
+      console.error("Error fetching conversations:", error);
+      setLoadingError("Failed to load conversations. Please try again later.");
+      toast.error("Failed to load conversations");
     } finally {
       setIsLoading(false);
     }
@@ -133,12 +135,12 @@ export default function Messages() {
     if (!newMessage.trim() || !selectedConversation) return;
 
     try {
-      const conversation = conversations.find(c => c.id === selectedConversation);
+      const conversation = conversations.find((c) => c.id === selectedConversation);
       if (!conversation) return;
 
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: newMessage,
           conversationId: selectedConversation,
@@ -146,33 +148,33 @@ export default function Messages() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to send message');
+      if (!response.ok) throw new Error("Failed to send message");
 
-      setNewMessage('');
+      setNewMessage("");
       scrollToBottom();
     } catch (error) {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message');
+      console.error("Error sending message:", error);
+      toast.error("Failed to send message");
     }
   };
 
   const markAsRead = async (messageId: string) => {
     try {
-      const response = await fetch('/api/messages/read', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/messages/read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messageIds: [messageId] }),
       });
 
-      if (!response.ok) throw new Error('Failed to mark message as read');
+      if (!response.ok) throw new Error("Failed to mark message as read");
     } catch (error) {
-      console.error('Error marking message as read:', error);
+      console.error("Error marking message as read:", error);
     }
   };
 
   const scrollToBottom = () => {
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 
@@ -183,15 +185,15 @@ export default function Messages() {
   useEffect(() => {
     if (selectedConversation) {
       // Mark unread messages as read when conversation is selected
-      const conversation = conversations.find(c => c.id === selectedConversation);
+      const conversation = conversations.find((c) => c.id === selectedConversation);
       if (conversation) {
-        conversation.messages.forEach(message => {
+        conversation.messages.forEach((message) => {
           if (!message.read && message.sender.id !== session?.user?.id) {
             markAsRead(message.id);
           }
         });
       }
-      
+
       scrollToBottom();
     }
   }, [selectedConversation, conversations]);
@@ -244,24 +246,24 @@ export default function Messages() {
               No conversations yet. Start a new one!
             </div>
           ) : (
-            conversations.map(conversation => {
+            conversations.map((conversation) => {
               const unreadMessagesCount = conversation.messages.filter(
-                m => !m.read && m.sender.id !== session?.user?.id
+                (m) => !m.read && m.sender.id !== session?.user?.id,
               ).length;
-              
+
               const lastMessage = conversation.messages[conversation.messages.length - 1];
-              
+
               return (
                 <div
                   key={conversation.id}
                   className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${
-                    selectedConversation === conversation.id ? 'bg-gray-100' : ''
+                    selectedConversation === conversation.id ? "bg-gray-100" : ""
                   }`}
                   onClick={() => setSelectedConversation(conversation.id)}
                 >
                   <div className="flex items-center">
                     <img
-                      src={conversation.doctor.image || '/default-avatar.png'}
+                      src={conversation.doctor.image || "/default-avatar.png"}
                       alt={conversation.doctor.name}
                       className="w-10 h-10 rounded-full mr-3"
                     />
@@ -276,7 +278,7 @@ export default function Messages() {
                       </div>
                       <div className="flex justify-between items-center">
                         <p className="text-sm text-gray-500 truncate max-w-[180px]">
-                          {lastMessage?.content || 'No messages'}
+                          {lastMessage?.content || "No messages"}
                         </p>
                         {unreadMessagesCount > 0 && (
                           <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
@@ -299,31 +301,29 @@ export default function Messages() {
           <>
             <div className="p-4 border-b">
               <h2 className="text-xl font-semibold">
-                {conversations.find(c => c.id === selectedConversation)?.doctor.name}
+                {conversations.find((c) => c.id === selectedConversation)?.doctor.name}
               </h2>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
-              {conversations
-                .find(c => c.id === selectedConversation)
-                ?.messages.length === 0 ? (
+              {conversations.find((c) => c.id === selectedConversation)?.messages.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-gray-500">
                   No messages yet. Start the conversation!
                 </div>
               ) : (
                 conversations
-                  .find(c => c.id === selectedConversation)
-                  ?.messages.map(message => (
+                  .find((c) => c.id === selectedConversation)
+                  ?.messages.map((message) => (
                     <div
                       key={message.id}
                       className={`mb-4 ${
-                        message.sender.id === session?.user?.id ? 'text-right' : 'text-left'
+                        message.sender.id === session?.user?.id ? "text-right" : "text-left"
                       }`}
                     >
                       <div
                         className={`inline-block p-3 rounded-lg max-w-[80%] ${
                           message.sender.id === session?.user?.id
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-100'
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-100"
                         }`}
                         onMouseEnter={() => {
                           if (!message.read && message.sender.id !== session?.user?.id) {
@@ -335,9 +335,7 @@ export default function Messages() {
                         <div className="flex items-center justify-end mt-1 text-xs opacity-75 space-x-1">
                           <span>{formatDate(message.createdAt)}</span>
                           {message.sender.id === session?.user?.id && (
-                            <span className="ml-1">
-                              {message.read ? '✓✓' : '✓'}
-                            </span>
+                            <span className="ml-1">{message.read ? "✓✓" : "✓"}</span>
                           )}
                         </div>
                       </div>
@@ -373,4 +371,4 @@ export default function Messages() {
       </div>
     </div>
   );
-} 
+}

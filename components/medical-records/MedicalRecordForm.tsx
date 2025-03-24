@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { toast } from 'react-hot-toast';
+import React, { useState } from "react";
+import { useSession } from "next-auth/react";
+import { toast } from "react-hot-toast";
 
 interface MedicalRecordFormProps {
   patientId: string;
@@ -8,22 +8,26 @@ interface MedicalRecordFormProps {
   initialData?: any;
 }
 
-export default function MedicalRecordForm({ patientId, onSuccess, initialData }: MedicalRecordFormProps) {
+export default function MedicalRecordForm({
+  patientId,
+  onSuccess,
+  initialData,
+}: MedicalRecordFormProps) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    title: initialData?.title || '',
-    description: initialData?.description || '',
-    diagnosis: initialData?.diagnosis || '',
-    prescription: initialData?.prescription || '',
-    notes: initialData?.notes || '',
-    bloodPressure: initialData?.bloodPressure || '',
-    heartRate: initialData?.heartRate || '',
-    temperature: initialData?.temperature || '',
-    respiratoryRate: initialData?.respiratoryRate || '',
-    oxygenSaturation: initialData?.oxygenSaturation || '',
-    height: initialData?.height || '',
-    weight: initialData?.weight || '',
+    title: initialData?.title || "",
+    description: initialData?.description || "",
+    diagnosis: initialData?.diagnosis || "",
+    prescription: initialData?.prescription || "",
+    notes: initialData?.notes || "",
+    bloodPressure: initialData?.bloodPressure || "",
+    heartRate: initialData?.heartRate || "",
+    temperature: initialData?.temperature || "",
+    respiratoryRate: initialData?.respiratoryRate || "",
+    oxygenSaturation: initialData?.oxygenSaturation || "",
+    height: initialData?.height || "",
+    weight: initialData?.weight || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,9 +35,9 @@ export default function MedicalRecordForm({ patientId, onSuccess, initialData }:
     setLoading(true);
 
     try {
-      const response = await fetch('/api/medical-records', {
-        method: initialData ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/medical-records", {
+        method: initialData ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           patientId,
@@ -42,14 +46,14 @@ export default function MedicalRecordForm({ patientId, onSuccess, initialData }:
       });
 
       if (response.ok) {
-        toast.success(`Medical record ${initialData ? 'updated' : 'created'} successfully`);
+        toast.success(`Medical record ${initialData ? "updated" : "created"} successfully`);
         if (onSuccess) onSuccess();
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Something went wrong');
+        toast.error(error.message || "Something went wrong");
       }
     } catch (error) {
-      toast.error('Failed to save medical record');
+      toast.error("Failed to save medical record");
     } finally {
       setLoading(false);
     }
@@ -57,7 +61,7 @@ export default function MedicalRecordForm({ patientId, onSuccess, initialData }:
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -193,9 +197,9 @@ export default function MedicalRecordForm({ patientId, onSuccess, initialData }:
           disabled={loading}
           className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
         >
-          {loading ? 'Saving...' : initialData ? 'Update Record' : 'Create Record'}
+          {loading ? "Saving..." : initialData ? "Update Record" : "Create Record"}
         </button>
       </div>
     </form>
   );
-} 
+}

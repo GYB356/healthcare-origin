@@ -1,5 +1,5 @@
-import React from 'react';
-import { useAppointments } from '../contexts/AppointmentsContext.js';
+import React from "react";
+import { useAppointments } from "../contexts/AppointmentsContext.js";
 
 const AppointmentsList = () => {
   const { appointments, loading, error } = useAppointments();
@@ -14,7 +14,7 @@ const AppointmentsList = () => {
         <p>No upcoming appointments</p>
       ) : (
         <ul>
-          {appointments.map(appt => (
+          {appointments.map((appt) => (
             <li key={appt.id}>
               <h3>{appt.title}</h3>
               <p>Date: {new Date(appt.date).toLocaleDateString()}</p>

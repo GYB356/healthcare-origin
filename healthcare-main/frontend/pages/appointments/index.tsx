@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
-import { useAuth } from '../../context/AuthContext';
-import Layout from '../../components/Layout';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import { useAuth } from "../../context/AuthContext";
+import Layout from "../../components/Layout";
 
 interface Appointment {
   id: string;
   title: string;
   date: string;
   time: string;
-  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+  status: "scheduled" | "in-progress" | "completed" | "cancelled";
   customerId: string;
   contractorId: string;
 }
@@ -19,33 +19,33 @@ export default function AppointmentsList() {
   const { token, user } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!token) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
     const fetchAppointments = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/appointments', {
+        const response = await fetch("/api/appointments", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch appointments');
+          throw new Error("Failed to fetch appointments");
         }
 
         const data = await response.json();
         setAppointments(data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching appointments:', err);
-        setError('Could not load appointments');
+        console.error("Error fetching appointments:", err);
+        setError("Could not load appointments");
         setLoading(false);
       }
     };
@@ -55,16 +55,16 @@ export default function AppointmentsList() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'scheduled':
-        return 'bg-blue-100 text-blue-800';
-      case 'in-progress':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
+      case "scheduled":
+        return "bg-blue-100 text-blue-800";
+      case "in-progress":
+        return "bg-yellow-100 text-yellow-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -94,7 +94,7 @@ export default function AppointmentsList() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Your Appointments</h1>
           <button
-            onClick={() => router.push('/appointments/new')}
+            onClick={() => router.push("/appointments/new")}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
           >
             Schedule New Appointment
@@ -105,7 +105,7 @@ export default function AppointmentsList() {
           <div className="bg-white rounded-lg shadow-md p-6 text-center">
             <p className="text-gray-600">You don't have any appointments yet.</p>
             <button
-              onClick={() => router.push('/appointments/new')}
+              onClick={() => router.push("/appointments/new")}
               className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
             >
               Schedule Your First Appointment
@@ -134,9 +134,7 @@ export default function AppointmentsList() {
                 {appointments.map((appointment) => (
                   <tr key={appointment.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {appointment.title}
-                      </div>
+                      <div className="text-sm font-medium text-gray-900">{appointment.title}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{appointment.date}</div>
@@ -145,7 +143,7 @@ export default function AppointmentsList() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                          appointment.status
+                          appointment.status,
                         )}`}
                       >
                         {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
@@ -165,4 +163,4 @@ export default function AppointmentsList() {
       </div>
     </Layout>
   );
-} 
+}

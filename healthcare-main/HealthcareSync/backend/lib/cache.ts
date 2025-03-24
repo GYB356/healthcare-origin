@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import Redis from "ioredis";
 
 // Initialize Redis client with environment variable
 const redis = new Redis(process.env.REDIS_URL!);
@@ -15,7 +15,7 @@ export class CacheService {
       const data = await this.redis.get(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
-      console.error('Cache get error:', error);
+      console.error("Cache get error:", error);
       return null;
     }
   }
@@ -25,7 +25,7 @@ export class CacheService {
     try {
       await this.redis.setex(key, ttl, JSON.stringify(data));
     } catch (error) {
-      console.error('Cache set error:', error);
+      console.error("Cache set error:", error);
     }
   }
 
@@ -34,7 +34,7 @@ export class CacheService {
     try {
       await this.redis.del(key);
     } catch (error) {
-      console.error('Cache delete error:', error);
+      console.error("Cache delete error:", error);
     }
   }
 
@@ -42,7 +42,7 @@ export class CacheService {
   static async getOrSet<T>(
     key: string,
     callback: () => Promise<T>,
-    ttl: number = DEFAULT_CACHE_TTL
+    ttl: number = DEFAULT_CACHE_TTL,
   ): Promise<T | null> {
     try {
       const cachedData = await this.get<T>(key);
@@ -52,7 +52,7 @@ export class CacheService {
       await this.set(key, freshData, ttl);
       return freshData;
     } catch (error) {
-      console.error('Cache getOrSet error:', error);
+      console.error("Cache getOrSet error:", error);
       return null;
     }
   }
@@ -65,7 +65,7 @@ export class CacheService {
         await this.redis.del(...keys);
       }
     } catch (error) {
-      console.error('Cache clearPrefix error:', error);
+      console.error("Cache clearPrefix error:", error);
     }
   }
 
@@ -75,7 +75,7 @@ export class CacheService {
       await this.redis.ping();
       return true;
     } catch (error) {
-      console.error('Redis health check failed:', error);
+      console.error("Redis health check failed:", error);
       return false;
     }
   }

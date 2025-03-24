@@ -35,11 +35,14 @@ export default function Reports() {
       <h1>Medical Reports</h1>
       {reports.map((report) => (
         <div key={report}>
-          <a href="#" onClick={async (e) => {
-            e.preventDefault();
-            const url = await generateSignedUrl(report);
-            window.open(url, "_blank");
-          }}>
+          <a
+            href="#"
+            onClick={async (e) => {
+              e.preventDefault();
+              const url = await generateSignedUrl(report);
+              window.open(url, "_blank");
+            }}
+          >
             {report}
           </a>
         </div>

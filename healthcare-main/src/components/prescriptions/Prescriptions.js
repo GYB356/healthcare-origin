@@ -1,203 +1,204 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { 
-  FiFileText, 
-  FiPlus, 
-  FiFilter, 
-  FiSearch, 
-  FiRefreshCw, 
-  FiAlertTriangle, 
-  FiCheck, 
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import {
+  FiFileText,
+  FiPlus,
+  FiFilter,
+  FiSearch,
+  FiRefreshCw,
+  FiAlertTriangle,
+  FiCheck,
   FiX,
   FiCalendar,
   FiClock,
   FiUser,
   FiEdit,
   FiTrash2,
-  FiDownload
-} from 'react-icons/fi';
-import { formatDate } from '../../utils/dateUtils';
-import PrescriptionForm from './PrescriptionForm';
-import PrescriptionDetails from './PrescriptionDetails';
+  FiDownload,
+} from "react-icons/fi";
+import { formatDate } from "../../utils/dateUtils";
+import PrescriptionForm from "./PrescriptionForm";
+import PrescriptionDetails from "./PrescriptionDetails";
 
 const Prescriptions = () => {
   const { currentUser } = useAuth();
-  
+
   const [prescriptions, setPrescriptions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [filter, setFilter] = useState('active');
-  const [searchTerm, setSearchTerm] = useState('');
-  
+  const [filter, setFilter] = useState("active");
+  const [searchTerm, setSearchTerm] = useState("");
+
   // Fetch prescriptions on component mount
   useEffect(() => {
     fetchPrescriptions();
   }, []);
-  
+
   const fetchPrescriptions = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/prescriptions', {
+      const response = await fetch("/api/prescriptions", {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to fetch prescriptions');
+        throw new Error("Failed to fetch prescriptions");
       }
-      
+
       const data = await response.json();
       setPrescriptions(data);
-      setError('');
+      setError("");
     } catch (err) {
-      setError('Error loading prescriptions. Please try again.');
+      setError("Error loading prescriptions. Please try again.");
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
-  
+
   const handleCreatePrescription = () => {
     setSelectedPrescription(null);
     setShowForm(true);
   };
-  
+
   const handleEditPrescription = (prescription) => {
     setSelectedPrescription(prescription);
     setShowForm(true);
   };
-  
+
   const handleViewDetails = (prescription) => {
     setSelectedPrescription(prescription);
     setShowDetails(true);
   };
-  
+
   const handleDeletePrescription = async (prescriptionId) => {
-    if (!window.confirm('Are you sure you want to delete this prescription?')) {
+    if (!window.confirm("Are you sure you want to delete this prescription?")) {
       return;
     }
-    
+
     try {
       const response = await fetch(`/api/prescriptions/${prescriptionId}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to delete prescription');
+        throw new Error("Failed to delete prescription");
       }
-      
+
       // Update state after successful deletion
-      setPrescriptions(prev => prev.filter(p => p._id !== prescriptionId));
-      
+      setPrescriptions((prev) => prev.filter((p) => p._id !== prescriptionId));
+
       if (selectedPrescription && selectedPrescription._id === prescriptionId) {
         setSelectedPrescription(null);
         setShowDetails(false);
       }
     } catch (err) {
-      setError('Error deleting prescription. Please try again.');
+      setError("Error deleting prescription. Please try again.");
       console.error(err);
     }
   };
-  
+
   const handleFormClose = () => {
     setShowForm(false);
     setSelectedPrescription(null);
   };
-  
+
   const handleDetailsClose = () => {
     setShowDetails(false);
     setSelectedPrescription(null);
   };
-  
+
   const handleRefillRequest = async (prescriptionId) => {
     try {
       const response = await fetch(`/api/prescriptions/${prescriptionId}/refill`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to request refill');
+        throw new Error("Failed to request refill");
       }
-      
+
       // Update the prescription in state
       const updatedData = await response.json();
-      setPrescriptions(prev => 
-        prev.map(p => p._id === prescriptionId ? updatedData : p)
-      );
-      
+      setPrescriptions((prev) => prev.map((p) => (p._id === prescriptionId ? updatedData : p)));
+
       if (selectedPrescription && selectedPrescription._id === prescriptionId) {
         setSelectedPrescription(updatedData);
       }
-      
-      alert('Refill request submitted successfully');
+
+      alert("Refill request submitted successfully");
     } catch (err) {
-      setError('Error requesting refill. Please try again.');
+      setError("Error requesting refill. Please try again.");
       console.error(err);
     }
   };
-  
+
   const filterPrescriptions = () => {
     let filtered = [...prescriptions];
-    
+
     // Apply filter
     const now = new Date();
     switch (filter) {
-      case 'active':
-        filtered = filtered.filter(p => {
+      case "active":
+        filtered = filtered.filter((p) => {
           const expiryDate = new Date(p.expiryDate);
           return expiryDate > now && !p.discontinued;
         });
         break;
-      case 'expired':
-        filtered = filtered.filter(p => {
+      case "expired":
+        filtered = filtered.filter((p) => {
           const expiryDate = new Date(p.expiryDate);
           return expiryDate <= now && !p.discontinued;
         });
         break;
-      case 'discontinued':
-        filtered = filtered.filter(p => p.discontinued);
+      case "discontinued":
+        filtered = filtered.filter((p) => p.discontinued);
         break;
-      case 'refill-requested':
-        filtered = filtered.filter(p => p.refillRequested && !p.refillApproved);
+      case "refill-requested":
+        filtered = filtered.filter((p) => p.refillRequested && !p.refillApproved);
         break;
       default:
         break;
     }
-    
+
     // Apply search
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(p => 
-        (p.medication && p.medication.toLowerCase().includes(term)) ||
-        (p.dosage && p.dosage.toLowerCase().includes(term)) ||
-        (p.instructions && p.instructions.toLowerCase().includes(term)) ||
-        (p.prescribedBy && p.prescribedBy.name && p.prescribedBy.name.toLowerCase().includes(term)) ||
-        (p.patient && p.patient.name && p.patient.name.toLowerCase().includes(term))
+      filtered = filtered.filter(
+        (p) =>
+          (p.medication && p.medication.toLowerCase().includes(term)) ||
+          (p.dosage && p.dosage.toLowerCase().includes(term)) ||
+          (p.instructions && p.instructions.toLowerCase().includes(term)) ||
+          (p.prescribedBy &&
+            p.prescribedBy.name &&
+            p.prescribedBy.name.toLowerCase().includes(term)) ||
+          (p.patient && p.patient.name && p.patient.name.toLowerCase().includes(term)),
       );
     }
-    
+
     // Sort by date (newest first)
     filtered.sort((a, b) => new Date(b.prescribedDate) - new Date(a.prescribedDate));
-    
+
     return filtered;
   };
-  
+
   const filteredPrescriptions = filterPrescriptions();
-  
+
   const getStatusBadge = (prescription) => {
     const now = new Date();
     const expiryDate = new Date(prescription.expiryDate);
-    
+
     if (prescription.discontinued) {
       return (
         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
@@ -230,23 +231,23 @@ const Prescriptions = () => {
       );
     }
   };
-  
+
   const canRequestRefill = (prescription) => {
     if (!prescription) return false;
-    
+
     const now = new Date();
     const expiryDate = new Date(prescription.expiryDate);
-    
+
     return (
       !prescription.discontinued &&
       expiryDate > now &&
       !prescription.refillRequested &&
       !prescription.refillApproved &&
       prescription.refillsRemaining > 0 &&
-      currentUser.role === 'patient'
+      currentUser.role === "patient"
     );
   };
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -254,7 +255,7 @@ const Prescriptions = () => {
           <FiFileText className="inline-block mr-2" />
           Prescriptions
         </h1>
-        
+
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full md:w-auto">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -268,7 +269,7 @@ const Prescriptions = () => {
               className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:w-64 dark:bg-gray-700 dark:text-white"
             />
           </div>
-          
+
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FiFilter className="h-5 w-5 text-gray-400" />
@@ -285,8 +286,8 @@ const Prescriptions = () => {
               <option value="refill-requested">Refill Requested</option>
             </select>
           </div>
-          
-          {currentUser.role === 'doctor' && (
+
+          {currentUser.role === "doctor" && (
             <button
               onClick={handleCreatePrescription}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -297,7 +298,7 @@ const Prescriptions = () => {
           )}
         </div>
       </div>
-      
+
       {error && (
         <div className="bg-red-50 dark:bg-red-900 border-l-4 border-red-500 p-4 mb-6">
           <div className="flex items-center">
@@ -310,7 +311,7 @@ const Prescriptions = () => {
           </div>
         </div>
       )}
-      
+
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
@@ -318,15 +319,17 @@ const Prescriptions = () => {
       ) : filteredPrescriptions.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 text-center">
           <FiFileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">No prescriptions found</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+            No prescriptions found
+          </h3>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            {filter === 'active' 
-              ? "You don't have any active prescriptions." 
-              : filter === 'expired' 
-                ? "You don't have any expired prescriptions." 
+            {filter === "active"
+              ? "You don't have any active prescriptions."
+              : filter === "expired"
+                ? "You don't have any expired prescriptions."
                 : "No prescriptions match your search criteria."}
           </p>
-          {currentUser.role === 'doctor' && (
+          {currentUser.role === "doctor" && (
             <div className="mt-6">
               <button
                 onClick={handleCreatePrescription}
@@ -343,7 +346,7 @@ const Prescriptions = () => {
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {filteredPrescriptions.map((prescription) => (
               <li key={prescription._id}>
-                <div 
+                <div
                   className="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                   onClick={() => handleViewDetails(prescription)}
                 >
@@ -366,28 +369,33 @@ const Prescriptions = () => {
                       <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
                         <FiCalendar className="flex-shrink-0 mr-1.5 h-4 w-4" />
                         <p>
-                          Expires: {formatDate(prescription.expiryDate, { year: 'numeric', month: 'short', day: 'numeric' })}
+                          Expires:{" "}
+                          {formatDate(prescription.expiryDate, {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </p>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="mt-2">
                     <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
                       {prescription.instructions}
                     </p>
                   </div>
-                  
+
                   <div className="mt-2 flex items-center justify-between">
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                       <FiUser className="flex-shrink-0 mr-1.5 h-4 w-4" />
                       <p>
-                        {currentUser.role === 'patient' 
-                          ? `Dr. ${prescription.prescribedBy?.name || 'Unknown'}`
-                          : `${prescription.patient?.name || 'Unknown'}`}
+                        {currentUser.role === "patient"
+                          ? `Dr. ${prescription.prescribedBy?.name || "Unknown"}`
+                          : `${prescription.patient?.name || "Unknown"}`}
                       </p>
                     </div>
-                    
+
                     <div className="flex space-x-2">
                       {canRequestRefill(prescription) && (
                         <button
@@ -401,8 +409,8 @@ const Prescriptions = () => {
                           Request Refill
                         </button>
                       )}
-                      
-                      {currentUser.role === 'doctor' && (
+
+                      {currentUser.role === "doctor" && (
                         <>
                           <button
                             onClick={(e) => {
@@ -414,7 +422,7 @@ const Prescriptions = () => {
                             <FiEdit className="mr-1" />
                             Edit
                           </button>
-                          
+
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -427,12 +435,12 @@ const Prescriptions = () => {
                           </button>
                         </>
                       )}
-                      
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           // In a real app, this would download a PDF of the prescription
-                          alert('Downloading prescription...');
+                          alert("Downloading prescription...");
                         }}
                         className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 dark:border-gray-600 shadow-sm text-xs font-medium rounded text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                       >
@@ -447,7 +455,7 @@ const Prescriptions = () => {
           </ul>
         </div>
       )}
-      
+
       {showForm && (
         <PrescriptionForm
           prescription={selectedPrescription}
@@ -455,18 +463,18 @@ const Prescriptions = () => {
           onSave={(newPrescription) => {
             if (selectedPrescription) {
               // Update existing prescription
-              setPrescriptions(prev => 
-                prev.map(p => p._id === newPrescription._id ? newPrescription : p)
+              setPrescriptions((prev) =>
+                prev.map((p) => (p._id === newPrescription._id ? newPrescription : p)),
               );
             } else {
               // Add new prescription
-              setPrescriptions(prev => [...prev, newPrescription]);
+              setPrescriptions((prev) => [...prev, newPrescription]);
             }
             handleFormClose();
           }}
         />
       )}
-      
+
       {showDetails && selectedPrescription && (
         <PrescriptionDetails
           prescription={selectedPrescription}
@@ -489,4 +497,4 @@ const Prescriptions = () => {
   );
 };
 
-export default Prescriptions; 
+export default Prescriptions;

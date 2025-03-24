@@ -10,15 +10,15 @@ const ReportSchema = new mongoose.Schema(
       diagnosis: { type: String }, // Fixed: removed stray bracket
       recommendations: [{ type: String }],
       medications: [{ type: String }],
-      followUpNeeded: { type: Boolean, default: false }
+      followUpNeeded: { type: Boolean, default: false },
     },
     followUpQuestions: { type: String },
     createdAt: {
       type: Date,
-      default: Date.now
-    }
+      default: Date.now,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("Report", ReportSchema);

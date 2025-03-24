@@ -17,7 +17,7 @@ router.post("/", authenticate, async (req, res) => {
       type: "appointment",
       message: `New appointment booked by ${req.user.name}.`,
       appointmentId: appointment._id,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
 
     res.json({ message: "Appointment created", appointment });
@@ -57,7 +57,11 @@ router.get("/all", authenticate, authorizeRoles(["admin"]), async (req, res) => 
 router.put("/:id", authenticate, async (req, res) => {
   try {
     const { status } = req.body;
-    const appointment = await Appointment.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    const appointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true },
+    );
     res.json({ message: "Appointment updated", appointment });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -91,7 +95,7 @@ router.post("/book", authenticate, authorizeRoles(["patient"]), async (req, res)
       type: "appointment",
       message: `New appointment booked by ${req.user.name} for ${new Date(date).toLocaleDateString()}.`,
       appointmentId: appointment._id,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
 
     res.status(201).json({ message: "Appointment request sent", appointment });

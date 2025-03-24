@@ -1,14 +1,14 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verify } from 'jsonwebtoken';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { verify } from "jsonwebtoken";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
     // Get token from cookies
-    const token = cookies().get('token')?.value;
+    const token = cookies().get("token")?.value;
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Verify token and get user ID
@@ -40,7 +40,7 @@ export async function GET() {
             doctorId: userId,
           },
         },
-        role: 'PATIENT',
+        role: "PATIENT",
       },
     });
 
@@ -48,7 +48,7 @@ export async function GET() {
     const pendingReports = await prisma.appointment.count({
       where: {
         doctorId: userId,
-        status: 'COMPLETED',
+        status: "COMPLETED",
         medicalRecord: null,
       },
     });
@@ -59,10 +59,7 @@ export async function GET() {
       pendingReports,
     });
   } catch (error) {
-    console.error('Error fetching doctor stats:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error fetching doctor stats:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-} 
+}

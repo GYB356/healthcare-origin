@@ -1,15 +1,15 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FiFile, FiDownload, FiUpload } from 'react-icons/fi';
+import React from "react";
+import { Link } from "react-router-dom";
+import { FiFile, FiDownload, FiUpload } from "react-icons/fi";
 
 // Inline PageLayout component to avoid import issues
-const PageLayout = ({ 
-  title, 
-  description, 
-  bgColor = "bg-blue-600", 
-  textColor = "text-blue-100", 
+const PageLayout = ({
+  title,
+  description,
+  bgColor = "bg-blue-600",
+  textColor = "text-blue-100",
   children,
-  actions
+  actions,
 }) => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-screen-xl">
@@ -21,19 +21,13 @@ const PageLayout = ({
               <h1 className="text-2xl font-bold">{title}</h1>
               <p className={`mt-2 ${textColor}`}>{description}</p>
             </div>
-            {actions && (
-              <div className="ml-4">
-                {actions}
-              </div>
-            )}
+            {actions && <div className="ml-4">{actions}</div>}
           </div>
         </div>
       </div>
-      
+
       {/* Content section */}
-      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">
-        {children}
-      </div>
+      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">{children}</div>
     </div>
   );
 };
@@ -63,29 +57,33 @@ const MedicalRecordsPage = () => {
     >
       <div className="mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link 
+          <Link
             to="/medical-records"
             className="p-4 border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-800/40 rounded-lg flex items-center"
           >
             <FiFile className="h-6 w-6 text-green-600 mr-3" />
             <div>
               <h3 className="font-medium text-gray-900 dark:text-white">Health Summary</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Overview of your health records</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Overview of your health records
+              </p>
             </div>
           </Link>
-          
-          <Link 
+
+          <Link
             to="/medical-records/medications"
             className="p-4 border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-800/40 rounded-lg flex items-center"
           >
             <FiFile className="h-6 w-6 text-green-600 mr-3" />
             <div>
               <h3 className="font-medium text-gray-900 dark:text-white">Medications</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Current and past medications</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Current and past medications
+              </p>
             </div>
           </Link>
-          
-          <Link 
+
+          <Link
             to="/medical-records/lab-results"
             className="p-4 border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-800/40 rounded-lg flex items-center"
           >
@@ -96,7 +94,7 @@ const MedicalRecordsPage = () => {
             </div>
           </Link>
         </div>
-        
+
         <div className="mt-8 bg-gray-50 dark:bg-gray-700 rounded-lg p-6 text-center">
           <p className="text-gray-600 dark:text-gray-300">
             This page is under development. Check back soon for medical records management features.

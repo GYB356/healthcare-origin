@@ -1,9 +1,9 @@
 // src/components/clients/ClientDetails.js
-import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
-import DashboardLayout from '../layout/DashboardLayout';
-import ProjectsTable from '../projects/ProjectsTable';
+import React, { useState, useEffect } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import api from "../../services/api";
+import DashboardLayout from "../layout/DashboardLayout";
+import ProjectsTable from "../projects/ProjectsTable";
 
 const ClientDetails = () => {
   const { id } = useParams();
@@ -24,15 +24,15 @@ const ClientDetails = () => {
       setLoading(true);
       const [clientResponse, projectsResponse] = await Promise.all([
         api.get(`/clients/${id}`),
-        api.get(`/clients/${id}/projects`)
+        api.get(`/clients/${id}/projects`),
       ]);
-      
+
       setClient(clientResponse.data);
       setClientProjects(projectsResponse.data);
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching client details:', err);
-      setError('Failed to load client details. Please try again.');
+      console.error("Error fetching client details:", err);
+      setError("Failed to load client details. Please try again.");
       setLoading(false);
     }
   };
@@ -42,10 +42,10 @@ const ClientDetails = () => {
       setDeleteLoading(true);
       await api.delete(`/clients/${id}`);
       setShowDeleteModal(false);
-      navigate('/clients');
+      navigate("/clients");
     } catch (err) {
-      console.error('Error deleting client:', err);
-      setError(err.response?.data?.message || 'Failed to delete client. Please try again.');
+      console.error("Error deleting client:", err);
+      setError(err.response?.data?.message || "Failed to delete client. Please try again.");
       setDeleteLoading(false);
       setShowDeleteModal(false);
     }
@@ -69,7 +69,7 @@ const ClientDetails = () => {
         </div>
         <div className="flex justify-center">
           <button
-            onClick={() => navigate('/clients')}
+            onClick={() => navigate("/clients")}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Back to Clients
@@ -82,12 +82,15 @@ const ClientDetails = () => {
   if (!client) {
     return (
       <DashboardLayout>
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+        <div
+          className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6"
+          role="alert"
+        >
           <p>Client not found. It may have been deleted or moved.</p>
         </div>
         <div className="flex justify-center">
           <button
-            onClick={() => navigate('/clients')}
+            onClick={() => navigate("/clients")}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Back to Clients
@@ -109,8 +112,8 @@ const ClientDetails = () => {
           >
             Delete
           </button>
-          <Link 
-            to={`/clients/${id}/edit`} 
+          <Link
+            to={`/clients/${id}/edit`}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Edit Client
@@ -137,7 +140,8 @@ const ClientDetails = () => {
           <div>
             <h3 className="text-sm font-medium text-gray-500">Address</h3>
             <p className="mt-1 text-gray-900">
-              {client.address}<br />
+              {client.address}
+              <br />
               {client.city}, {client.state} {client.zipCode}
             </p>
           </div>
@@ -154,8 +158,8 @@ const ClientDetails = () => {
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Client Projects</h2>
-          <Link 
-            to={`/projects/new?client=${id}`} 
+          <Link
+            to={`/projects/new?client=${id}`}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Add Project
@@ -184,7 +188,8 @@ const ClientDetails = () => {
                 </p>
                 {clientProjects.length > 0 && (
                   <p className="text-red-500 mt-2">
-                    Warning: This client has {clientProjects.length} associated projects. Deleting this client may affect those projects.
+                    Warning: This client has {clientProjects.length} associated projects. Deleting
+                    this client may affect those projects.
                   </p>
                 )}
               </div>
@@ -200,7 +205,7 @@ const ClientDetails = () => {
                   disabled={deleteLoading}
                   className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none disabled:opacity-50"
                 >
-                  {deleteLoading ? 'Deleting...' : 'Delete'}
+                  {deleteLoading ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </div>

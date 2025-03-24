@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
@@ -104,13 +104,13 @@ export default function MedicalRecordsPage() {
       const data = await response.json();
       setRecords(data.records);
       setPagination(data.pagination);
-        } catch (error) {
+    } catch (error) {
       console.error("Error fetching medical records:", error);
       toast.error("Failed to load medical records");
-        } finally {
-          setLoading(false);
-        }
-      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = (value: string) => {
     setSearch(value);
@@ -145,17 +145,14 @@ export default function MedicalRecordsPage() {
           <div className="flex flex-col space-y-4 md:flex-row md:items-center md:space-x-4 md:space-y-0">
             <div className="flex items-center space-x-2">
               <Search className="h-5 w-5 text-gray-500" />
-          <Input
-            placeholder="Search records..."
+              <Input
+                placeholder="Search records..."
                 value={search}
-            onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="max-w-sm"
-          />
-        </div>
-            <Select
-              value={recordType}
-              onValueChange={handleTypeChange}
-            >
+              />
+            </div>
+            <Select value={recordType} onValueChange={handleTypeChange}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Record Type" />
               </SelectTrigger>
@@ -199,9 +196,7 @@ export default function MedicalRecordsPage() {
                   ) : (
                     records.map((record) => (
                       <TableRow key={record.id}>
-                        <TableCell>
-                          {format(new Date(record.date), "PPP")}
-                        </TableCell>
+                        <TableCell>{format(new Date(record.date), "PPP")}</TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{record.patient.name}</p>
@@ -218,23 +213,13 @@ export default function MedicalRecordsPage() {
                             </p>
                           </div>
                         </TableCell>
+                        <TableCell>{record.type.replace(/_/g, " ")}</TableCell>
                         <TableCell>
-                          {record.type.replace(/_/g, " ")}
+                          <p className="truncate max-w-xs">{record.description}</p>
                         </TableCell>
                         <TableCell>
-                          <p className="truncate max-w-xs">
-                            {record.description}
-                          </p>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                          >
-                            <Link href={`/medical-records/${record.id}`}>
-                              View Details
-                            </Link>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/medical-records/${record.id}`}>View Details</Link>
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -274,7 +259,7 @@ export default function MedicalRecordsPage() {
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>
-      </div>
+                </div>
               )}
             </>
           )}

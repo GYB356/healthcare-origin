@@ -1,4 +1,4 @@
-import api from './api';
+import api from "./api";
 
 /**
  * Patient service for handling all patient-related API calls
@@ -11,7 +11,7 @@ const patientService = {
    */
   getAppointments: async (params = {}) => {
     try {
-      const response = await api.get('/patients/appointments', { params });
+      const response = await api.get("/patients/appointments", { params });
       return response.data;
     } catch (error) {
       throw handlePatientError(error);
@@ -25,7 +25,7 @@ const patientService = {
    */
   scheduleAppointment: async (appointmentData) => {
     try {
-      const response = await api.post('/patients/appointments', appointmentData);
+      const response = await api.post("/patients/appointments", appointmentData);
       return response.data;
     } catch (error) {
       throw handlePatientError(error);
@@ -69,7 +69,7 @@ const patientService = {
    */
   getMedicalRecords: async (params = {}) => {
     try {
-      const response = await api.get('/patients/medical-records', { params });
+      const response = await api.get("/patients/medical-records", { params });
       return response.data;
     } catch (error) {
       throw handlePatientError(error);
@@ -98,7 +98,10 @@ const patientService = {
    */
   requestRecordAccess: async (recordId, requestData) => {
     try {
-      const response = await api.post(`/patients/medical-records/${recordId}/request-access`, requestData);
+      const response = await api.post(
+        `/patients/medical-records/${recordId}/request-access`,
+        requestData,
+      );
       return response.data;
     } catch (error) {
       throw handlePatientError(error);
@@ -112,7 +115,7 @@ const patientService = {
    */
   getPrescriptions: async (params = {}) => {
     try {
-      const response = await api.get('/patients/prescriptions', { params });
+      const response = await api.get("/patients/prescriptions", { params });
       return response.data;
     } catch (error) {
       throw handlePatientError(error);
@@ -127,7 +130,10 @@ const patientService = {
    */
   requestRefill: async (prescriptionId, refillData = {}) => {
     try {
-      const response = await api.post(`/patients/prescriptions/${prescriptionId}/refill`, refillData);
+      const response = await api.post(
+        `/patients/prescriptions/${prescriptionId}/refill`,
+        refillData,
+      );
       return response.data;
     } catch (error) {
       throw handlePatientError(error);
@@ -141,7 +147,7 @@ const patientService = {
    */
   getBilling: async (params = {}) => {
     try {
-      const response = await api.get('/patients/billing', { params });
+      const response = await api.get("/patients/billing", { params });
       return response.data;
     } catch (error) {
       throw handlePatientError(error);
@@ -184,13 +190,13 @@ const patientService = {
    */
   getMessages: async (params = {}) => {
     try {
-      const response = await api.get('/patients/messages', { params });
+      const response = await api.get("/patients/messages", { params });
       return response.data;
     } catch (error) {
       throw handlePatientError(error);
     }
   },
-  
+
   /**
    * Send a new message
    * @param {Object} messageData - Message details
@@ -198,13 +204,13 @@ const patientService = {
    */
   sendMessage: async (messageData) => {
     try {
-      const response = await api.post('/patients/messages', messageData);
+      const response = await api.post("/patients/messages", messageData);
       return response.data;
     } catch (error) {
       throw handlePatientError(error);
     }
   },
-  
+
   /**
    * Get health metrics
    * @param {Object} params - Query parameters (type, date, pageSize, page)
@@ -212,13 +218,13 @@ const patientService = {
    */
   getHealthMetrics: async (params = {}) => {
     try {
-      const response = await api.get('/patients/health-metrics', { params });
+      const response = await api.get("/patients/health-metrics", { params });
       return response.data;
     } catch (error) {
       throw handlePatientError(error);
     }
   },
-  
+
   /**
    * Add new health metric
    * @param {Object} metricData - Health metric details
@@ -226,12 +232,12 @@ const patientService = {
    */
   addHealthMetric: async (metricData) => {
     try {
-      const response = await api.post('/patients/health-metrics', metricData);
+      const response = await api.post("/patients/health-metrics", metricData);
       return response.data;
     } catch (error) {
       throw handlePatientError(error);
     }
-  }
+  },
 };
 
 /**
@@ -240,37 +246,37 @@ const patientService = {
  * @returns {Error} - Processed error with helpful message
  */
 const handlePatientError = (error) => {
-  let errorMessage = 'An error occurred while processing your request.';
-  
+  let errorMessage = "An error occurred while processing your request.";
+
   if (error.response) {
     const { status, data } = error.response;
-    
+
     switch (status) {
       case 400:
-        errorMessage = data.message || 'Invalid request. Please check your input.';
+        errorMessage = data.message || "Invalid request. Please check your input.";
         break;
       case 401:
-        errorMessage = 'Authentication required. Please log in again.';
+        errorMessage = "Authentication required. Please log in again.";
         break;
       case 403:
-        errorMessage = 'Access denied. You do not have permission to perform this action.';
+        errorMessage = "Access denied. You do not have permission to perform this action.";
         break;
       case 404:
-        errorMessage = 'The requested resource was not found.';
+        errorMessage = "The requested resource was not found.";
         break;
       case 409:
-        errorMessage = data.message || 'Conflict with the current state of the resource.';
+        errorMessage = data.message || "Conflict with the current state of the resource.";
         break;
       case 422:
-        errorMessage = data.message || 'Validation failed. Please check your input.';
+        errorMessage = data.message || "Validation failed. Please check your input.";
         break;
       default:
-        errorMessage = data.message || 'Server error. Please try again later.';
+        errorMessage = data.message || "Server error. Please try again later.";
     }
   } else if (error.request) {
-    errorMessage = 'No response from server. Please check your internet connection.';
+    errorMessage = "No response from server. Please check your internet connection.";
   }
-  
+
   const customError = new Error(errorMessage);
   customError.originalError = error;
   return customError;

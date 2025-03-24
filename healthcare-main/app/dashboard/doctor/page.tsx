@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Appointment {
   id: string;
   patientName: string;
   date: string;
   time: string;
-  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
 }
 
 interface Patient {
@@ -28,14 +28,14 @@ export default function DoctorDashboard() {
     pendingReports: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         // Fetch appointments
-        const appointmentsRes = await fetch('/api/doctor/appointments', {
-          credentials: 'include',
+        const appointmentsRes = await fetch("/api/doctor/appointments", {
+          credentials: "include",
         });
         if (appointmentsRes.ok) {
           const data = await appointmentsRes.json();
@@ -43,8 +43,8 @@ export default function DoctorDashboard() {
         }
 
         // Fetch recent patients
-        const patientsRes = await fetch('/api/doctor/patients', {
-          credentials: 'include',
+        const patientsRes = await fetch("/api/doctor/patients", {
+          credentials: "include",
         });
         if (patientsRes.ok) {
           const data = await patientsRes.json();
@@ -52,16 +52,16 @@ export default function DoctorDashboard() {
         }
 
         // Fetch stats
-        const statsRes = await fetch('/api/doctor/stats', {
-          credentials: 'include',
+        const statsRes = await fetch("/api/doctor/stats", {
+          credentials: "include",
         });
         if (statsRes.ok) {
           const data = await statsRes.json();
           setStats(data);
         }
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        setError('Failed to load dashboard data');
+        console.error("Error fetching dashboard data:", error);
+        setError("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
@@ -106,12 +106,12 @@ export default function DoctorDashboard() {
           <h2 className="text-xl font-semibold mb-2">Today's Appointments</h2>
           <p className="text-4xl font-bold text-blue-600">{stats.todayAppointments}</p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-2">Total Patients</h2>
           <p className="text-4xl font-bold text-green-600">{stats.totalPatients}</p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-2">Pending Reports</h2>
           <p className="text-4xl font-bold text-yellow-600">{stats.pendingReports}</p>
@@ -153,10 +153,16 @@ export default function DoctorDashboard() {
                         <div className="text-sm text-gray-900">{appointment.time}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                          ${appointment.status === 'SCHEDULED' ? 'bg-green-100 text-green-800' : 
-                            appointment.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : 
-                            'bg-blue-100 text-blue-800'}`}>
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                          ${
+                            appointment.status === "SCHEDULED"
+                              ? "bg-green-100 text-green-800"
+                              : appointment.status === "CANCELLED"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
                           {appointment.status}
                         </span>
                       </td>
@@ -164,7 +170,7 @@ export default function DoctorDashboard() {
                         <button
                           onClick={() => handleStartConsultation(appointment.id)}
                           className="text-blue-600 hover:text-blue-900 mr-4"
-                          disabled={appointment.status !== 'SCHEDULED'}
+                          disabled={appointment.status !== "SCHEDULED"}
                         >
                           Start Consultation
                         </button>
@@ -207,18 +213,16 @@ export default function DoctorDashboard() {
                   {recentPatients.map((patient) => (
                     <tr key={patient.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {patient.name}
+                        <div className="text-sm font-medium text-gray-900">{patient.name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {patient.lastVisit || "No previous visits"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {patient.lastVisit || 'No previous visits'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {patient.upcomingAppointment || 'No upcoming appointments'}
+                          {patient.upcomingAppointment || "No upcoming appointments"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -241,4 +245,4 @@ export default function DoctorDashboard() {
       </div>
     </div>
   );
-} 
+}

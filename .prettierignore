@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+coverage/
+dist/
+build/
+.jest-cache/
+test-reports/
+test-results/
+**/*.min.js
+.cache/
+.cache_ggshield
+*.lock 

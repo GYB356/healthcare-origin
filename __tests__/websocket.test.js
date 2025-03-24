@@ -1,9 +1,9 @@
-const WebSocket = require('ws');
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const mongoose = require('mongoose');
-const { PrismaClient } = require('@prisma/client');
-const jwt = require('jsonwebtoken');
-const { hash } = require('bcryptjs');
+const WebSocket = require("ws");
+const { MongoMemoryServer } = require("mongodb-memory-server");
+const mongoose = require("mongoose");
+const { PrismaClient } = require("@prisma/client");
+const jwt = require("jsonwebtoken");
+const { hash } = require("bcryptjs");
 
 let wss;
 let mongod;
@@ -19,7 +19,7 @@ beforeAll(async () => {
   const uri = mongod.getUri();
   await mongoose.connect(uri, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
   });
 
   // Initialize Prisma client
@@ -27,36 +27,36 @@ beforeAll(async () => {
   await prisma.$connect();
 
   // Create test users
-  const doctorPassword = await hash('password123', 10);
+  const doctorPassword = await hash("password123", 10);
   const doctor = await prisma.user.create({
     data: {
-      name: 'Doctor Test',
-      email: 'doctor@example.com',
+      name: "Doctor Test",
+      email: "doctor@example.com",
       password: doctorPassword,
-      role: 'DOCTOR'
-    }
+      role: "DOCTOR",
+    },
   });
   doctorId = doctor.id;
   doctorToken = jwt.sign({ userId: doctor.id }, process.env.JWT_SECRET);
 
-  const patientPassword = await hash('password123', 10);
+  const patientPassword = await hash("password123", 10);
   const patient = await prisma.user.create({
     data: {
-      name: 'Patient Test',
-      email: 'patient@example.com',
+      name: "Patient Test",
+      email: "patient@example.com",
       password: patientPassword,
-      role: 'PATIENT'
-    }
+      role: "PATIENT",
+    },
   });
   patientId = patient.id;
   patientToken = jwt.sign({ userId: patient.id }, process.env.JWT_SECRET);
 
   // Import and start WebSocket server
-  const { createServer } = require('http');
-  const { Server } = require('ws');
+  const { createServer } = require("http");
+  const { Server } = require("ws");
   const server = createServer();
   wss = new Server({ server });
-  require('../websocket')(wss);
+  require("../websocket")(wss);
   server.listen(3001);
 });
 
@@ -67,23 +67,23 @@ afterAll(async () => {
   wss.close();
 });
 
-describe('WebSocket Connection', () => {
+describe("WebSocket Connection", () => {
   let doctorWs;
   let patientWs;
 
   beforeEach((done) => {
     // Connect doctor client
-    doctorWs = new WebSocket('ws://localhost:3001', {
+    doctorWs = new WebSocket("ws://localhost:3001", {
       headers: {
-        Authorization: `Bearer ${doctorToken}`
-      }
+        Authorization: `Bearer ${doctorToken}`,
+      },
     });
 
     // Connect patient client
-    patientWs = new WebSocket('ws://localhost:3001', {
+    patientWs = new WebSocket("ws://localhost:3001", {
       headers: {
-        Authorization: `Bearer ${patientToken}`
-      }
+        Authorization: `Bearer ${patientToken}`,
+      },
     });
 
     // Wait for both connections to be established
@@ -95,8 +95,8 @@ describe('WebSocket Connection', () => {
       }
     };
 
-    doctorWs.on('open', onConnection);
-    patientWs.on('open', onConnection);
+    doctorWs.on("open", onConnection);
+    patientWs.on("open", onConnection);
   });
 
   afterEach(() => {
@@ -104,58 +104,58 @@ describe('WebSocket Connection', () => {
     patientWs.close();
   });
 
-  it('should establish connection with valid token', (done) => {
-    const ws = new WebSocket('ws://localhost:3001', {
+  it("should establish connection with valid token", (done) => {
+    const ws = new WebSocket("ws://localhost:3001", {
       headers: {
-        Authorization: `Bearer ${doctorToken}`
-      }
+        Authorization: `Bearer ${doctorToken}`,
+      },
     });
 
-    ws.on('open', () => {
+    ws.on("open", () => {
       expect(ws.readyState).toBe(WebSocket.OPEN);
       ws.close();
       done();
     });
   });
 
-  it('should reject connection with invalid token', (done) => {
-    const ws = new WebSocket('ws://localhost:3001', {
+  it("should reject connection with invalid token", (done) => {
+    const ws = new WebSocket("ws://localhost:3001", {
       headers: {
-        Authorization: 'Bearer invalid-token'
-      }
+        Authorization: "Bearer invalid-token",
+      },
     });
 
-    ws.on('error', (error) => {
-      expect(error.message).toContain('Unauthorized');
+    ws.on("error", (error) => {
+      expect(error.message).toContain("Unauthorized");
       done();
     });
   });
 
-  it('should reject connection without token', (done) => {
-    const ws = new WebSocket('ws://localhost:3001');
+  it("should reject connection without token", (done) => {
+    const ws = new WebSocket("ws://localhost:3001");
 
-    ws.on('error', (error) => {
-      expect(error.message).toContain('Unauthorized');
+    ws.on("error", (error) => {
+      expect(error.message).toContain("Unauthorized");
       done();
     });
   });
 });
 
-describe('WebSocket Events', () => {
+describe("WebSocket Events", () => {
   let doctorWs;
   let patientWs;
 
   beforeEach((done) => {
-    doctorWs = new WebSocket('ws://localhost:3001', {
+    doctorWs = new WebSocket("ws://localhost:3001", {
       headers: {
-        Authorization: `Bearer ${doctorToken}`
-      }
+        Authorization: `Bearer ${doctorToken}`,
+      },
     });
 
-    patientWs = new WebSocket('ws://localhost:3001', {
+    patientWs = new WebSocket("ws://localhost:3001", {
       headers: {
-        Authorization: `Bearer ${patientToken}`
-      }
+        Authorization: `Bearer ${patientToken}`,
+      },
     });
 
     let connections = 0;
@@ -166,8 +166,8 @@ describe('WebSocket Events', () => {
       }
     };
 
-    doctorWs.on('open', onConnection);
-    patientWs.on('open', onConnection);
+    doctorWs.on("open", onConnection);
+    patientWs.on("open", onConnection);
   });
 
   afterEach(() => {
@@ -175,16 +175,16 @@ describe('WebSocket Events', () => {
     patientWs.close();
   });
 
-  it('should handle appointment updates', (done) => {
+  it("should handle appointment updates", (done) => {
     const appointmentData = {
-      type: 'APPOINTMENT_UPDATE',
+      type: "APPOINTMENT_UPDATE",
       data: {
-        id: 'test-appointment-id',
-        status: 'COMPLETED'
-      }
+        id: "test-appointment-id",
+        status: "COMPLETED",
+      },
     };
 
-    patientWs.on('message', (data) => {
+    patientWs.on("message", (data) => {
       const message = JSON.parse(data);
       expect(message).toEqual(appointmentData);
       done();
@@ -193,17 +193,17 @@ describe('WebSocket Events', () => {
     doctorWs.send(JSON.stringify(appointmentData));
   });
 
-  it('should handle chat messages', (done) => {
+  it("should handle chat messages", (done) => {
     const chatMessage = {
-      type: 'CHAT_MESSAGE',
+      type: "CHAT_MESSAGE",
       data: {
         senderId: doctorId,
         receiverId: patientId,
-        content: 'Hello, how are you?'
-      }
+        content: "Hello, how are you?",
+      },
     };
 
-    patientWs.on('message', (data) => {
+    patientWs.on("message", (data) => {
       const message = JSON.parse(data);
       expect(message).toEqual(chatMessage);
       done();
@@ -212,16 +212,16 @@ describe('WebSocket Events', () => {
     doctorWs.send(JSON.stringify(chatMessage));
   });
 
-  it('should handle real-time notifications', (done) => {
+  it("should handle real-time notifications", (done) => {
     const notification = {
-      type: 'NOTIFICATION',
+      type: "NOTIFICATION",
       data: {
         userId: patientId,
-        message: 'Your appointment has been scheduled'
-      }
+        message: "Your appointment has been scheduled",
+      },
     };
 
-    patientWs.on('message', (data) => {
+    patientWs.on("message", (data) => {
       const message = JSON.parse(data);
       expect(message).toEqual(notification);
       done();
@@ -230,25 +230,25 @@ describe('WebSocket Events', () => {
     doctorWs.send(JSON.stringify(notification));
   });
 
-  it('should handle invalid message format', (done) => {
-    const invalidMessage = 'invalid-json';
+  it("should handle invalid message format", (done) => {
+    const invalidMessage = "invalid-json";
 
-    doctorWs.on('error', (error) => {
-      expect(error.message).toContain('Invalid message format');
+    doctorWs.on("error", (error) => {
+      expect(error.message).toContain("Invalid message format");
       done();
     });
 
     doctorWs.send(invalidMessage);
   });
 
-  it('should handle unknown message type', (done) => {
+  it("should handle unknown message type", (done) => {
     const unknownMessage = {
-      type: 'UNKNOWN_TYPE',
-      data: {}
+      type: "UNKNOWN_TYPE",
+      data: {},
     };
 
-    doctorWs.on('error', (error) => {
-      expect(error.message).toContain('Unknown message type');
+    doctorWs.on("error", (error) => {
+      expect(error.message).toContain("Unknown message type");
       done();
     });
 
@@ -256,33 +256,33 @@ describe('WebSocket Events', () => {
   });
 });
 
-describe('WebSocket Reconnection', () => {
+describe("WebSocket Reconnection", () => {
   let ws;
 
   beforeEach((done) => {
-    ws = new WebSocket('ws://localhost:3001', {
+    ws = new WebSocket("ws://localhost:3001", {
       headers: {
-        Authorization: `Bearer ${doctorToken}`
-      }
+        Authorization: `Bearer ${doctorToken}`,
+      },
     });
 
-    ws.on('open', done);
+    ws.on("open", done);
   });
 
   afterEach(() => {
     ws.close();
   });
 
-  it('should handle connection loss and reconnection', (done) => {
+  it("should handle connection loss and reconnection", (done) => {
     let reconnectAttempts = 0;
     const maxReconnectAttempts = 3;
 
-    ws.on('close', () => {
+    ws.on("close", () => {
       // Simulate connection loss
       ws.terminate();
     });
 
-    ws.on('error', () => {
+    ws.on("error", () => {
       reconnectAttempts++;
       if (reconnectAttempts >= maxReconnectAttempts) {
         done();
@@ -293,16 +293,16 @@ describe('WebSocket Reconnection', () => {
     ws.close();
   });
 
-  it('should maintain authentication after reconnection', (done) => {
-    ws.on('close', () => {
+  it("should maintain authentication after reconnection", (done) => {
+    ws.on("close", () => {
       // Create new connection with same token
-      const newWs = new WebSocket('ws://localhost:3001', {
+      const newWs = new WebSocket("ws://localhost:3001", {
         headers: {
-          Authorization: `Bearer ${doctorToken}`
-        }
+          Authorization: `Bearer ${doctorToken}`,
+        },
       });
 
-      newWs.on('open', () => {
+      newWs.on("open", () => {
         expect(newWs.readyState).toBe(WebSocket.OPEN);
         newWs.close();
         done();
@@ -313,65 +313,67 @@ describe('WebSocket Reconnection', () => {
   });
 });
 
-describe('WebSocket Error Handling', () => {
+describe("WebSocket Error Handling", () => {
   let ws;
 
   beforeEach((done) => {
-    ws = new WebSocket('ws://localhost:3001', {
+    ws = new WebSocket("ws://localhost:3001", {
       headers: {
-        Authorization: `Bearer ${doctorToken}`
-      }
+        Authorization: `Bearer ${doctorToken}`,
+      },
     });
 
-    ws.on('open', done);
+    ws.on("open", done);
   });
 
   afterEach(() => {
     ws.close();
   });
 
-  it('should handle malformed messages', (done) => {
-    ws.on('error', (error) => {
-      expect(error.message).toContain('Invalid message format');
+  it("should handle malformed messages", (done) => {
+    ws.on("error", (error) => {
+      expect(error.message).toContain("Invalid message format");
       done();
     });
 
-    ws.send('{invalid:json}');
+    ws.send("{invalid:json}");
   });
 
-  it('should handle oversized messages', (done) => {
+  it("should handle oversized messages", (done) => {
     const largeMessage = {
-      type: 'CHAT_MESSAGE',
+      type: "CHAT_MESSAGE",
       data: {
-        content: 'a'.repeat(1000000) // 1MB message
-      }
+        content: "a".repeat(1000000), // 1MB message
+      },
     };
 
-    ws.on('error', (error) => {
-      expect(error.message).toContain('Message too large');
+    ws.on("error", (error) => {
+      expect(error.message).toContain("Message too large");
       done();
     });
 
     ws.send(JSON.stringify(largeMessage));
   });
 
-  it('should handle rate limiting', (done) => {
+  it("should handle rate limiting", (done) => {
     let messageCount = 0;
     const maxMessages = 100;
 
     const sendMessage = () => {
       if (messageCount >= maxMessages) {
-        ws.on('error', (error) => {
-          expect(error.message).toContain('Rate limit exceeded');
+        ws.on("error", (error) => {
+          expect(error.message).toContain("Rate limit exceeded");
           done();
         });
         return;
       }
 
-      ws.send(JSON.stringify({
-        type: 'CHAT_MESSAGE',
-        data: { content: `Message ${messageCount++}` }
-      }));
+      ws.send(
+        JSON.stringify({
+          type: "CHAT_MESSAGE",
+          data: { content: `Message ${messageCount++}` },
+        }),
+      );
     };
 
     // Send messages rapidly
@@ -381,26 +383,26 @@ describe('WebSocket Error Handling', () => {
   });
 });
 
-describe('WebSocket Mock', () => {
+describe("WebSocket Mock", () => {
   let ws;
 
   beforeEach(() => {
-    ws = new WebSocket('ws://test.com');
+    ws = new WebSocket("ws://test.com");
   });
 
   afterEach(() => {
     ws.disconnect();
   });
 
-  test('should handle connection states', (done) => {
+  test("should handle connection states", (done) => {
     expect(ws.readyState).toBe(WebSocket.CONNECTING);
-    
-    ws.on('open', () => {
+
+    ws.on("open", () => {
       expect(ws.readyState).toBe(WebSocket.OPEN);
       ws.close();
     });
 
-    ws.on('close', () => {
+    ws.on("close", () => {
       expect(ws.readyState).toBe(WebSocket.CLOSED);
       done();
     });
@@ -408,15 +410,15 @@ describe('WebSocket Mock', () => {
     ws.connect();
   });
 
-  test('should handle message sending and receiving', (done) => {
-    const testMessage = 'Hello, WebSocket!';
-    
-    ws.on('send', (data) => {
+  test("should handle message sending and receiving", (done) => {
+    const testMessage = "Hello, WebSocket!";
+
+    ws.on("send", (data) => {
       expect(data).toBe(testMessage);
       ws.simulateMessage(testMessage);
     });
 
-    ws.on('message', (data) => {
+    ws.on("message", (data) => {
       expect(data).toBe(testMessage);
       done();
     });
@@ -425,11 +427,11 @@ describe('WebSocket Mock', () => {
     ws.send(testMessage);
   });
 
-  test('should handle close with code and reason', (done) => {
+  test("should handle close with code and reason", (done) => {
     const closeCode = 1000;
-    const closeReason = 'Test closure';
-    
-    ws.on('close', (code, reason) => {
+    const closeReason = "Test closure";
+
+    ws.on("close", (code, reason) => {
       expect(code).toBe(closeCode);
       expect(reason).toBe(closeReason);
       done();
@@ -438,4 +440,4 @@ describe('WebSocket Mock', () => {
     ws.connect();
     ws.close(closeCode, closeReason);
   });
-}); 
+});

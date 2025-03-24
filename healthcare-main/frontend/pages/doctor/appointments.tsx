@@ -18,9 +18,13 @@ export default function DoctorAppointments() {
   const handleAction = async (id, action) => {
     const token = localStorage.getItem("token");
 
-    await axios.put(`/api/appointments/${id}/${action}`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await axios.put(
+      `/api/appointments/${id}/${action}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
 
     window.location.reload();
   };

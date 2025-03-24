@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { useSession } from 'next-auth/react';
-import { showNotification } from '../components/Notification';
+import { useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
+import { useSession } from "next-auth/react";
+import { showNotification } from "../components/Notification";
 
 interface UseSocketOptions {
   autoConnect?: boolean;
@@ -14,8 +14,8 @@ interface UseSocketOptions {
 }
 
 export default function useSocket(
-  url: string = process.env.NEXTAUTH_URL || 'http://localhost:3000',
-  options: UseSocketOptions = {}
+  url: string = process.env.NEXTAUTH_URL || "http://localhost:3000",
+  options: UseSocketOptions = {},
 ) {
   const { data: session } = useSession();
   const socketRef = useRef<Socket | null>(null);
@@ -45,26 +45,26 @@ export default function useSocket(
         },
       });
 
-      socketRef.current.on('connect', () => {
-        console.log('Socket connected');
+      socketRef.current.on("connect", () => {
+        console.log("Socket connected");
         setIsConnected(true);
         setError(null);
         onConnect?.();
       });
 
-      socketRef.current.on('disconnect', () => {
-        console.log('Socket disconnected');
+      socketRef.current.on("disconnect", () => {
+        console.log("Socket disconnected");
         setIsConnected(false);
         onDisconnect?.();
       });
 
-      socketRef.current.on('connect_error', (err) => {
-        console.error('Socket connection error:', err);
+      socketRef.current.on("connect_error", (err) => {
+        console.error("Socket connection error:", err);
         setError(err);
         onError?.(err);
         showNotification({
-          message: 'Connection error. Trying to reconnect...',
-          type: 'error',
+          message: "Connection error. Trying to reconnect...",
+          type: "error",
         });
       });
     }
@@ -75,7 +75,17 @@ export default function useSocket(
         socketRef.current = null;
       }
     };
-  }, [session?.user?.id, url, autoConnect, reconnection, reconnectionAttempts, reconnectionDelay, onConnect, onDisconnect, onError]);
+  }, [
+    session?.user?.id,
+    url,
+    autoConnect,
+    reconnection,
+    reconnectionAttempts,
+    reconnectionDelay,
+    onConnect,
+    onDisconnect,
+    onError,
+  ]);
 
   const connect = () => {
     if (!socketRef.current && session?.user?.id) {
@@ -102,7 +112,7 @@ export default function useSocket(
     if (socketRef.current) {
       socketRef.current.emit(event, data);
     } else {
-      console.warn('Socket not connected, unable to emit event:', event);
+      console.warn("Socket not connected, unable to emit event:", event);
     }
   };
 
@@ -128,4 +138,4 @@ export default function useSocket(
     on,
     off,
   };
-} 
+}

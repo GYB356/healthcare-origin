@@ -1,4 +1,4 @@
-import { Redis } from 'ioredis';
+import { Redis } from "ioredis";
 
 class RedisWrapper {
   private client: Redis | null = null;
@@ -6,8 +6,8 @@ class RedisWrapper {
   private maxCacheSize = 1000; // Maximum number of cache entries
 
   constructor() {
-    this.initializeRedis().catch(error => {
-      console.error('Failed to initialize Redis:', error);
+    this.initializeRedis().catch((error) => {
+      console.error("Failed to initialize Redis:", error);
     });
   }
 
@@ -20,32 +20,32 @@ class RedisWrapper {
         retryStrategy: (times) => {
           const delay = Math.min(times * 1000, 30000);
           if (times > 20) {
-            console.log('Redis connection failed after maximum retries');
+            console.log("Redis connection failed after maximum retries");
             return null;
           }
           return delay;
         },
         tls: {
-          rejectUnauthorized: false // Required for Upstash
-        }
+          rejectUnauthorized: false, // Required for Upstash
+        },
       });
 
-      this.client.on('connect', () => {
-        console.log('Redis connected successfully');
+      this.client.on("connect", () => {
+        console.log("Redis connected successfully");
         this.isConnected = true;
       });
 
-      this.client.on('error', (error) => {
-        console.error('Redis connection error:', error.message);
+      this.client.on("error", (error) => {
+        console.error("Redis connection error:", error.message);
         this.isConnected = false;
       });
 
-      this.client.on('end', () => {
-        console.log('Redis connection ended');
+      this.client.on("end", () => {
+        console.log("Redis connection ended");
         this.isConnected = false;
       });
     } catch (error) {
-      console.error('Failed to initialize Redis:', error);
+      console.error("Failed to initialize Redis:", error);
       this.isConnected = false;
     }
   }
@@ -53,7 +53,7 @@ class RedisWrapper {
   private async enforceMaxCacheSize(): Promise<void> {
     try {
       if (this.isConnected && this.client) {
-        const keys = await this.client.keys('*');
+        const keys = await this.client.keys("*");
         if (keys.length > this.maxCacheSize) {
           const keysToRemove = keys.slice(0, keys.length - this.maxCacheSize);
           if (keysToRemove.length) {
@@ -63,7 +63,7 @@ class RedisWrapper {
         }
       }
     } catch (error) {
-      console.error('Error enforcing cache size limit:', error);
+      console.error("Error enforcing cache size limit:", error);
     }
   }
 
@@ -75,7 +75,7 @@ class RedisWrapper {
       }
       return null;
     } catch (error) {
-      console.error('Cache get error:', error);
+      console.error("Cache get error:", error);
       return null;
     }
   }
@@ -87,7 +87,7 @@ class RedisWrapper {
         await this.enforceMaxCacheSize();
       }
     } catch (error) {
-      console.error('Cache set error:', error);
+      console.error("Cache set error:", error);
     }
   }
 
@@ -101,18 +101,18 @@ class RedisWrapper {
         }
       }
     } catch (error) {
-      console.error('Cache invalidate error:', error);
+      console.error("Cache invalidate error:", error);
     }
   }
 }
 
 export const redis = new RedisWrapper();
 export const CACHE_KEYS = {
-  ADMIN_STATS: 'admin:stats:',
-  STAFF_STATS: 'staff:stats:',
-  USER_DATA: 'user:data:',
-  APPOINTMENTS: 'appointments:',
-  MEDICAL_RECORDS: 'medical:records:', // Added missing MEDICAL_RECORDS key
+  ADMIN_STATS: "admin:stats:",
+  STAFF_STATS: "staff:stats:",
+  USER_DATA: "user:data:",
+  APPOINTMENTS: "appointments:",
+  MEDICAL_RECORDS: "medical:records:", // Added missing MEDICAL_RECORDS key
 };
 
 export const getCache = redis.getCache.bind(redis);

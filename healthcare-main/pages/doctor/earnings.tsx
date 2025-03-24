@@ -26,7 +26,7 @@ export default function Earnings() {
     await axios.post(
       "/api/earnings/payout",
       { amount: Number(amount) * 100 },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
 
     alert("Payout Requested!");
@@ -40,15 +40,14 @@ export default function Earnings() {
       <h3>Payment History</h3>
       <ul>
         {payments.map((pay) => (
-          <li key={pay.id}>${pay.amount / 100} - {pay.status}</li>
+          <li key={pay.id}>
+            ${pay.amount / 100} - {pay.status}
+          </li>
         ))}
       </ul>
 
       <h3>Request Payout</h3>
-      <input
-        placeholder="Enter Amount"
-        onChange={(e) => setAmount(e.target.value)}
-      />
+      <input placeholder="Enter Amount" onChange={(e) => setAmount(e.target.value)} />
       <button onClick={handlePayout}>Request Payout</button>
     </div>
   );

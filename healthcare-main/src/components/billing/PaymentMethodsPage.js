@@ -1,14 +1,14 @@
-import React from 'react';
-import { FiCreditCard, FiPlus, FiTrash2, FiEdit } from 'react-icons/fi';
+import React from "react";
+import { FiCreditCard, FiPlus, FiTrash2, FiEdit } from "react-icons/fi";
 
 // Inline PageLayout component
-const PageLayout = ({ 
-  title, 
-  description, 
-  bgColor = "bg-blue-600", 
-  textColor = "text-blue-100", 
+const PageLayout = ({
+  title,
+  description,
+  bgColor = "bg-blue-600",
+  textColor = "text-blue-100",
   children,
-  actions
+  actions,
 }) => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-screen-xl">
@@ -19,18 +19,12 @@ const PageLayout = ({
               <h1 className="text-2xl font-bold">{title}</h1>
               <p className={`mt-2 ${textColor}`}>{description}</p>
             </div>
-            {actions && (
-              <div className="ml-4">
-                {actions}
-              </div>
-            )}
+            {actions && <div className="ml-4">{actions}</div>}
           </div>
         </div>
       </div>
-      
-      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">
-        {children}
-      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">{children}</div>
     </div>
   );
 };
@@ -45,8 +39,8 @@ const PaymentMethodsPage = () => {
 
   // Sample payment methods
   const paymentMethods = [
-    { id: 1, type: 'Credit Card', last4: '4242', expiryDate: '09/25', isDefault: true },
-    { id: 2, type: 'Bank Account', last4: '7890', name: 'Chase Checking', isDefault: false }
+    { id: 1, type: "Credit Card", last4: "4242", expiryDate: "09/25", isDefault: true },
+    { id: 2, type: "Bank Account", last4: "7890", name: "Chase Checking", isDefault: false },
   ];
 
   return (
@@ -58,11 +52,16 @@ const PaymentMethodsPage = () => {
       actions={actionButtons}
     >
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Payment Methods</h2>
-        
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Your Payment Methods
+        </h2>
+
         <div className="space-y-4">
-          {paymentMethods.map(method => (
-            <div key={method.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex justify-between items-center">
+          {paymentMethods.map((method) => (
+            <div
+              key={method.id}
+              className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex justify-between items-center"
+            >
               <div className="flex items-center">
                 <div className="bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-lg mr-4">
                   <FiCreditCard className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
@@ -79,7 +78,7 @@ const PaymentMethodsPage = () => {
                     )}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {method.type === 'Credit Card' ? `Expires ${method.expiryDate}` : method.name}
+                    {method.type === "Credit Card" ? `Expires ${method.expiryDate}` : method.name}
                   </p>
                 </div>
               </div>
@@ -94,11 +93,13 @@ const PaymentMethodsPage = () => {
             </div>
           ))}
         </div>
-        
+
         {paymentMethods.length === 0 && (
           <div className="text-center py-8 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
             <FiCreditCard className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">No Payment Methods</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
+              No Payment Methods
+            </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               You haven't added any payment methods yet.
             </p>
@@ -108,18 +109,20 @@ const PaymentMethodsPage = () => {
           </div>
         )}
       </div>
-      
+
       <div className="mt-4 bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
         <h3 className="font-medium text-gray-900 dark:text-white mb-2">About Payment Methods</h3>
         <p className="text-gray-600 dark:text-gray-300 text-sm">
-          Your payment information is encrypted and securely stored. We use industry-standard security measures to protect your sensitive data.
-          Your default payment method will be used for all automatic charges unless you specify otherwise.
+          Your payment information is encrypted and securely stored. We use industry-standard
+          security measures to protect your sensitive data. Your default payment method will be used
+          for all automatic charges unless you specify otherwise.
         </p>
       </div>
-      
+
       <div className="mt-4 bg-gray-50 dark:bg-gray-700 rounded-lg p-6 text-center">
         <p className="text-gray-600 dark:text-gray-300">
-          This page is under development. Check back soon for more payment method management features.
+          This page is under development. Check back soon for more payment method management
+          features.
         </p>
       </div>
     </PageLayout>

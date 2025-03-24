@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const CalendarView = () => {
   return (
@@ -9,4 +9,4 @@ const CalendarView = () => {
   );
 };
 
-export default CalendarView; 
+export default CalendarView;

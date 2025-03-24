@@ -28,7 +28,7 @@ export const getAllAppointments = async (req: Request, res: Response) => {
 // Get doctor's appointments
 export const getDoctorAppointments = async (req: Request, res: Response) => {
   const doctorId = req.user?.id;
-  
+
   const appointments = await prisma.appointment.findMany({
     where: { doctorId },
   });
@@ -39,7 +39,7 @@ export const getDoctorAppointments = async (req: Request, res: Response) => {
 // Get patient's appointments
 export const getPatientAppointments = async (req: Request, res: Response) => {
   const patientId = req.user?.id;
-  
+
   const appointments = await prisma.appointment.findMany({
     where: { patientId },
   });

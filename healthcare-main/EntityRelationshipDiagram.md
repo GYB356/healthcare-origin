@@ -1,14 +1,14 @@
 erDiagram
-    User ||--o{ TimeEntry : creates
-    User ||--o{ TimeTrackingSettings : has
-    User ||--o{ BillableRate : has
-    Project ||--o{ TimeEntry : contains
-    Project ||--o{ BillableRate : has
-    Task ||--o{ TimeEntry : has
-    TaskType ||--o{ Task : categorizes
-    TaskType ||--o{ BillableRate : has
-    Invoice ||--o{ TimeEntry : includes
-    
+User ||--o{ TimeEntry : creates
+User ||--o{ TimeTrackingSettings : has
+User ||--o{ BillableRate : has
+Project ||--o{ TimeEntry : contains
+Project ||--o{ BillableRate : has
+Task ||--o{ TimeEntry : has
+TaskType ||--o{ Task : categorizes
+TaskType ||--o{ BillableRate : has
+Invoice ||--o{ TimeEntry : includes
+
     User {
         string id PK
         string email
@@ -17,7 +17,7 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     Project {
         string id PK
         string name
@@ -27,7 +27,7 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     Task {
         string id PK
         string name
@@ -39,7 +39,7 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     TaskType {
         string id PK
         string name
@@ -47,7 +47,7 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     TimeEntry {
         string id PK
         string taskId FK
@@ -65,7 +65,7 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     TimeTrackingSettings {
         string userId PK
         float defaultBillableRate
@@ -76,7 +76,7 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     BillableRate {
         string id PK
         string projectId FK
@@ -89,7 +89,7 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     Invoice {
         string id PK
         string clientId FK
@@ -100,4 +100,4 @@ erDiagram
         string status
         datetime createdAt
         datetime updatedAt
-    } 
+    }

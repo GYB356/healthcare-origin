@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useSocket } from '../context/SocketContext';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 
 const MedicalRecords = () => {
   const { user, hasRole } = useAuth();
@@ -9,19 +9,19 @@ const MedicalRecords = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!hasRole(['doctor', 'nurse', 'admin', 'patient'])) {
-      setError('Access Denied');
+    if (!hasRole(["doctor", "nurse", "admin", "patient"])) {
+      setError("Access Denied");
       return;
     }
 
     // Fetch medical records data
     const fetchRecords = async () => {
       try {
-        const response = await fetch('/api/medical-records');
+        const response = await fetch("/api/medical-records");
         const data = await response.json();
         setRecords(data);
       } catch (err) {
-        setError('Failed to load medical records');
+        setError("Failed to load medical records");
       }
     };
 
@@ -40,7 +40,7 @@ const MedicalRecords = () => {
     <div className="medical-records-page p-4">
       <h1 className="text-2xl font-bold">Medical Records</h1>
       <ul>
-        {records.map(record => (
+        {records.map((record) => (
           <li key={record.id} className="mb-2">
             {record.patientName} - {record.description} ({record.date})
           </li>

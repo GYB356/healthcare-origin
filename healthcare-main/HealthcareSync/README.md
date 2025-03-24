@@ -33,17 +33,20 @@ HealthcareSync is a comprehensive healthcare management system designed to strea
 ### Installation
 
 1. Clone the repository:
+
    ```
    git clone https://github.com/yourusername/healthcare-sync.git
    cd healthcare-sync
    ```
 
 2. Install dependencies:
+
    ```
    npm install
    ```
 
 3. Start the development server:
+
    ```
    npm start
    ```
@@ -90,11 +93,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ### Backend Server Setup
 
 1. Navigate to the backend directory:
+
    ```
    cd backend
    ```
 
 2. Install backend dependencies:
+
    ```
    npm install
    ```

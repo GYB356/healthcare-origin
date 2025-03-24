@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import Link from 'next/link';
+import { useEffect } from "react";
+import Link from "next/link";
 
 export default function DashboardError({
   error,
@@ -11,7 +11,7 @@ export default function DashboardError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Dashboard error:', error);
+    console.error("Dashboard error:", error);
   }, [error]);
 
   return (
@@ -22,7 +22,7 @@ export default function DashboardError({
             Something went wrong!
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            {error.message || 'An error occurred while loading the dashboard.'}
+            {error.message || "An error occurred while loading the dashboard."}
           </p>
         </div>
         <div className="flex flex-col items-center space-y-4">
@@ -32,14 +32,11 @@ export default function DashboardError({
           >
             Try again
           </button>
-          <Link
-            href="/"
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-          >
+          <Link href="/" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
             Return to home
           </Link>
         </div>
       </div>
     </div>
   );
-} 
+}

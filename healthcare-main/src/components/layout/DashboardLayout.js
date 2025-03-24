@@ -1,7 +1,7 @@
 // src/components/layout/DashboardLayout.js
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import {
   Home,
   Calendar,
@@ -17,8 +17,8 @@ import {
   Bell,
   Search,
   User,
-  ChevronDown
-} from 'lucide-react';
+  ChevronDown,
+} from "lucide-react";
 
 const DashboardLayout = ({ children }) => {
   const { currentUser, logout } = useAuth();
@@ -27,7 +27,7 @@ const DashboardLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -36,12 +36,12 @@ const DashboardLayout = ({ children }) => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch('/api/notifications');
+        const response = await fetch("/api/notifications");
         const data = await response.json();
         setNotifications(data);
-        setUnreadNotifications(data.filter(n => !n.read).length);
+        setUnreadNotifications(data.filter((n) => !n.read).length);
       } catch (error) {
-        console.error('Error fetching notifications:', error);
+        console.error("Error fetching notifications:", error);
       }
     };
 
@@ -53,13 +53,13 @@ const DashboardLayout = ({ children }) => {
   // Handle notification click
   const handleNotificationClick = async (notificationId) => {
     try {
-      await fetch(`/api/notifications/${notificationId}/read`, { method: 'PUT' });
-      setNotifications(notifications.map(n => 
-        n.id === notificationId ? { ...n, read: true } : n
-      ));
-      setUnreadNotifications(prev => Math.max(0, prev - 1));
+      await fetch(`/api/notifications/${notificationId}/read`, { method: "PUT" });
+      setNotifications(
+        notifications.map((n) => (n.id === notificationId ? { ...n, read: true } : n)),
+      );
+      setUnreadNotifications((prev) => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error("Error marking notification as read:", error);
     }
   };
 
@@ -70,9 +70,9 @@ const DashboardLayout = ({ children }) => {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/login');
+      navigate("/login");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -86,72 +86,74 @@ const DashboardLayout = ({ children }) => {
         // Handle search results
         navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
       } catch (error) {
-        console.error('Search error:', error);
+        console.error("Search error:", error);
       }
     }
   };
 
   // Enhanced navigation items with role-based access
   const navigationItems = [
-    { 
-      name: 'Dashboard', 
-      icon: <Home size={20} />, 
-      path: '/dashboard',
-      roles: ['admin', 'doctor', 'patient']
+    {
+      name: "Dashboard",
+      icon: <Home size={20} />,
+      path: "/dashboard",
+      roles: ["admin", "doctor", "patient"],
     },
-    { 
-      name: 'Projects', 
-      icon: <Clipboard size={20} />, 
-      path: '/projects',
-      roles: ['admin', 'doctor']
+    {
+      name: "Projects",
+      icon: <Clipboard size={20} />,
+      path: "/projects",
+      roles: ["admin", "doctor"],
     },
-    { 
-      name: 'Clients', 
-      icon: <Users size={20} />, 
-      path: '/clients',
-      roles: ['admin', 'doctor']
+    {
+      name: "Clients",
+      icon: <Users size={20} />,
+      path: "/clients",
+      roles: ["admin", "doctor"],
     },
-    { 
-      name: 'Calendar', 
-      icon: <Calendar size={20} />, 
-      path: '/calendar',
-      roles: ['admin', 'doctor', 'patient']
+    {
+      name: "Calendar",
+      icon: <Calendar size={20} />,
+      path: "/calendar",
+      roles: ["admin", "doctor", "patient"],
     },
-    { 
-      name: 'Materials', 
-      icon: <Package size={20} />, 
-      path: '/inventory',
-      roles: ['admin']
+    {
+      name: "Materials",
+      icon: <Package size={20} />,
+      path: "/inventory",
+      roles: ["admin"],
     },
-    { 
-      name: 'Reports', 
-      icon: <BarChart2 size={20} />, 
-      path: '/reports',
-      roles: ['admin', 'doctor']
+    {
+      name: "Reports",
+      icon: <BarChart2 size={20} />,
+      path: "/reports",
+      roles: ["admin", "doctor"],
     },
-    { 
-      name: 'Settings', 
-      icon: <Settings size={20} />, 
-      path: '/settings',
-      roles: ['admin', 'doctor', 'patient']
+    {
+      name: "Settings",
+      icon: <Settings size={20} />,
+      path: "/settings",
+      roles: ["admin", "doctor", "patient"],
     },
-    { 
-      name: 'Help', 
-      icon: <HelpCircle size={20} />, 
-      path: '/help',
-      roles: ['admin', 'doctor', 'patient']
+    {
+      name: "Help",
+      icon: <HelpCircle size={20} />,
+      path: "/help",
+      roles: ["admin", "doctor", "patient"],
     },
   ];
 
   // Filter navigation items based on user role
-  const filteredNavigationItems = navigationItems.filter(item => 
-    item.roles.includes(currentUser?.role?.toLowerCase())
+  const filteredNavigationItems = navigationItems.filter((item) =>
+    item.roles.includes(currentUser?.role?.toLowerCase()),
   );
 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-4 border-b">
@@ -174,8 +176,8 @@ const DashboardLayout = ({ children }) => {
                 href={item.path}
                 className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                   isCurrentPath(item.path)
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
                 {item.icon}
@@ -189,18 +191,12 @@ const DashboardLayout = ({ children }) => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
-                  <span className="text-white font-medium">
-                    {currentUser?.name?.charAt(0)}
-                  </span>
+                  <span className="text-white font-medium">{currentUser?.name?.charAt(0)}</span>
                 </div>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">
-                  {currentUser?.name}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {currentUser?.role}
-                </p>
+                <p className="text-sm font-medium text-gray-700">{currentUser?.name}</p>
+                <p className="text-xs text-gray-500">{currentUser?.role}</p>
               </div>
             </div>
           </div>
@@ -208,7 +204,7 @@ const DashboardLayout = ({ children }) => {
       </div>
 
       {/* Main Content */}
-      <div className={`${sidebarOpen ? 'lg:ml-64' : ''} flex flex-col min-h-screen`}>
+      <div className={`${sidebarOpen ? "lg:ml-64" : ""} flex flex-col min-h-screen`}>
         {/* Top Bar */}
         <div className="sticky top-0 z-40 bg-white shadow-sm">
           <div className="flex items-center justify-between h-16 px-4">
@@ -260,7 +256,7 @@ const DashboardLayout = ({ children }) => {
                           key={notification.id}
                           onClick={() => handleNotificationClick(notification.id)}
                           className={`w-full px-4 py-2 text-left hover:bg-gray-50 ${
-                            !notification.read ? 'bg-blue-50' : ''
+                            !notification.read ? "bg-blue-50" : ""
                           }`}
                         >
                           <p className="text-sm text-gray-900">{notification.message}</p>
@@ -270,9 +266,7 @@ const DashboardLayout = ({ children }) => {
                         </button>
                       ))
                     ) : (
-                      <div className="px-4 py-2 text-sm text-gray-500">
-                        No notifications
-                      </div>
+                      <div className="px-4 py-2 text-sm text-gray-500">No notifications</div>
                     )}
                   </div>
                   <div className="px-4 py-2 border-t">
@@ -324,9 +318,7 @@ const DashboardLayout = ({ children }) => {
         </div>
 
         {/* Page Content */}
-        <main className="flex-1 p-6">
-          {children}
-        </main>
+        <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
   );

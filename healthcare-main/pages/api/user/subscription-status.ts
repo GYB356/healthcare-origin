@@ -26,7 +26,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!user) return res.status(404).json({ error: "User not found" });
 
     // Cache the result for 1 hour
-    await redis.set(`subscription:${session.user.email}`, JSON.stringify({ isSubscribed: user.isSubscribed }), "EX", 3600);
+    await redis.set(
+      `subscription:${session.user.email}`,
+      JSON.stringify({ isSubscribed: user.isSubscribed }),
+      "EX",
+      3600,
+    );
 
     return res.status(200).json({ isSubscribed: user.isSubscribed });
   } catch (error) {

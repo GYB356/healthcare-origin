@@ -1,21 +1,29 @@
-import { db } from '@/lib/db';
-import { AuditLog, Prisma, ResourceType, AuditAction, AuditSeverity, AuditStatus, Role } from '@prisma/client';
-import { createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
-import { promisify } from 'util';
-import { RateLimiter } from 'limiter';
-import { Redis } from 'ioredis';
+import { db } from "@/lib/db";
+import {
+  AuditLog,
+  Prisma,
+  ResourceType,
+  AuditAction,
+  AuditSeverity,
+  AuditStatus,
+  Role,
+} from "@prisma/client";
+import { createCipheriv, createDecipheriv, randomBytes, scrypt } from "crypto";
+import { promisify } from "util";
+import { RateLimiter } from "limiter";
+import { Redis } from "ioredis";
 
 // Constants for encryption
-const ENCRYPTION_ALGORITHM = 'aes-256-gcm';
+const ENCRYPTION_ALGORITHM = "aes-256-gcm";
 const ENCRYPTION_KEY_LENGTH = 32; // 256 bits
 const AUTH_TAG_LENGTH = 16; // 128 bits
 
 // Rate limiting configuration
-const RATE_LIMIT_WINDOW = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'); // 15 minutes
-const MAX_REQUESTS = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100');
+const RATE_LIMIT_WINDOW = parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000"); // 15 minutes
+const MAX_REQUESTS = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "100");
 
 // Redis client for rate limiting
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
 
 // Rate limiter instance
 const rateLimiter = new RateLimiter({
@@ -51,11 +59,11 @@ interface EncryptedData {
 async function checkRateLimit(ipAddress: string): Promise<boolean> {
   const key = `ratelimit:${ipAddress}`;
   const count = await redis.incr(key);
-  
+
   if (count === 1) {
     await redis.expire(key, Math.floor(RATE_LIMIT_WINDOW / 1000));
   }
-  
+
   return count <= MAX_REQUESTS;
 }
 
@@ -68,18 +76,18 @@ export async function createAuditLog(options: AuditOptions): Promise<AuditLog> {
     if (options.ipAddress) {
       const allowed = await checkRateLimit(options.ipAddress);
       if (!allowed) {
-        throw new Error('Rate limit exceeded');
+        throw new Error("Rate limit exceeded");
       }
     }
 
     const timestamp = options.timestamp || new Date();
-    
+
     // Generate integrity hash for the log entry
     const logData = {
       ...options,
       timestamp,
     };
-    
+
     return await db.auditLog.create({
       data: {
         userId: options.userId,
@@ -95,11 +103,11 @@ export async function createAuditLog(options: AuditOptions): Promise<AuditLog> {
         sessionId: options.sessionId,
         timestamp,
         integrityHash: generateIntegrityHash(logData),
-      }
+      },
     });
   } catch (error) {
-    console.error('Failed to create audit log:', error);
-    throw new Error('Failed to create audit log entry');
+    console.error("Failed to create audit log:", error);
+    throw new Error("Failed to create audit log entry");
   }
 }
 
@@ -121,15 +129,25 @@ export async function getAuditLogs(
   pagination: {
     page?: number;
     limit?: number;
-  } = {}
+  } = {},
 ) {
   try {
-    const { userId, resourceType, resourceId, medicalRecordId, startDate, endDate, severity, status, sessionId } = filters;
+    const {
+      userId,
+      resourceType,
+      resourceId,
+      medicalRecordId,
+      startDate,
+      endDate,
+      severity,
+      status,
+      sessionId,
+    } = filters;
     const { page = 1, limit = 50 } = pagination;
     const skip = (page - 1) * limit;
-    
+
     const where: Prisma.AuditLogWhereInput = {};
-    
+
     if (userId) where.userId = userId;
     if (resourceType) where.resourceType = resourceType;
     if (resourceId) where.resourceId = resourceId;
@@ -137,18 +155,18 @@ export async function getAuditLogs(
     if (severity) where.severity = severity;
     if (status) where.status = status;
     if (sessionId) where.sessionId = sessionId;
-    
+
     if (startDate || endDate) {
       where.timestamp = {};
       if (startDate) where.timestamp.gte = startDate;
       if (endDate) where.timestamp.lte = endDate;
     }
-    
+
     const [logs, count] = await Promise.all([
       db.auditLog.findMany({
         where,
         orderBy: {
-          timestamp: 'desc',
+          timestamp: "desc",
         },
         skip,
         take: limit,
@@ -167,14 +185,14 @@ export async function getAuditLogs(
     ]);
 
     // Verify integrity of logs
-    const verifiedLogs = logs.map(log => {
+    const verifiedLogs = logs.map((log) => {
       const { user, ...logData } = log;
       return {
         ...log,
         integrityVerified: verifyLogIntegrity(logData),
       };
     });
-    
+
     return {
       logs: verifiedLogs,
       pagination: {
@@ -185,8 +203,8 @@ export async function getAuditLogs(
       },
     };
   } catch (error) {
-    console.error('Failed to retrieve audit logs:', error);
-    throw new Error('Failed to retrieve audit logs');
+    console.error("Failed to retrieve audit logs:", error);
+    throw new Error("Failed to retrieve audit logs");
   }
 }
 
@@ -195,7 +213,7 @@ export async function getAuditLogs(
  */
 async function generateKey(password: string, salt: Buffer): Promise<Buffer> {
   const scryptAsync = promisify(scrypt);
-  return await scryptAsync(password, salt, ENCRYPTION_KEY_LENGTH) as Buffer;
+  return (await scryptAsync(password, salt, ENCRYPTION_KEY_LENGTH)) as Buffer;
 }
 
 /**
@@ -206,24 +224,24 @@ export async function encryptData(data: string): Promise<EncryptedData> {
   try {
     const iv = randomBytes(16);
     const salt = randomBytes(32);
-    
+
     // Generate key from environment variable
-    const key = await generateKey(process.env.ENCRYPTION_KEY || '', salt);
-    
+    const key = await generateKey(process.env.ENCRYPTION_KEY || "", salt);
+
     const cipher = createCipheriv(ENCRYPTION_ALGORITHM, key, iv);
-    let encryptedData = cipher.update(data, 'utf8', 'hex');
-    encryptedData += cipher.final('hex');
-    
+    let encryptedData = cipher.update(data, "utf8", "hex");
+    encryptedData += cipher.final("hex");
+
     const authTag = cipher.getAuthTag();
-    
+
     return {
-      encryptedData: `${encryptedData}:${salt.toString('hex')}`,
-      iv: iv.toString('hex'),
-      authTag: authTag.toString('hex')
+      encryptedData: `${encryptedData}:${salt.toString("hex")}`,
+      iv: iv.toString("hex"),
+      authTag: authTag.toString("hex"),
     };
   } catch (error) {
-    console.error('Encryption failed:', error);
-    throw new Error('Failed to encrypt data');
+    console.error("Encryption failed:", error);
+    throw new Error("Failed to encrypt data");
   }
 }
 
@@ -232,24 +250,24 @@ export async function encryptData(data: string): Promise<EncryptedData> {
  */
 export async function decryptData(encrypted: EncryptedData): Promise<string> {
   try {
-    const [data, saltHex] = encrypted.encryptedData.split(':');
-    const salt = Buffer.from(saltHex, 'hex');
-    const iv = Buffer.from(encrypted.iv, 'hex');
-    const authTag = Buffer.from(encrypted.authTag, 'hex');
-    
+    const [data, saltHex] = encrypted.encryptedData.split(":");
+    const salt = Buffer.from(saltHex, "hex");
+    const iv = Buffer.from(encrypted.iv, "hex");
+    const authTag = Buffer.from(encrypted.authTag, "hex");
+
     // Generate key from environment variable
-    const key = await generateKey(process.env.ENCRYPTION_KEY || '', salt);
-    
+    const key = await generateKey(process.env.ENCRYPTION_KEY || "", salt);
+
     const decipher = createDecipheriv(ENCRYPTION_ALGORITHM, key, iv);
     decipher.setAuthTag(authTag);
-    
-    let decrypted = decipher.update(data, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    
+
+    let decrypted = decipher.update(data, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+
     return decrypted;
   } catch (error) {
-    console.error('Decryption failed:', error);
-    throw new Error('Failed to decrypt data');
+    console.error("Decryption failed:", error);
+    throw new Error("Failed to decrypt data");
   }
 }
 
@@ -257,10 +275,10 @@ export async function decryptData(encrypted: EncryptedData): Promise<string> {
  * Generate integrity hash for audit log
  */
 function generateIntegrityHash(data: any): string {
-  const crypto = require('crypto');
-  const hash = crypto.createHash('sha256');
+  const crypto = require("crypto");
+  const hash = crypto.createHash("sha256");
   hash.update(JSON.stringify(data));
-  return hash.digest('hex');
+  return hash.digest("hex");
 }
 
 /**
@@ -268,10 +286,10 @@ function generateIntegrityHash(data: any): string {
  */
 function verifyLogIntegrity(log: AuditLog & { integrityHash?: string }): boolean {
   if (!log.integrityHash) return false;
-  
+
   const { integrityHash, ...logData } = log;
   const computedHash = generateIntegrityHash(logData);
-  
+
   return computedHash === integrityHash;
 }
 
@@ -294,7 +312,7 @@ export async function verifyPatientAccess(userId: string, patientId: string): Pr
       const patient = await db.patient.findUnique({
         where: { userId: user.id },
       });
-      
+
       return patient?.id === patientId;
     }
 
@@ -303,9 +321,9 @@ export async function verifyPatientAccess(userId: string, patientId: string): Pr
       const provider = await db.healthcareProvider.findUnique({
         where: { userId: user.id },
       });
-      
+
       if (!provider) return false;
-      
+
       // Check if provider has any appointments with this patient
       const hasAppointment = await db.appointment.findFirst({
         where: {
@@ -313,9 +331,9 @@ export async function verifyPatientAccess(userId: string, patientId: string): Pr
           patientId: patientId,
         },
       });
-      
+
       if (hasAppointment) return true;
-      
+
       // Check if provider has any medical records for this patient
       const hasRecord = await db.medicalRecord.findFirst({
         where: {
@@ -323,7 +341,7 @@ export async function verifyPatientAccess(userId: string, patientId: string): Pr
           patientId: patientId,
         },
       });
-      
+
       return !!hasRecord;
     }
 
@@ -334,15 +352,18 @@ export async function verifyPatientAccess(userId: string, patientId: string): Pr
 
     return false;
   } catch (error) {
-    console.error('Failed to verify patient access:', error);
-    throw new Error('Failed to verify patient access');
+    console.error("Failed to verify patient access:", error);
+    throw new Error("Failed to verify patient access");
   }
 }
 
 /**
  * Check if user has access to a specific medical record
  */
-export async function verifyMedicalRecordAccess(userId: string, recordId: string): Promise<boolean> {
+export async function verifyMedicalRecordAccess(
+  userId: string,
+  recordId: string,
+): Promise<boolean> {
   try {
     const user = await db.user.findUnique({
       where: { id: userId },
@@ -365,7 +386,7 @@ export async function verifyMedicalRecordAccess(userId: string, recordId: string
       const patient = await db.patient.findUnique({
         where: { userId: user.id },
       });
-      
+
       return patient?.id === record.patientId;
     }
 
@@ -374,12 +395,12 @@ export async function verifyMedicalRecordAccess(userId: string, recordId: string
       const provider = await db.healthcareProvider.findUnique({
         where: { userId: user.id },
       });
-      
+
       if (!provider) return false;
-      
+
       // Provider can access if they created the record
       if (provider.id === record.providerId) return true;
-      
+
       // Check if provider has any appointments with this patient
       const hasAppointment = await db.appointment.findFirst({
         where: {
@@ -387,7 +408,7 @@ export async function verifyMedicalRecordAccess(userId: string, recordId: string
           patientId: record.patientId,
         },
       });
-      
+
       return !!hasAppointment;
     }
 
@@ -398,8 +419,8 @@ export async function verifyMedicalRecordAccess(userId: string, recordId: string
 
     return false;
   } catch (error) {
-    console.error('Failed to verify medical record access:', error);
-    throw new Error('Failed to verify medical record access');
+    console.error("Failed to verify medical record access:", error);
+    throw new Error("Failed to verify medical record access");
   }
 }
 
@@ -410,7 +431,7 @@ export async function applyDataRetentionPolicies() {
   try {
     const retentionDate = new Date();
     retentionDate.setFullYear(retentionDate.getFullYear() - 7); // 7 years retention
-    
+
     // Archive old audit logs
     await db.auditLog.updateMany({
       where: {
@@ -424,24 +445,24 @@ export async function applyDataRetentionPolicies() {
         archivedAt: new Date(),
       },
     });
-    
+
     await createAuditLog({
-      userId: 'system',
+      userId: "system",
       action: AuditAction.UPDATE,
       resourceType: ResourceType.AUDIT_LOG,
-      details: 'Applied data retention policies',
+      details: "Applied data retention policies",
       severity: AuditSeverity.LOW,
       status: AuditStatus.SUCCESS,
     });
-    
+
     return {
-      status: 'success',
-      message: 'Data retention policies applied',
+      status: "success",
+      message: "Data retention policies applied",
       date: new Date(),
     };
   } catch (error) {
-    console.error('Failed to apply data retention policies:', error);
-    throw new Error('Failed to apply data retention policies');
+    console.error("Failed to apply data retention policies:", error);
+    throw new Error("Failed to apply data retention policies");
   }
 }
 
@@ -451,34 +472,34 @@ export async function applyDataRetentionPolicies() {
 export async function createHIPAABackup() {
   try {
     const timestamp = new Date().toISOString();
-    
+
     await createAuditLog({
-      userId: 'system',
+      userId: "system",
       action: AuditAction.CREATE,
       resourceType: ResourceType.BACKUP,
       details: `Created HIPAA-compliant backup at ${timestamp}`,
       severity: AuditSeverity.MEDIUM,
       status: AuditStatus.SUCCESS,
     });
-    
+
     return {
-      status: 'success',
-      message: 'HIPAA-compliant backup created',
+      status: "success",
+      message: "HIPAA-compliant backup created",
       timestamp,
     };
   } catch (error) {
-    console.error('Failed to create HIPAA backup:', error);
-    
+    console.error("Failed to create HIPAA backup:", error);
+
     await createAuditLog({
-      userId: 'system',
+      userId: "system",
       action: AuditAction.CREATE,
       resourceType: ResourceType.BACKUP,
-      details: `Backup creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      details: `Backup creation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       severity: AuditSeverity.HIGH,
       status: AuditStatus.FAILURE,
     });
-    
-    throw new Error('Failed to create HIPAA backup');
+
+    throw new Error("Failed to create HIPAA backup");
   }
 }
 
@@ -487,13 +508,13 @@ export async function createHIPAABackup() {
  * This is a simplified mock implementation
  */
 export async function verifyConversationAccess(
-  userId: string, 
-  conversationId: string
+  userId: string,
+  conversationId: string,
 ): Promise<boolean> {
   // In production, this would check the database to ensure the user
   // is a participant in the conversation
   console.log(`Checking if user ${userId} has access to conversation ${conversationId}`);
-  
+
   // For development, we'll just return true
   return true;
 }
@@ -515,5 +536,5 @@ export async function encryptPHI(data: string): Promise<string> {
 export async function decryptPHI(encryptedData: string): Promise<string> {
   // In production, this would use proper decryption
   // For development, we'll just return the data without the [ENCRYPTED] prefix
-  return encryptedData.replace('[ENCRYPTED]', '');
+  return encryptedData.replace("[ENCRYPTED]", "");
 }

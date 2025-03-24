@@ -39,8 +39,22 @@ export default function PatientDetails() {
     <div>
       <h1>{patient.name}</h1>
       <p>Email: {patient.email}</p>
-      <p>Condition: {editMode ? <input defaultValue={patient.condition} onChange={(e) => setFormData({ condition: e.target.value })} /> : patient.condition}</p>
-      {editMode ? <button onClick={handleUpdate}>Save</button> : <button onClick={() => setEditMode(true)}>Edit</button>}
+      <p>
+        Condition:{" "}
+        {editMode ? (
+          <input
+            defaultValue={patient.condition}
+            onChange={(e) => setFormData({ condition: e.target.value })}
+          />
+        ) : (
+          patient.condition
+        )}
+      </p>
+      {editMode ? (
+        <button onClick={handleUpdate}>Save</button>
+      ) : (
+        <button onClick={() => setEditMode(true)}>Edit</button>
+      )}
     </div>
   );
 }

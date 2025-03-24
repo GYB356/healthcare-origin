@@ -1,23 +1,23 @@
-const React = require('react');
+const React = require("react");
 
 // Mock AuthContext
 const mockAuthState = {
   isAuthenticated: true,
   user: {
-    id: '123',
-    username: 'testuser',
-    email: 'test@example.com',
-    role: 'admin'
+    id: "123",
+    username: "testuser",
+    email: "test@example.com",
+    role: "admin",
   },
   login: jest.fn(() => Promise.resolve({ success: true })),
   logout: jest.fn(),
   register: jest.fn(() => Promise.resolve({ success: true })),
   loading: false,
-  error: null
+  error: null,
 };
 
 const AuthContext = React.createContext(mockAuthState);
-AuthContext.displayName = 'AuthContext';
+AuthContext.displayName = "AuthContext";
 
 // Auth Provider component
 const AuthProvider = ({ children, value = mockAuthState }) => {
@@ -33,15 +33,15 @@ const mockSocketState = {
     on: jest.fn(),
     emit: jest.fn(),
     connect: jest.fn(),
-    disconnect: jest.fn()
+    disconnect: jest.fn(),
   },
   isConnected: true,
   connect: jest.fn(),
-  disconnect: jest.fn()
+  disconnect: jest.fn(),
 };
 
 const SocketContext = React.createContext(mockSocketState);
-SocketContext.displayName = 'SocketContext';
+SocketContext.displayName = "SocketContext";
 
 // Socket Provider component
 const SocketProvider = ({ children, value = mockSocketState }) => {
@@ -59,5 +59,5 @@ module.exports = {
   SocketContext,
   SocketProvider,
   useSocket,
-  mockSocketState
+  mockSocketState,
 };

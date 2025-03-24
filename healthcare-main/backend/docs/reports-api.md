@@ -15,6 +15,7 @@ Generates a new medical report from a consultation transcript and saves it to th
 **Authentication**: Required
 
 **Request Body**:
+
 ```json
 {
   "appointmentId": "string (required)",
@@ -23,6 +24,7 @@ Generates a new medical report from a consultation transcript and saves it to th
 ```
 
 **Response**:
+
 ```json
 {
   "message": "Report saved",
@@ -55,9 +57,11 @@ Retrieves all reports associated with a specific appointment.
 **Authentication**: Required
 
 **URL Parameters**:
+
 - `appointmentId`: ID of the appointment
 
 **Response**:
+
 ```json
 [
   {
@@ -89,9 +93,11 @@ Retrieves a specific report by its ID.
 **Authentication**: Required
 
 **URL Parameters**:
+
 - `reportId`: ID of the report
 
 **Response**:
+
 ```json
 {
   "_id": "string",
@@ -113,6 +119,7 @@ Retrieves a specific report by its ID.
 ## Error Responses
 
 **Status Code**: `400 Bad Request`
+
 ```json
 {
   "message": "Appointment ID and transcript required"
@@ -120,6 +127,7 @@ Retrieves a specific report by its ID.
 ```
 
 **Status Code**: `401 Unauthorized`
+
 ```json
 {
   "message": "No token, authorization denied"
@@ -127,6 +135,7 @@ Retrieves a specific report by its ID.
 ```
 
 **Status Code**: `404 Not Found`
+
 ```json
 {
   "message": "Report not found"
@@ -134,6 +143,7 @@ Retrieves a specific report by its ID.
 ```
 
 **Status Code**: `500 Server Error`
+
 ```json
 {
   "message": "Server error"
@@ -155,4 +165,4 @@ You can use the provided test script to verify that the API is working correctly
 
 ## Integration with Frontend
 
-The frontend can use the Reports API to generate and display medical reports after video consultations. The `ConsultationReport` component in `frontend/components/ConsultationReport.tsx` provides a user interface for interacting with this API. 
+The frontend can use the Reports API to generate and display medical reports after video consultations. The `ConsultationReport` component in `frontend/components/ConsultationReport.tsx` provides a user interface for interacting with this API.

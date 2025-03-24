@@ -12,7 +12,9 @@ export default function Chat({ chatId, userId }) {
     socket.emit("joinChat", chatId);
 
     socket.on("receiveMessage", (msg) => {
-      const decryptedMessage = CryptoJS.AES.decrypt(msg.message, SECRET_KEY).toString(CryptoJS.enc.Utf8);
+      const decryptedMessage = CryptoJS.AES.decrypt(msg.message, SECRET_KEY).toString(
+        CryptoJS.enc.Utf8,
+      );
       setMessages((prev) => [...prev, { senderId: msg.senderId, message: decryptedMessage }]);
     });
 
@@ -21,7 +23,12 @@ export default function Chat({ chatId, userId }) {
 
   const sendMessage = () => {
     const encryptedMessage = CryptoJS.AES.encrypt(message, SECRET_KEY).toString();
-    socket.emit("sendMessage", { chatId, senderId: userId, receiverId: "otherUserId", message: encryptedMessage });
+    socket.emit("sendMessage", {
+      chatId,
+      senderId: userId,
+      receiverId: "otherUserId",
+      message: encryptedMessage,
+    });
     setMessage("");
   };
 
@@ -48,4 +55,4 @@ export default function Chat({ chatId, userId }) {
       </div>
     </div>
   );
-} 
+}

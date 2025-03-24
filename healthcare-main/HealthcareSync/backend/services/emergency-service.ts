@@ -1,17 +1,17 @@
-import { WebSocket } from 'ws';
-import { prisma } from '../../lib/prisma';
-import { NotificationService } from './notification-service';
+import { WebSocket } from "ws";
+import { prisma } from "../../lib/prisma";
+import { NotificationService } from "./notification-service";
 
 export interface VitalSign {
   patientId: number;
-  type: 'heart_rate' | 'blood_pressure' | 'oxygen_level' | 'temperature';
+  type: "heart_rate" | "blood_pressure" | "oxygen_level" | "temperature";
   value: number;
   unit: string;
   timestamp: string;
 }
 
 export interface AlertThreshold {
-  type: 'heart_rate' | 'blood_pressure' | 'oxygen_level' | 'temperature';
+  type: "heart_rate" | "blood_pressure" | "oxygen_level" | "temperature";
   min?: number;
   max?: number;
   critical_min?: number;
@@ -30,7 +30,7 @@ export class EmergencyService {
 
     // Get patient's thresholds
     const thresholds = this.vitalSignThresholds.get(vitalSign.patientId) || [];
-    const threshold = thresholds.find(t => t.type === vitalSign.type);
+    const threshold = thresholds.find((t) => t.type === vitalSign.type);
 
     if (threshold) {
       const alertTriggers = [];
@@ -40,14 +40,14 @@ export class EmergencyService {
         (threshold.critical_max && vitalSign.value > threshold.critical_max) ||
         (threshold.critical_min && vitalSign.value < threshold.critical_min)
       ) {
-        alertTriggers.push('CRITICAL_THRESHOLD');
+        alertTriggers.push("CRITICAL_THRESHOLD");
       }
       // Check warning thresholds
       else if (
         (threshold.max && vitalSign.value > threshold.max) ||
         (threshold.min && vitalSign.value < threshold.min)
       ) {
-        alertTriggers.push('WARNING_THRESHOLD');
+        alertTriggers.push("WARNING_THRESHOLD");
       }
 
       // Check rapid changes if trend monitoring is configured
@@ -55,10 +55,10 @@ export class EmergencyService {
         const trendAlert = await this.checkVitalSignTrend(
           vitalSign,
           threshold.trend_duration,
-          threshold.trend_threshold
+          threshold.trend_threshold,
         );
         if (trendAlert) {
-          alertTriggers.push('RAPID_CHANGE');
+          alertTriggers.push("RAPID_CHANGE");
         }
       }
 
@@ -84,14 +84,14 @@ export class EmergencyService {
 
     // Keep last 24 hours of data
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const filteredHistory = typeHistory.filter(vs => vs.timestamp >= oneDayAgo);
+    const filteredHistory = typeHistory.filter((vs) => vs.timestamp >= oneDayAgo);
     patientHistory.set(vitalSign.type, filteredHistory);
   }
 
   private static async checkVitalSignTrend(
     currentVitalSign: VitalSign,
     duration: number,
-    threshold: number
+    threshold: number,
   ): Promise<boolean> {
     const patientHistory = this.vitalSignHistory.get(currentVitalSign.patientId);
     if (!patientHistory) return false;
@@ -100,12 +100,12 @@ export class EmergencyService {
     if (!typeHistory) return false;
 
     const timeThreshold = new Date(Date.now() - duration * 60 * 1000).toISOString();
-    const recentReadings = typeHistory.filter(vs => vs.timestamp >= timeThreshold);
+    const recentReadings = typeHistory.filter((vs) => vs.timestamp >= timeThreshold);
 
     if (recentReadings.length < 2) return false;
 
     const oldestValue = recentReadings[0].value;
-    const percentageChange = Math.abs((currentVitalSign.value - oldestValue) / oldestValue * 100);
+    const percentageChange = Math.abs(((currentVitalSign.value - oldestValue) / oldestValue) * 100);
 
     return percentageChange >= threshold;
   }
@@ -114,25 +114,25 @@ export class EmergencyService {
     try {
       const patient = await prisma.patient.findUnique({
         where: { id: vitalSign.patientId },
-        include: { assignedDoctor: true }
+        include: { assignedDoctor: true },
       });
 
       if (!patient) return;
 
-      const alertPriority = triggers.includes('CRITICAL_THRESHOLD') ? 'critical' : 'high';
+      const alertPriority = triggers.includes("CRITICAL_THRESHOLD") ? "critical" : "high";
       const alertTitle = `${alertPriority.toUpperCase()} Alert - ${patient.firstName} ${patient.lastName}`;
       const triggerDescriptions = {
-        CRITICAL_THRESHOLD: 'Critical threshold exceeded',
-        WARNING_THRESHOLD: 'Warning threshold exceeded',
-        RAPID_CHANGE: 'Rapid change detected'
+        CRITICAL_THRESHOLD: "Critical threshold exceeded",
+        WARNING_THRESHOLD: "Warning threshold exceeded",
+        RAPID_CHANGE: "Rapid change detected",
       };
 
-      const alertMessage = `${vitalSign.type.replace('_', ' ')} reading of ${vitalSign.value}${vitalSign.unit} - ${triggers.map(t => triggerDescriptions[t]).join(', ')}`;
+      const alertMessage = `${vitalSign.type.replace("_", " ")} reading of ${vitalSign.value}${vitalSign.unit} - ${triggers.map((t) => triggerDescriptions[t]).join(", ")}`;
 
       // Create emergency alert
       const alert = await prisma.notification.create({
         data: {
-          type: 'ALERT',
+          type: "ALERT",
           title: alertTitle,
           message: alertMessage,
           userId: patient.assignedDoctorId,
@@ -143,18 +143,18 @@ export class EmergencyService {
             value: vitalSign.value,
             unit: vitalSign.unit,
             timestamp: vitalSign.timestamp,
-            triggers: triggers
-          }
-        }
+            triggers: triggers,
+          },
+        },
       });
 
       // Send notification to assigned doctor
       await NotificationService.sendNotification({
         userId: patient.assignedDoctorId,
-        type: 'health',
+        type: "health",
         title: alert.title,
         message: alert.message,
-        priority: alertPriority
+        priority: alertPriority,
       });
 
       // Log emergency event
@@ -166,11 +166,11 @@ export class EmergencyService {
           unit: vitalSign.unit,
           timestamp: vitalSign.timestamp,
           alertId: alert.id,
-          triggers: triggers
-        }
+          triggers: triggers,
+        },
       });
     } catch (error) {
-      console.error('Error triggering emergency alert:', error);
+      console.error("Error triggering emergency alert:", error);
     }
   }
 
@@ -186,7 +186,7 @@ export class EmergencyService {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     this.vitalSignHistory.forEach((patientHistory, patientId) => {
       patientHistory.forEach((typeHistory, type) => {
-        const filteredHistory = typeHistory.filter(vs => vs.timestamp >= oneDayAgo);
+        const filteredHistory = typeHistory.filter((vs) => vs.timestamp >= oneDayAgo);
         patientHistory.set(type, filteredHistory);
       });
     });

@@ -7,7 +7,7 @@ const openai = new OpenAI({
 // Log OpenAI configuration status without exposing the key
 console.log("OpenAI API Configuration Status:", {
   keyConfigured: !!process.env.OPENAI_API_KEY,
-  keyPrefix: process.env.OPENAI_API_KEY?.substring(0, 3)
+  keyPrefix: process.env.OPENAI_API_KEY?.substring(0, 3),
 });
 
 export async function generateHealthPrediction(patientData: {
@@ -27,7 +27,7 @@ export async function generateHealthPrediction(patientData: {
     console.log("Generating health prediction for patient data:", {
       symptomsCount: patientData.symptoms?.length || 0,
       symptoms: patientData.symptoms,
-      vitalSigns: patientData.vitalSigns
+      vitalSigns: patientData.vitalSigns,
     });
 
     const completion = await openai.chat.completions.create({
@@ -35,7 +35,8 @@ export async function generateHealthPrediction(patientData: {
       messages: [
         {
           role: "system",
-          content: "You are a healthcare AI assistant that helps analyze patient data and provide health insights. Be concise and professional in your analysis."
+          content:
+            "You are a healthcare AI assistant that helps analyze patient data and provide health insights. Be concise and professional in your analysis.",
         },
         {
           role: "user",
@@ -44,8 +45,8 @@ export async function generateHealthPrediction(patientData: {
           Vital Signs:
           - Blood Pressure: ${patientData.vitalSigns.bloodPressure}
           - Heart Rate: ${patientData.vitalSigns.heartRate}
-          - Temperature: ${patientData.vitalSigns.temperature}`
-        }
+          - Temperature: ${patientData.vitalSigns.temperature}`,
+        },
       ],
       temperature: 0.7,
       max_tokens: 500,
@@ -55,8 +56,10 @@ export async function generateHealthPrediction(patientData: {
     return completion.choices[0].message.content;
   } catch (error: any) {
     console.error("Error generating health prediction:", error);
-    if (error.code === 'insufficient_quota') {
-      throw new Error("The AI service is temporarily unavailable. Please try again later or contact support.");
+    if (error.code === "insufficient_quota") {
+      throw new Error(
+        "The AI service is temporarily unavailable. Please try again later or contact support.",
+      );
     }
 
     throw new Error("Unable to generate prediction at this time. Please try again later.");

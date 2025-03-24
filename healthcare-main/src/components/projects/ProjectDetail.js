@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const ProjectDetail = () => {
   return (
@@ -9,4 +9,4 @@ const ProjectDetail = () => {
   );
 };
 
-export default ProjectDetail; 
+export default ProjectDetail;

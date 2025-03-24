@@ -1,6 +1,6 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 /**
  * Protected Route component
@@ -10,12 +10,12 @@ import { useAuth } from '../../contexts/AuthContext';
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
   const location = useLocation();
-  
+
   // Log authentication status for debugging
-  console.log('ProtectedRoute checking auth:', { 
-    isAuthenticated: !!currentUser, 
-    loading, 
-    path: location.pathname 
+  console.log("ProtectedRoute checking auth:", {
+    isAuthenticated: !!currentUser,
+    loading,
+    path: location.pathname,
   });
 
   // Show loading indicator while checking authentication
@@ -30,12 +30,12 @@ const ProtectedRoute = ({ children }) => {
   // If not authenticated, redirect to login page
   // And store the current path for redirecting back after login
   if (!currentUser) {
-    console.log('Not authenticated, redirecting to login');
+    console.log("Not authenticated, redirecting to login");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // User is authenticated, render the protected content
-  console.log('User authenticated, rendering protected content');
+  console.log("User authenticated, rendering protected content");
   return children;
 };
 

@@ -24,7 +24,11 @@ export default function Navbar() {
           {user.role === "DOCTOR" && <Link href="/doctor/patients">My Patients</Link>}
         </>
       )}
-      {!user ? <Link href="/login">Login</Link> : <button onClick={() => localStorage.removeItem("token")}>Logout</button>}
+      {!user ? (
+        <Link href="/login">Login</Link>
+      ) : (
+        <button onClick={() => localStorage.removeItem("token")}>Logout</button>
+      )}
     </nav>
   );
 }

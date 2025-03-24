@@ -1,6 +1,6 @@
 // src/components/common/ErrorBoundary.js
-import React, { Component } from 'react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import React, { Component } from "react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
 /**
  * Error Boundary component to catch JavaScript errors in child components
@@ -9,10 +9,10 @@ import { AlertCircle, RefreshCw } from 'lucide-react';
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = {
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
     };
   }
 
@@ -32,7 +32,7 @@ class ErrorBoundary extends Component {
    */
   componentDidCatch(error, errorInfo) {
     this.setState({ errorInfo });
-    
+
     // Log error to an error reporting service
     this.logErrorToService(error, errorInfo);
   }
@@ -45,11 +45,11 @@ class ErrorBoundary extends Component {
   logErrorToService(error, errorInfo) {
     // In production, this would send to your error monitoring service
     // Examples: Sentry, LogRocket, etc.
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       // Example: Sentry.captureException(error, { extra: errorInfo });
-      console.error('Error captured by ErrorBoundary:', error, errorInfo);
+      console.error("Error captured by ErrorBoundary:", error, errorInfo);
     } else {
-      console.error('Error captured by ErrorBoundary:', error, errorInfo);
+      console.error("Error captured by ErrorBoundary:", error, errorInfo);
     }
   }
 
@@ -57,12 +57,12 @@ class ErrorBoundary extends Component {
    * Reset the error state to allow recovery
    */
   handleReset = () => {
-    this.setState({ 
+    this.setState({
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
     });
-  }
+  };
 
   /**
    * Render fallback UI when error occurs or children when no error
@@ -73,10 +73,10 @@ class ErrorBoundary extends Component {
 
     // If a custom fallback is provided, use it
     if (hasError && fallback) {
-      return React.cloneElement(fallback, { 
-        error, 
+      return React.cloneElement(fallback, {
+        error,
         errorInfo,
-        onReset: this.handleReset 
+        onReset: this.handleReset,
       });
     }
 
@@ -90,9 +90,9 @@ class ErrorBoundary extends Component {
               <h2 className="mt-4 text-xl font-bold">Something went wrong</h2>
               <div className="mt-4 p-4 bg-gray-900 rounded-md text-left">
                 <p className="text-red-400 mb-2">
-                  {error ? error.toString() : 'An unexpected error occurred'}
+                  {error ? error.toString() : "An unexpected error occurred"}
                 </p>
-                {process.env.NODE_ENV !== 'production' && errorInfo && (
+                {process.env.NODE_ENV !== "production" && errorInfo && (
                   <details className="mt-2">
                     <summary className="text-sm text-gray-400 cursor-pointer">
                       Component Stack Details

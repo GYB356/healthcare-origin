@@ -1,6 +1,5 @@
-
-import { prisma } from '../../lib/prisma';
-import { AppError } from '../utils/app-error';
+import { prisma } from "../../lib/prisma";
+import { AppError } from "../utils/app-error";
 
 export class HealthMetricService {
   static async getAllHealthMetrics() {
@@ -14,16 +13,16 @@ export class HealthMetricService {
               user: {
                 select: {
                   name: true,
-                  email: true
-                }
-              }
-            }
-          }
+                  email: true,
+                },
+              },
+            },
+          },
         },
-        orderBy: { timestamp: 'desc' }
+        orderBy: { timestamp: "desc" },
       });
     } catch (error) {
-      throw new AppError('Failed to fetch health metrics', 500);
+      throw new AppError("Failed to fetch health metrics", 500);
     }
   }
 
@@ -39,22 +38,22 @@ export class HealthMetricService {
               user: {
                 select: {
                   name: true,
-                  email: true
-                }
-              }
-            }
-          }
-        }
+                  email: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!healthMetric) {
-        throw new AppError('Health metric not found', 404);
+        throw new AppError("Health metric not found", 404);
       }
 
       return healthMetric;
     } catch (error) {
       if (error instanceof AppError) throw error;
-      throw new AppError('Failed to fetch health metric', 500);
+      throw new AppError("Failed to fetch health metric", 500);
     }
   }
 
@@ -62,11 +61,11 @@ export class HealthMetricService {
     try {
       // Validate the patient exists
       const patient = await prisma.patient.findUnique({
-        where: { id: data.patientId }
+        where: { id: data.patientId },
       });
 
       if (!patient) {
-        throw new AppError('Patient not found', 404);
+        throw new AppError("Patient not found", 404);
       }
 
       // Create new health metric
@@ -80,16 +79,16 @@ export class HealthMetricService {
               user: {
                 select: {
                   name: true,
-                  email: true
-                }
-              }
-            }
-          }
-        }
+                  email: true,
+                },
+              },
+            },
+          },
+        },
       });
     } catch (error) {
       if (error instanceof AppError) throw error;
-      throw new AppError('Failed to create health metric', 500);
+      throw new AppError("Failed to create health metric", 500);
     }
   }
 
@@ -97,11 +96,11 @@ export class HealthMetricService {
     try {
       // Check if the health metric exists
       const existingHealthMetric = await prisma.healthMetric.findUnique({
-        where: { id }
+        where: { id },
       });
 
       if (!existingHealthMetric) {
-        throw new AppError('Health metric not found', 404);
+        throw new AppError("Health metric not found", 404);
       }
 
       // Update the health metric
@@ -116,16 +115,16 @@ export class HealthMetricService {
               user: {
                 select: {
                   name: true,
-                  email: true
-                }
-              }
-            }
-          }
-        }
+                  email: true,
+                },
+              },
+            },
+          },
+        },
       });
     } catch (error) {
       if (error instanceof AppError) throw error;
-      throw new AppError('Failed to update health metric', 500);
+      throw new AppError("Failed to update health metric", 500);
     }
   }
 
@@ -133,21 +132,21 @@ export class HealthMetricService {
     try {
       // Check if the health metric exists
       const existingHealthMetric = await prisma.healthMetric.findUnique({
-        where: { id }
+        where: { id },
       });
 
       if (!existingHealthMetric) {
-        throw new AppError('Health metric not found', 404);
+        throw new AppError("Health metric not found", 404);
       }
 
       // Delete the health metric
       await prisma.healthMetric.delete({
-        where: { id }
+        where: { id },
       });
 
       return true;
     } catch (error) {
-      throw new AppError('Failed to delete health metric', 500);
+      throw new AppError("Failed to delete health metric", 500);
     }
   }
 
@@ -155,24 +154,24 @@ export class HealthMetricService {
     try {
       return await prisma.healthMetric.findMany({
         where: { patientId },
-        orderBy: { timestamp: 'desc' }
+        orderBy: { timestamp: "desc" },
       });
     } catch (error) {
-      throw new AppError('Failed to fetch health metrics', 500);
+      throw new AppError("Failed to fetch health metrics", 500);
     }
   }
 
   static async getHealthMetricsByType(patientId: string, type: string) {
     try {
       return await prisma.healthMetric.findMany({
-        where: { 
+        where: {
           patientId,
-          type
+          type,
         },
-        orderBy: { timestamp: 'desc' }
+        orderBy: { timestamp: "desc" },
       });
     } catch (error) {
-      throw new AppError('Failed to fetch health metrics', 500);
+      throw new AppError("Failed to fetch health metrics", 500);
     }
   }
 }

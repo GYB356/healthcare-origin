@@ -1,10 +1,10 @@
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { useEffect, ReactNode } from 'react';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect, ReactNode } from "react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  allowedRoles?: ('doctor' | 'patient')[];
+  allowedRoles?: ("doctor" | "patient" | "admin")[];
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
@@ -12,17 +12,17 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
       return;
     }
 
-    if (session?.user && allowedRoles && !allowedRoles.includes(session.user.role)) {
-      router.push(session.user.role === 'doctor' ? '/doctor/dashboard' : '/patient/dashboard');
+    if (session?.user && allowedRoles && !allowedRoles.includes(session.user.role as "doctor" | "patient" | "admin")) {
+      router.push(session.user.role === "doctor" ? "/doctor/dashboard" : "/patient/dashboard");
     }
   }, [session, status, router, allowedRoles]);
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -34,9 +34,9 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     return null;
   }
 
-  if (allowedRoles && !allowedRoles.includes(session.user.role)) {
+  if (allowedRoles && !allowedRoles.includes(session.user.role as "doctor" | "patient" | "admin")) {
     return null;
   }
 
   return <>{children}</>;
-} 
+}

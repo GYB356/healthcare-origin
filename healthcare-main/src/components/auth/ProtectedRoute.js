@@ -1,7 +1,7 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import authService from '../../services/AuthService';
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import authService from "../../services/AuthService";
 
 /**
  * ProtectedRoute component that handles role-based access control
@@ -19,9 +19,9 @@ const ProtectedRoute = ({ children, allowedRoles = [], requireAuth = true }) => 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
-      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-      <p className="text-lg">Verifying access permissions...</p>
-    </div>
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+        <p className="text-lg">Verifying access permissions...</p>
+      </div>
     );
   }
 
@@ -31,8 +31,8 @@ const ProtectedRoute = ({ children, allowedRoles = [], requireAuth = true }) => 
   }
 
   // If specific roles are required, check if user has one of those roles
-  if (allowedRoles.length > 0 && !allowedRoles.some(role => currentUser?.roles?.includes(role))) {
-    console.error('Unauthorized role attempt:', currentUser?.roles);
+  if (allowedRoles.length > 0 && !allowedRoles.some((role) => currentUser?.roles?.includes(role))) {
+    console.error("Unauthorized role attempt:", currentUser?.roles);
     return <Navigate to="/" replace />;
   }
 

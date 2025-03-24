@@ -1,0 +1,275 @@
+4b29b4a54863faa839592b7238c97241
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DryMongoBinary = void 0;
+const tslib_1 = require("tslib");
+const debug_1 = (0, tslib_1.__importDefault)(require("debug"));
+const resolveConfig_1 = require("./resolveConfig");
+const utils_1 = require("./utils");
+const path = (0, tslib_1.__importStar)(require("path"));
+const os_1 = require("os");
+const find_cache_dir_1 = (0, tslib_1.__importDefault)(require("find-cache-dir"));
+const getos_1 = require("./getos");
+const errors_1 = require("./errors");
+const MongoBinaryDownloadUrl_1 = require("./MongoBinaryDownloadUrl");
+const log = (0, debug_1.default)('MongoMS:DryMongoBinary');
+/**
+ * Locate an Binary, without downloading / locking
+ */
+class DryMongoBinary {
+  /**
+   * Try to locate an existing binary
+   * @returns The Path to an Binary Found, or undefined
+   */
+  static locateBinary(opts) {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log(`locateBinary: Trying to locate Binary for version "${opts.version}"`);
+      const useOpts = yield this.generateOptions(opts);
+      if (!!useOpts.systemBinary) {
+        log(`locateBinary: env "SYSTEM_BINARY" was provided with value: "${useOpts.systemBinary}"`);
+        const systemReturn = yield this.getSystemPath(useOpts.systemBinary);
+        if ((0, utils_1.isNullOrUndefined)(systemReturn)) {
+          throw new errors_1.NoSystemBinaryFoundError(useOpts.systemBinary);
+        }
+        return systemReturn;
+      }
+      if (this.binaryCache.has(opts.version)) {
+        const binary = this.binaryCache.get(opts.version);
+        log(`locateBinary: Requested Version found in cache: "[${opts.version}, ${binary}]"`);
+        return binary;
+      }
+      log('locateBinary: running generateDownloadPath');
+      const returnValue = yield this.generateDownloadPath(useOpts);
+      if (!returnValue[0]) {
+        log('locateBinary: could not find a existing binary');
+        return undefined;
+      }
+      log(`locateBinary: found binary at "${returnValue[1]}"`);
+      this.binaryCache.set(opts.version, returnValue[1]);
+      return returnValue[1];
+    });
+  }
+  /**
+   * Generate All required options for the binary name / path generation
+   */
+  static generateOptions(opts) {
+    var _a, _b;
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log('generateOptions');
+      const defaultVersion = (_a = (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.VERSION)) !== null && _a !== void 0 ? _a : resolveConfig_1.DEFAULT_VERSION;
+      const ensuredOpts = (0, utils_1.isNullOrUndefined)(opts) ? {
+        version: defaultVersion
+      } : opts;
+      const final = {
+        version: ensuredOpts.version || defaultVersion,
+        downloadDir: (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.DOWNLOAD_DIR) || ensuredOpts.downloadDir || '',
+        os: (_b = ensuredOpts.os) !== null && _b !== void 0 ? _b : yield (0, getos_1.getOS)(),
+        platform: ensuredOpts.platform || (0, os_1.platform)(),
+        arch: ensuredOpts.arch || (0, os_1.arch)(),
+        systemBinary: (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.SYSTEM_BINARY) || ensuredOpts.systemBinary || ''
+      };
+      final.downloadDir = path.dirname((yield this.generateDownloadPath(final))[1]);
+      // if truthy
+      if ((0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.ARCHIVE_NAME) || (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.DOWNLOAD_URL)) {
+        // "DOWNLOAD_URL" will be used over "ARCHIVE_NAME"
+        // the "as string" cast is there because it is already checked that one of the 2 exists, and "resolveConfig" ensures it only returns strings
+        const input = (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.DOWNLOAD_URL) || (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.ARCHIVE_NAME);
+        log(`generateOptions: ARCHIVE_NAME or DOWNLOAD_URL defined, generating options based on that (input: "${input}")`);
+        return this.parseArchiveNameRegex(input, final);
+      }
+      return final;
+    });
+  }
+  /**
+   * Parse "input" into DryMongoBinaryOptions
+   * @param input The Input to be parsed with the regex
+   * @param opts The Options which will be augmented with "input"
+   * @returns The Augmented options
+   */
+  static parseArchiveNameRegex(input, opts) {
+    log(`parseArchiveNameRegex (input: "${input}")`);
+    const archiveMatches = /mongodb-(?<platform>linux|win32|osx|macos)(?:-ssl-|-)(?<arch>\w{4,})(?:-(?<dist>\w+)|)(?:-ssl-|-)(?:v|)(?<version>[\d.]+(?:-latest|))\./gim.exec(input);
+    (0, utils_1.assertion)(!(0, utils_1.isNullOrUndefined)(archiveMatches), new errors_1.NoRegexMatchError('input'));
+    // this error is kinda impossible to test, because the regex we use either has matches that are groups or no matches
+    (0, utils_1.assertion)(!(0, utils_1.isNullOrUndefined)(archiveMatches.groups), new errors_1.NoRegexMatchError('input', 'groups'));
+    const groups = archiveMatches.groups;
+    (0, utils_1.assertion)(typeof groups.version === 'string' && groups.version.length > 1, new errors_1.ParseArchiveRegexError('version'));
+    // the following 2 assertions are hard to test, because the regex has restrictions that are more strict than the assertions
+    (0, utils_1.assertion)(typeof groups.platform === 'string' && groups.platform.length > 1, new errors_1.ParseArchiveRegexError('platform'));
+    (0, utils_1.assertion)(typeof groups.arch === 'string' && groups.arch.length >= 4, new errors_1.ParseArchiveRegexError('arch'));
+    opts.version = groups.version;
+    opts.arch = groups.arch;
+    if (groups.platform === 'linux') {
+      const distMatches = !!groups.dist ? /([a-z]+)(\d*)/gim.exec(groups.dist) : null;
+      opts.os = {
+        os: 'linux',
+        dist: typeof (distMatches === null || distMatches === void 0 ? void 0 : distMatches[1]) === 'string' ? distMatches[1] : 'unknown',
+        // "release" should be able to be discarded in this case
+        release: ''
+      };
+    } else {
+      opts.os = {
+        os: groups.platform
+      };
+    }
+    return opts;
+  }
+  /**
+   * Get the full path with filename
+   * @returns Absoulte Path with FileName
+   */
+  static getBinaryName(opts) {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log('getBinaryName');
+      let binaryName;
+      if ((0, resolveConfig_1.envToBool)((0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.USE_ARCHIVE_NAME_FOR_BINARY_NAME))) {
+        const archiveName = yield new MongoBinaryDownloadUrl_1.MongoBinaryDownloadUrl(opts).getArchiveName();
+        binaryName = path.parse(archiveName).name;
+      } else {
+        const addExe = opts.platform === 'win32' ? '.exe' : '';
+        const dist = (0, getos_1.isLinuxOS)(opts.os) ? opts.os.dist : opts.os.os;
+        binaryName = `mongod-${opts.arch}-${dist}-${opts.version}${addExe}`;
+      }
+      return binaryName;
+    });
+  }
+  /**
+   * Combine basePath with binaryName
+   */
+  static combineBinaryName(basePath, binaryName) {
+    log('combineBinaryName');
+    return path.resolve(basePath, binaryName);
+  }
+  /**
+   * Probe if the provided "systemBinary" is an existing path
+   * @param systemBinary The Path to probe for an System-Binary
+   * @returns System Binary path or undefined
+   */
+  static getSystemPath(systemBinary) {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      // REFACTOR: change this function to always return "string"
+      log('getSystempath');
+      try {
+        yield (0, utils_1.checkBinaryPermissions)(systemBinary);
+        log(`getSystemPath: found system binary path at "${systemBinary}"`);
+        return systemBinary; // returns if "access" is successful
+      } catch (err) {
+        log(`getSystemPath: can't find system binary at "${systemBinary}".\n${err instanceof Error ? err.message : err}`);
+      }
+      return undefined;
+    });
+  }
+  /**
+   * Generate an "MongoBinaryPaths" object
+   *
+   * This Function should not hit the FileSystem
+   * @returns an finished "MongoBinaryPaths" object
+   */
+  static generatePaths(opts) {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      log('generatePaths', opts);
+      const final = {
+        legacyHomeCache: '',
+        modulesCache: '',
+        relative: '',
+        resolveConfig: ''
+      };
+      const binaryName = yield this.getBinaryName(opts);
+      // Assign "node_modules/.cache" to modulesCache
+      // if we're in postinstall script, npm will set the cwd too deep
+      // when in postinstall, npm will provide an "INIT_CWD" env variable
+      let nodeModulesDLDir = process.env['INIT_CWD'] || process.cwd();
+      // as long as "node_modules/mongodb-memory-server*" is included in the path, go the paths up
+      while (nodeModulesDLDir.includes(`node_modules${path.sep}mongodb-memory-server`)) {
+        nodeModulesDLDir = path.resolve(nodeModulesDLDir, '..', '..');
+      }
+      const tmpModulesCache = (0, find_cache_dir_1.default)({
+        name: 'mongodb-memory-server',
+        cwd: nodeModulesDLDir
+      });
+      if (!(0, utils_1.isNullOrUndefined)(tmpModulesCache)) {
+        final.modulesCache = this.combineBinaryName(path.resolve(tmpModulesCache), binaryName);
+      }
+      const legacyHomeCache = path.resolve(this.homedir(), '.cache/mongodb-binaries');
+      final.legacyHomeCache = this.combineBinaryName(legacyHomeCache, binaryName);
+      // Resolve the config value "DOWNLOAD_DIR" if provided, otherwise remove from list
+      const resolveConfigValue = opts.downloadDir || (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.DOWNLOAD_DIR);
+      if (!(0, utils_1.isNullOrUndefined)(resolveConfigValue) && resolveConfigValue.length > 0) {
+        log(`generatePaths: resolveConfigValue is not empty`);
+        final.resolveConfig = this.combineBinaryName(resolveConfigValue, binaryName);
+      }
+      // Resolve relative to cwd if no other has been found
+      final.relative = this.combineBinaryName(path.resolve(process.cwd(), 'mongodb-binaries'), binaryName);
+      return final;
+    });
+  }
+  /**
+   * Generate the Path where an Binary will be located
+   * @returns "boolean" indicating if the binary exists at the provided path, and "string" the path to use for the binary
+   */
+  static generateDownloadPath(opts) {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+      const preferGlobal = (0, resolveConfig_1.envToBool)((0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.PREFER_GLOBAL_PATH));
+      log(`generateDownloadPath: Generating Download Path, preferGlobal: "${preferGlobal}"`);
+      const paths = yield this.generatePaths(opts);
+      log('generateDownloadPath: Paths:', paths, opts.systemBinary);
+      // SystemBinary will only be returned if defined and paths exists
+      if (!!opts.systemBinary && (yield (0, utils_1.pathExists)(opts.systemBinary))) {
+        const sysPath = yield this.getSystemPath(opts.systemBinary);
+        if (!(0, utils_1.isNullOrUndefined)(sysPath)) {
+          return [true, sysPath];
+        }
+      }
+      // Section where paths are probed for an existing binary
+      if (yield (0, utils_1.pathExists)(paths.resolveConfig)) {
+        log(`generateDownloadPath: Found binary in resolveConfig (DOWNLOAD_DIR): "${paths.resolveConfig}"`);
+        return [true, paths.resolveConfig];
+      }
+      if (yield (0, utils_1.pathExists)(paths.legacyHomeCache)) {
+        log(`generateDownloadPath: Found binary in legacyHomeCache: "${paths.legacyHomeCache}"`);
+        return [true, paths.legacyHomeCache];
+      }
+      if (yield (0, utils_1.pathExists)(paths.modulesCache)) {
+        log(`generateDownloadPath: Found binary in modulesCache: "${paths.modulesCache}"`);
+        return [true, paths.modulesCache];
+      }
+      if (yield (0, utils_1.pathExists)(paths.relative)) {
+        log(`generateDownloadPath: Found binary in relative: "${paths.relative}"`);
+        return [true, paths.relative];
+      }
+      // Section where binary path gets generated when no binary was found
+      log(`generateDownloadPath: no existing binary for version "${opts.version}" was found`);
+      if (paths.resolveConfig.length > 0) {
+        log(`generateDownloadPath: using resolveConfig (DOWNLOAD_DIR) "${paths.resolveConfig}"`);
+        return [false, paths.resolveConfig];
+      }
+      if (preferGlobal && !!paths.legacyHomeCache) {
+        log(`generateDownloadPath: using global (preferGlobal) "${paths.legacyHomeCache}"`);
+        return [false, paths.legacyHomeCache];
+      }
+      // this case may not happen, if somehow the cwd gets changed outside of "node_modules" reach
+      if (paths.modulesCache.length > 0) {
+        log(`generateDownloadPath: using modulesCache "${paths.modulesCache}"`);
+        return [false, paths.modulesCache];
+      }
+      log(`generateDownloadPath: using relative "${paths.relative}"`);
+      return [false, paths.relative];
+    });
+  }
+  /**
+   * This function is used, because jest just dosnt want "os.homedir" to be mocked
+   * if someone can find an way to actually mock this in an test, please change it
+   */
+  static homedir() {
+    return (0, os_1.homedir)();
+  }
+}
+exports.DryMongoBinary = DryMongoBinary;
+/**
+ * Binaries already found, values are: [Version, Path]
+ */
+DryMongoBinary.binaryCache = new Map();
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJkZWJ1Z18xIiwidHNsaWJfMSIsIl9faW1wb3J0RGVmYXVsdCIsInJlcXVpcmUiLCJyZXNvbHZlQ29uZmlnXzEiLCJ1dGlsc18xIiwicGF0aCIsIl9faW1wb3J0U3RhciIsIm9zXzEiLCJmaW5kX2NhY2hlX2Rpcl8xIiwiZ2V0b3NfMSIsImVycm9yc18xIiwiTW9uZ29CaW5hcnlEb3dubG9hZFVybF8xIiwibG9nIiwiZGVmYXVsdCIsIkRyeU1vbmdvQmluYXJ5IiwibG9jYXRlQmluYXJ5Iiwib3B0cyIsInZlcnNpb24iLCJ1c2VPcHRzIiwiZ2VuZXJhdGVPcHRpb25zIiwic3lzdGVtQmluYXJ5Iiwic3lzdGVtUmV0dXJuIiwiZ2V0U3lzdGVtUGF0aCIsImlzTnVsbE9yVW5kZWZpbmVkIiwiTm9TeXN0ZW1CaW5hcnlGb3VuZEVycm9yIiwiYmluYXJ5Q2FjaGUiLCJoYXMiLCJiaW5hcnkiLCJnZXQiLCJyZXR1cm5WYWx1ZSIsImdlbmVyYXRlRG93bmxvYWRQYXRoIiwidW5kZWZpbmVkIiwic2V0IiwiZGVmYXVsdFZlcnNpb24iLCJfYSIsInJlc29sdmVDb25maWciLCJSZXNvbHZlQ29uZmlnVmFyaWFibGVzIiwiVkVSU0lPTiIsIkRFRkFVTFRfVkVSU0lPTiIsImVuc3VyZWRPcHRzIiwiZmluYWwiLCJkb3dubG9hZERpciIsIkRPV05MT0FEX0RJUiIsIm9zIiwiX2IiLCJnZXRPUyIsInBsYXRmb3JtIiwiYXJjaCIsIlNZU1RFTV9CSU5BUlkiLCJkaXJuYW1lIiwiQVJDSElWRV9OQU1FIiwiRE9XTkxPQURfVVJMIiwiaW5wdXQiLCJwYXJzZUFyY2hpdmVOYW1lUmVnZXgiLCJhcmNoaXZlTWF0Y2hlcyIsImV4ZWMiLCJhc3NlcnRpb24iLCJOb1JlZ2V4TWF0Y2hFcnJvciIsImdyb3VwcyIsImxlbmd0aCIsIlBhcnNlQXJjaGl2ZVJlZ2V4RXJyb3IiLCJkaXN0TWF0Y2hlcyIsImRpc3QiLCJyZWxlYXNlIiwiZ2V0QmluYXJ5TmFtZSIsImJpbmFyeU5hbWUiLCJlbnZUb0Jvb2wiLCJVU0VfQVJDSElWRV9OQU1FX0ZPUl9CSU5BUllfTkFNRSIsImFyY2hpdmVOYW1lIiwiTW9uZ29CaW5hcnlEb3dubG9hZFVybCIsImdldEFyY2hpdmVOYW1lIiwicGFyc2UiLCJuYW1lIiwiYWRkRXhlIiwiaXNMaW51eE9TIiwiY29tYmluZUJpbmFyeU5hbWUiLCJiYXNlUGF0aCIsInJlc29sdmUiLCJjaGVja0JpbmFyeVBlcm1pc3Npb25zIiwiZXJyIiwiRXJyb3IiLCJtZXNzYWdlIiwiZ2VuZXJhdGVQYXRocyIsImxlZ2FjeUhvbWVDYWNoZSIsIm1vZHVsZXNDYWNoZSIsInJlbGF0aXZlIiwibm9kZU1vZHVsZXNETERpciIsInByb2Nlc3MiLCJlbnYiLCJjd2QiLCJpbmNsdWRlcyIsInNlcCIsInRtcE1vZHVsZXNDYWNoZSIsImhvbWVkaXIiLCJyZXNvbHZlQ29uZmlnVmFsdWUiLCJwcmVmZXJHbG9iYWwiLCJQUkVGRVJfR0xPQkFMX1BBVEgiLCJwYXRocyIsInBhdGhFeGlzdHMiLCJzeXNQYXRoIiwiZXhwb3J0cyIsIk1hcCJdLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy91dGlsL0RyeU1vbmdvQmluYXJ5LnRzIl0sInNvdXJjZXNDb250ZW50IjpbbnVsbF0sIm1hcHBpbmdzIjoiOzs7Ozs7O0FBQUEsTUFBQUEsT0FBQSxPQUFBQyxPQUFBLENBQUFDLGVBQUEsRUFBQUMsT0FBQTtBQUNBLE1BQUFDLGVBQUEsR0FBQUQsT0FBQTtBQUNBLE1BQUFFLE9BQUEsR0FBQUYsT0FBQTtBQUNBLE1BQUFHLElBQUEsT0FBQUwsT0FBQSxDQUFBTSxZQUFBLEVBQUFKLE9BQUE7QUFDQSxNQUFBSyxJQUFBLEdBQUFMLE9BQUE7QUFDQSxNQUFBTSxnQkFBQSxPQUFBUixPQUFBLENBQUFDLGVBQUEsRUFBQUMsT0FBQTtBQUNBLE1BQUFPLE9BQUEsR0FBQVAsT0FBQTtBQUNBLE1BQUFRLFFBQUEsR0FBQVIsT0FBQTtBQUNBLE1BQUFTLHdCQUFBLEdBQUFULE9BQUE7QUFFQSxNQUFNVSxHQUFHLEdBQUcsSUFB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

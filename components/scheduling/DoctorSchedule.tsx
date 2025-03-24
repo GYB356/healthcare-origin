@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar } from '@fullcalendar/react';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { toast } from 'react-hot-toast';
-import { useSession } from 'next-auth/react';
-import { Schedule } from '@prisma/client';
+import React, { useState, useEffect } from "react";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import { toast } from "react-hot-toast";
+import { useSession } from "next-auth/react";
+import { Schedule } from "@prisma/client";
 
 interface TimeSlot {
   id: string;
@@ -24,29 +24,31 @@ export default function DoctorSchedule() {
 
   const fetchSchedules = async () => {
     try {
-      const response = await fetch('/api/schedule');
+      const response = await fetch("/api/schedule");
       const data = await response.json();
-      setSchedules(data.schedules.map((schedule: Schedule) => ({
-        id: schedule.id,
-        start: new Date(schedule.startTime),
-        end: new Date(schedule.endTime),
-        title: 'Available',
-      })));
+      setSchedules(
+        data.schedules.map((schedule: Schedule) => ({
+          id: schedule.id,
+          start: new Date(schedule.startTime),
+          end: new Date(schedule.endTime),
+          title: "Available",
+        })),
+      );
     } catch (error) {
-      toast.error('Failed to fetch schedules');
+      toast.error("Failed to fetch schedules");
     } finally {
       setLoading(false);
     }
   };
 
   const handleSelect = async (selectInfo: any) => {
-    const title = 'Available';
+    const title = "Available";
     const calendarApi = selectInfo.view.calendar;
 
     try {
-      const response = await fetch('/api/schedule', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           startTime: selectInfo.start,
           endTime: selectInfo.end,
@@ -61,31 +63,31 @@ export default function DoctorSchedule() {
           start: selectInfo.start,
           end: selectInfo.end,
         });
-        toast.success('Time slot added successfully');
+        toast.success("Time slot added successfully");
         fetchSchedules();
       } else {
-        toast.error('Failed to add time slot');
+        toast.error("Failed to add time slot");
       }
     } catch (error) {
-      toast.error('Error adding time slot');
+      toast.error("Error adding time slot");
     }
   };
 
   const handleEventClick = async (clickInfo: any) => {
-    if (confirm('Would you like to remove this time slot?')) {
+    if (confirm("Would you like to remove this time slot?")) {
       try {
         const response = await fetch(`/api/schedule/${clickInfo.event.id}`, {
-          method: 'DELETE',
+          method: "DELETE",
         });
 
         if (response.ok) {
           clickInfo.event.remove();
-          toast.success('Time slot removed successfully');
+          toast.success("Time slot removed successfully");
         } else {
-          toast.error('Failed to remove time slot');
+          toast.error("Failed to remove time slot");
         }
       } catch (error) {
-        toast.error('Error removing time slot');
+        toast.error("Error removing time slot");
       }
     }
   };
@@ -98,7 +100,7 @@ export default function DoctorSchedule() {
     <div className="p-4 bg-white rounded-lg shadow">
       <h2 className="text-2xl font-bold mb-4">Manage Schedule</h2>
       <div className="h-[600px]">
-        <Calendar
+        <FullCalendar
           plugins={[timeGridPlugin, interactionPlugin]}
           initialView="timeGridWeek"
           selectable={true}
@@ -113,12 +115,12 @@ export default function DoctorSchedule() {
           allDaySlot={false}
           slotDuration="00:30:00"
           headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: 'timeGridWeek,timeGridDay',
+            left: "prev,next today",
+            center: "title",
+            right: "timeGridWeek,timeGridDay",
           }}
         />
       </div>
     </div>
   );
-} 
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   AreaChart,
   Area,
@@ -12,8 +12,8 @@ import {
   PieChart,
   Pie,
   Cell,
-} from 'recharts';
-import { toast } from 'react-hot-toast';
+} from "recharts";
+import { toast } from "react-hot-toast";
 
 interface AnalyticsData {
   appointments: {
@@ -49,12 +49,12 @@ interface AnalyticsData {
   };
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
 export default function AnalyticsDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('month'); // month, quarter, year
+  const [timeRange, setTimeRange] = useState("month"); // month, quarter, year
 
   const fetchAnalytics = async () => {
     try {
@@ -62,7 +62,7 @@ export default function AnalyticsDashboard() {
       const analyticsData = await response.json();
       setData(analyticsData);
     } catch (error) {
-      toast.error('Failed to fetch analytics data');
+      toast.error("Failed to fetch analytics data");
     } finally {
       setLoading(false);
     }
@@ -238,4 +238,4 @@ export default function AnalyticsDashboard() {
       </div>
     </div>
   );
-} 
+}

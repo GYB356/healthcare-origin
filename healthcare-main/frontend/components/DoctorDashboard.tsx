@@ -46,19 +46,21 @@ export default function DoctorDashboard() {
     try {
       const res = await fetch(`/api/appointments/${id}/status`, {
         method: "PUT",
-        headers: { 
-          "Content-Type": "application/json", 
-          Authorization: `Bearer ${token}` 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status }),
       });
-      
+
       if (!res.ok) throw new Error("Failed to update status");
-      
+
       // Update local state
-      setAppointments(appointments.map(appointment => 
-        appointment._id === id ? { ...appointment, status } : appointment
-      ));
+      setAppointments(
+        appointments.map((appointment) =>
+          appointment._id === id ? { ...appointment, status } : appointment,
+        ),
+      );
     } catch (error) {
       alert("Failed to update appointment status");
     } finally {
@@ -70,14 +72,14 @@ export default function DoctorDashboard() {
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   // Group appointments by status
-  const pendingAppointments = appointments.filter(app => app.status === "pending");
-  const approvedAppointments = appointments.filter(app => app.status === "approved");
-  const rejectedAppointments = appointments.filter(app => app.status === "rejected");
+  const pendingAppointments = appointments.filter((app) => app.status === "pending");
+  const approvedAppointments = appointments.filter((app) => app.status === "approved");
+  const rejectedAppointments = appointments.filter((app) => app.status === "rejected");
 
   return (
     <div className="p-4 border rounded-lg">
       <h2 className="text-xl font-bold mb-4">Doctor's Dashboard</h2>
-      
+
       {appointments.length === 0 ? (
         <p>No appointments found.</p>
       ) : (
@@ -89,18 +91,28 @@ export default function DoctorDashboard() {
               <ul className="space-y-3">
                 {pendingAppointments.map((appointment) => (
                   <li key={appointment._id} className="border p-3 rounded bg-orange-50">
-                    <p><strong>Patient:</strong> {appointment.patient.email}</p>
-                    <p><strong>Date:</strong> {new Date(appointment.date).toLocaleString()}</p>
-                    {appointment.notes && <p><strong>Notes:</strong> {appointment.notes}</p>}
-                    <p><strong>Status:</strong> {appointment.status}</p>
+                    <p>
+                      <strong>Patient:</strong> {appointment.patient.email}
+                    </p>
+                    <p>
+                      <strong>Date:</strong> {new Date(appointment.date).toLocaleString()}
+                    </p>
+                    {appointment.notes && (
+                      <p>
+                        <strong>Notes:</strong> {appointment.notes}
+                      </p>
+                    )}
+                    <p>
+                      <strong>Status:</strong> {appointment.status}
+                    </p>
                     <div className="mt-2 space-x-2">
-                      <button 
+                      <button
                         onClick={() => updateStatus(appointment._id, "approved")}
                         className="px-3 py-1 bg-green-600 text-white rounded"
                       >
                         Approve
                       </button>
-                      <button 
+                      <button
                         onClick={() => updateStatus(appointment._id, "rejected")}
                         className="px-3 py-1 bg-red-600 text-white rounded"
                       >
@@ -112,7 +124,7 @@ export default function DoctorDashboard() {
               </ul>
             </div>
           )}
-          
+
           {/* Approved Appointments */}
           {approvedAppointments.length > 0 && (
             <div>
@@ -120,16 +132,26 @@ export default function DoctorDashboard() {
               <ul className="space-y-2">
                 {approvedAppointments.map((appointment) => (
                   <li key={appointment._id} className="border p-3 rounded bg-green-50">
-                    <p><strong>Patient:</strong> {appointment.patient.email}</p>
-                    <p><strong>Date:</strong> {new Date(appointment.date).toLocaleString()}</p>
-                    {appointment.notes && <p><strong>Notes:</strong> {appointment.notes}</p>}
-                    <p><strong>Status:</strong> {appointment.status}</p>
+                    <p>
+                      <strong>Patient:</strong> {appointment.patient.email}
+                    </p>
+                    <p>
+                      <strong>Date:</strong> {new Date(appointment.date).toLocaleString()}
+                    </p>
+                    {appointment.notes && (
+                      <p>
+                        <strong>Notes:</strong> {appointment.notes}
+                      </p>
+                    )}
+                    <p>
+                      <strong>Status:</strong> {appointment.status}
+                    </p>
                   </li>
                 ))}
               </ul>
             </div>
           )}
-          
+
           {/* Rejected Appointments */}
           {rejectedAppointments.length > 0 && (
             <div>
@@ -137,10 +159,20 @@ export default function DoctorDashboard() {
               <ul className="space-y-2">
                 {rejectedAppointments.map((appointment) => (
                   <li key={appointment._id} className="border p-3 rounded bg-red-50">
-                    <p><strong>Patient:</strong> {appointment.patient.email}</p>
-                    <p><strong>Date:</strong> {new Date(appointment.date).toLocaleString()}</p>
-                    {appointment.notes && <p><strong>Notes:</strong> {appointment.notes}</p>}
-                    <p><strong>Status:</strong> {appointment.status}</p>
+                    <p>
+                      <strong>Patient:</strong> {appointment.patient.email}
+                    </p>
+                    <p>
+                      <strong>Date:</strong> {new Date(appointment.date).toLocaleString()}
+                    </p>
+                    {appointment.notes && (
+                      <p>
+                        <strong>Notes:</strong> {appointment.notes}
+                      </p>
+                    )}
+                    <p>
+                      <strong>Status:</strong> {appointment.status}
+                    </p>
                   </li>
                 ))}
               </ul>

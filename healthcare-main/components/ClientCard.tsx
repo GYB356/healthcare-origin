@@ -1,20 +1,20 @@
-'use client'
+"use client";
 
-import { Client } from '../types/client'
+import { Client } from "../types/client";
 
 interface ClientCardProps {
-  client: Client
-  onEdit: (client: Client) => void
-  onDelete: () => void
+  client: Client;
+  onEdit: (client: Client) => void;
+  onDelete: () => void;
 }
 
 export default function ClientCard({ client, onEdit, onDelete }: ClientCardProps) {
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount)
-  }
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -49,10 +49,7 @@ export default function ClientCard({ client, onEdit, onDelete }: ClientCardProps
       </div>
 
       <div className="mt-4 flex justify-end space-x-4">
-        <button
-          onClick={onDelete}
-          className="text-red-600 hover:text-red-800 font-medium"
-        >
+        <button onClick={onDelete} className="text-red-600 hover:text-red-800 font-medium">
           Delete
         </button>
         <button
@@ -63,5 +60,5 @@ export default function ClientCard({ client, onEdit, onDelete }: ClientCardProps
         </button>
       </div>
     </div>
-  )
-} 
+  );
+}

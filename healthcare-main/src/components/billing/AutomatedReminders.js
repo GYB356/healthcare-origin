@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { FiClock, FiSend, FiAlertCircle } from 'react-icons/fi';
-import { AuditService } from '../../services/AuditService';
-import { HIPAAEncryptionService } from '../../utils/HIPAACompliance';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { FiClock, FiSend, FiAlertCircle } from "react-icons/fi";
+import { AuditService } from "../../services/AuditService";
+import { HIPAAEncryptionService } from "../../utils/HIPAACompliance";
 
 export default function AutomatedReminders() {
   const { authAxios } = useAuth();
   const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
     const fetchOverdueInvoices = async () => {
       try {
-        const response = await authAxios.get('/api/billing/overdue');
+        const response = await authAxios.get("/api/billing/overdue");
         setReminders(response.data);
       } catch (err) {
-        setError('Failed to load overdue invoices');
-        console.error('Reminder error:', err);
+        setError("Failed to load overdue invoices");
+        console.error("Reminder error:", err);
       } finally {
         setLoading(false);
       }
@@ -32,23 +32,23 @@ export default function AutomatedReminders() {
       setSending(true);
       const encryptedData = HIPAAEncryptionService.encryptSensitiveData({
         invoiceId,
-        action: 'reminder_sent'
+        action: "reminder_sent",
       });
 
       await authAxios.post(`/api/billing/reminders/${invoiceId}`);
-      
+
       await AuditService.logTransaction({
         userId: authAxios.currentUser.id,
-        action: 'payment_reminder_sent',
+        action: "payment_reminder_sent",
         entityId: invoiceId,
-        entityType: 'billing',
-        encryptedData
+        entityType: "billing",
+        encryptedData,
       });
 
-      setReminders(prev => prev.filter(r => r.id !== invoiceId));
+      setReminders((prev) => prev.filter((r) => r.id !== invoiceId));
     } catch (err) {
-      setError('Failed to send reminder');
-      console.error('Reminder send error:', err);
+      setError("Failed to send reminder");
+      console.error("Reminder send error:", err);
     } finally {
       setSending(false);
     }
@@ -82,10 +82,18 @@ export default function AutomatedReminders() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount Due</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Patient
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Due Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Amount Due
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -105,7 +113,7 @@ export default function AutomatedReminders() {
                     className="flex items-center text-blue-600 hover:text-blue-900 disabled:text-gray-400"
                   >
                     <FiSend className="mr-1" />
-                    {sending ? 'Sending...' : 'Send Reminder'}
+                    {sending ? "Sending..." : "Send Reminder"}
                   </button>
                 </td>
               </tr>

@@ -1,7 +1,7 @@
 // components/MedicalRecords.js - Fixed uploadDocument undefined
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useMedicalRecords, uploadDocument } from '../contexts/MedicalRecordsContext.js';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMedicalRecords, uploadDocument } from "../contexts/MedicalRecordsContext.js";
 
 const MedicalRecords = () => {
   const { records, loading, error, fetchRecords } = useMedicalRecords();
@@ -19,7 +19,7 @@ const MedicalRecords = () => {
     try {
       // In a real app, you would call an API endpoint here
       console.log(`Uploading file ${file.name} to record ${recordId}`);
-      
+
       // Mock successful upload
       setTimeout(() => {
         alert(`File ${file.name} uploaded successfully`);
@@ -28,10 +28,9 @@ const MedicalRecords = () => {
         // Refresh records after upload
         fetchRecords();
       }, 1500);
-      
     } catch (error) {
-      console.error('Error uploading document:', error);
-      alert('Failed to upload document. Please try again.');
+      console.error("Error uploading document:", error);
+      alert("Failed to upload document. Please try again.");
     }
   };
 
@@ -54,7 +53,7 @@ const MedicalRecords = () => {
   const handleSubmitUpload = (e) => {
     e.preventDefault();
     if (!file || !selectedRecord) return;
-    
+
     uploadDocument(selectedRecord.id, file);
   };
 
@@ -64,7 +63,7 @@ const MedicalRecords = () => {
   return (
     <div className="container mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold mb-6">Medical Records</h1>
-      
+
       {records.length === 0 ? (
         <div className="bg-gray-100 p-4 rounded">
           <p>No medical records found.</p>
@@ -102,19 +101,17 @@ const MedicalRecords = () => {
           </ul>
         </div>
       )}
-      
+
       {/* Upload Modal */}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h2 className="text-xl font-bold mb-4">Upload Document</h2>
             <p className="mb-4">Upload a document to: {selectedRecord.title}</p>
-            
+
             <form onSubmit={handleSubmitUpload}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">
-                  Select File
-                </label>
+                <label className="block text-sm font-medium mb-1">Select File</label>
                 <input
                   type="file"
                   onChange={handleFileChange}
@@ -122,7 +119,7 @@ const MedicalRecords = () => {
                   required
                 />
               </div>
-              
+
               <div className="flex justify-end space-x-2">
                 <button
                   type="button"

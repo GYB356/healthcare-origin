@@ -70,7 +70,7 @@ export default function PrescriptionDetails({ prescriptionId }: PrescriptionDeta
       setPrescription({
         ...prescription,
         signedByDoctor: true,
-        signature: `Signed by Dr. ${user?.name} on ${new Date().toISOString()}`
+        signature: `Signed by Dr. ${user?.name} on ${new Date().toISOString()}`,
       });
     }
   };
@@ -87,22 +87,26 @@ export default function PrescriptionDetails({ prescriptionId }: PrescriptionDeta
     return <div className="p-4">Prescription not found</div>;
   }
 
-  const isDoctor = user?.role === 'contractor';
-  const canSign = isDoctor && !prescription.signedByDoctor && 
-    (typeof prescription.doctor === 'string' 
-      ? prescription.doctor === user?.id 
+  const isDoctor = user?.role === "contractor";
+  const canSign =
+    isDoctor &&
+    !prescription.signedByDoctor &&
+    (typeof prescription.doctor === "string"
+      ? prescription.doctor === user?.id
       : prescription.doctor._id === user?.id);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-xl font-bold">Prescription Details</h2>
-        <span className={`px-3 py-1 rounded-full text-sm ${
-          prescription.signedByDoctor 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {prescription.signedByDoctor ? 'Signed' : 'Unsigned'}
+        <span
+          className={`px-3 py-1 rounded-full text-sm ${
+            prescription.signedByDoctor
+              ? "bg-green-100 text-green-800"
+              : "bg-yellow-100 text-yellow-800"
+          }`}
+        >
+          {prescription.signedByDoctor ? "Signed" : "Unsigned"}
         </span>
       </div>
 
@@ -111,16 +115,14 @@ export default function PrescriptionDetails({ prescriptionId }: PrescriptionDeta
           <div>
             <p className="text-gray-600">Doctor</p>
             <p className="font-medium">
-              {typeof prescription.doctor === 'string' 
-                ? 'Doctor information not available' 
+              {typeof prescription.doctor === "string"
+                ? "Doctor information not available"
                 : prescription.doctor.name}
             </p>
           </div>
           <div>
             <p className="text-gray-600">Date Prescribed</p>
-            <p className="font-medium">
-              {new Date(prescription.createdAt).toLocaleDateString()}
-            </p>
+            <p className="font-medium">{new Date(prescription.createdAt).toLocaleDateString()}</p>
           </div>
         </div>
 
@@ -164,12 +166,12 @@ export default function PrescriptionDetails({ prescriptionId }: PrescriptionDeta
           <p className="mb-2 text-gray-700">
             Please review the prescription details before signing.
           </p>
-          <SignPrescription 
-            prescriptionId={prescription._id} 
+          <SignPrescription
+            prescriptionId={prescription._id}
             onPrescriptionSigned={handlePrescriptionSigned}
           />
         </div>
       )}
     </div>
   );
-} 
+}

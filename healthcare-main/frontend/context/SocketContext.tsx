@@ -23,9 +23,7 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket, notifications }}>
-      {children}
-    </SocketContext.Provider>
+    <SocketContext.Provider value={{ socket, notifications }}>{children}</SocketContext.Provider>
   );
 };
 

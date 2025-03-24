@@ -1,6 +1,5 @@
-
-import { PrismaClient } from '@prisma/client';
-import { Appointment } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
+import { Appointment } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -15,8 +14,8 @@ export class AppointmentService {
             firstName: true,
             lastName: true,
             email: true,
-            phoneNumber: true
-          }
+            phoneNumber: true,
+          },
         },
         doctor: {
           select: {
@@ -24,13 +23,13 @@ export class AppointmentService {
             firstName: true,
             lastName: true,
             email: true,
-            specialty: true
-          }
-        }
+            specialty: true,
+          },
+        },
       },
-      orderBy: { scheduledTime: 'asc' }
+      orderBy: { scheduledTime: "asc" },
     };
-    
+
     return await prisma.appointment.findMany(query);
   }
 
@@ -39,8 +38,8 @@ export class AppointmentService {
       where: { id },
       include: {
         patient: true,
-        doctor: true
-      }
+        doctor: true,
+      },
     });
   }
 
@@ -50,12 +49,12 @@ export class AppointmentService {
       where: {
         doctorId: data.doctorId,
         scheduledTime: data.scheduledTime,
-        status: { not: 'CANCELLED' }
-      }
+        status: { not: "CANCELLED" },
+      },
     });
 
     if (conflictingAppointment) {
-      throw new Error('Doctor already has an appointment at this time');
+      throw new Error("Doctor already has an appointment at this time");
     }
 
     return await prisma.appointment.create({
@@ -67,8 +66,8 @@ export class AppointmentService {
             firstName: true,
             lastName: true,
             email: true,
-            phoneNumber: true
-          }
+            phoneNumber: true,
+          },
         },
         doctor: {
           select: {
@@ -76,10 +75,10 @@ export class AppointmentService {
             firstName: true,
             lastName: true,
             email: true,
-            specialty: true
-          }
-        }
-      }
+            specialty: true,
+          },
+        },
+      },
     });
   }
 
@@ -91,12 +90,12 @@ export class AppointmentService {
           id: { not: id },
           doctorId: data.doctorId,
           scheduledTime: data.scheduledTime,
-          status: { not: 'CANCELLED' }
-        }
+          status: { not: "CANCELLED" },
+        },
       });
 
       if (conflictingAppointment) {
-        throw new Error('Doctor already has an appointment at this time');
+        throw new Error("Doctor already has an appointment at this time");
       }
     }
 
@@ -105,54 +104,61 @@ export class AppointmentService {
       data,
       include: {
         patient: true,
-        doctor: true
-      }
+        doctor: true,
+      },
     });
   }
 
   static async deleteAppointment(id: string): Promise<Appointment> {
     return await prisma.appointment.delete({
-      where: { id }
+      where: { id },
     });
   }
-  
-  static async getDoctorAvailability(doctorId: string, date: Date): Promise<{ time: Date, available: boolean }[]> {
+
+  static async getDoctorAvailability(
+    doctorId: string,
+    date: Date,
+  ): Promise<{ time: Date; available: boolean }[]> {
     // Get business hours
     const businessStart = new Date(date);
     businessStart.setHours(9, 0, 0, 0); // 9 AM
-    
+
     const businessEnd = new Date(date);
     businessEnd.setHours(17, 0, 0, 0); // 5 PM
-    
+
     // Get existing appointments for that day
     const appointments = await prisma.appointment.findMany({
       where: {
         doctorId,
         scheduledTime: {
           gte: businessStart,
-          lt: businessEnd
+          lt: businessEnd,
         },
-        status: { not: 'CANCELLED' }
-      }
+        status: { not: "CANCELLED" },
+      },
     });
-    
+
     // Generate all possible 30-minute slots
     const slots = [];
     const slotLength = 30; // 30 minutes
-    
-    for (let time = businessStart; time < businessEnd; time = new Date(time.getTime() + slotLength * 60000)) {
+
+    for (
+      let time = businessStart;
+      time < businessEnd;
+      time = new Date(time.getTime() + slotLength * 60000)
+    ) {
       const slotTime = new Date(time);
-      const isBooked = appointments.some(apt => {
+      const isBooked = appointments.some((apt) => {
         const aptTime = new Date(apt.scheduledTime);
         return aptTime.getTime() === slotTime.getTime();
       });
-      
+
       slots.push({
         time: slotTime,
-        available: !isBooked
+        available: !isBooked,
       });
     }
-    
+
     return slots;
   }
 }

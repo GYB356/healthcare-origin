@@ -1,13 +1,13 @@
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 
 // Add TextEncoder and TextDecoder
-const { TextEncoder, TextDecoder } = require('util');
+const { TextEncoder, TextDecoder } = require("util");
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
 // Mock window.structuredClone
-if (typeof window.structuredClone === 'undefined') {
-  window.structuredClone = obj => JSON.parse(JSON.stringify(obj));
+if (typeof window.structuredClone === "undefined") {
+  window.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
 
 // Mock localStorage
@@ -22,17 +22,17 @@ global.localStorage = localStorageMock;
 // Mock window.location
 delete window.location;
 window.location = {
-  href: '',
-  pathname: '',
+  href: "",
+  pathname: "",
   reload: jest.fn(),
 };
 
 // Mock react-router-dom
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
   useNavigate: () => jest.fn(),
   useParams: () => ({}),
 }));
 
 // Increase timeout for all tests
-jest.setTimeout(30000); 
+jest.setTimeout(30000);

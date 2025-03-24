@@ -1,9 +1,6 @@
 import express from "express";
 import { authMiddleware } from "../middlewares/authMiddleware";
-import {
-  getDoctorEarnings,
-  requestPayout,
-} from "../controllers/earningsController";
+import { getDoctorEarnings, requestPayout } from "../controllers/earningsController";
 
 const router = express.Router();
 

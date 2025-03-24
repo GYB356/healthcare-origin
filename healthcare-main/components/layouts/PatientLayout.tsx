@@ -1,14 +1,9 @@
-import { Fragment, useState } from 'react';
-import { Dialog, Menu, Transition } from '@headlessui/react';
-import {
-  Bars3Icon,
-  XMarkIcon,
-  BellIcon,
-  UserCircleIcon,
-} from '@heroicons/react/24/outline';
-import { useSession, signOut } from 'next-auth/react';
-import Link from 'next/link';
-import PatientNav from '../patient/PatientNav';
+import { Fragment, useState } from "react";
+import { Dialog, Menu, Transition } from "@headlessui/react";
+import { Bars3Icon, XMarkIcon, BellIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
+import PatientNav from "../patient/PatientNav";
 
 interface PatientLayoutProps {
   children: React.ReactNode;
@@ -21,11 +16,7 @@ export default function PatientLayout({ children }: PatientLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-100">
       <Transition.Root show={sidebarOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="relative z-50 lg:hidden"
-          onClose={setSidebarOpen}
-        >
+        <Dialog as="div" className="relative z-50 lg:hidden" onClose={setSidebarOpen}>
           <Transition.Child
             as={Fragment}
             enter="transition-opacity ease-linear duration-300"
@@ -51,11 +42,7 @@ export default function PatientLayout({ children }: PatientLayoutProps) {
               <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1">
                 <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
                   <div className="flex h-16 shrink-0 items-center">
-                    <img
-                      className="h-8 w-auto"
-                      src="/logo.png"
-                      alt="Healthcare Portal"
-                    />
+                    <img className="h-8 w-auto" src="/logo.png" alt="Healthcare Portal" />
                     <span className="ml-2 text-xl font-semibold text-gray-900">
                       Healthcare Portal
                     </span>
@@ -72,14 +59,8 @@ export default function PatientLayout({ children }: PatientLayoutProps) {
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center">
-            <img
-              className="h-8 w-auto"
-              src="/logo.png"
-              alt="Healthcare Portal"
-            />
-            <span className="ml-2 text-xl font-semibold text-gray-900">
-              Healthcare Portal
-            </span>
+            <img className="h-8 w-auto" src="/logo.png" alt="Healthcare Portal" />
+            <span className="ml-2 text-xl font-semibold text-gray-900">Healthcare Portal</span>
           </div>
           <PatientNav />
         </div>
@@ -102,19 +83,13 @@ export default function PatientLayout({ children }: PatientLayoutProps) {
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1" />
             <div className="flex items-center gap-x-4 lg:gap-x-6">
-              <button
-                type="button"
-                className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
-              >
+              <button type="button" className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500">
                 <span className="sr-only">View notifications</span>
                 <BellIcon className="h-6 w-6" aria-hidden="true" />
               </button>
 
               {/* Separator */}
-              <div
-                className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200"
-                aria-hidden="true"
-              />
+              <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" aria-hidden="true" />
 
               {/* Profile dropdown */}
               <Menu as="div" className="relative">
@@ -139,7 +114,7 @@ export default function PatientLayout({ children }: PatientLayoutProps) {
                           href="/patient/profile"
                           className={`
                             block px-3 py-1 text-sm leading-6
-                            ${active ? 'bg-gray-50' : ''}
+                            ${active ? "bg-gray-50" : ""}
                           `}
                         >
                           Your profile
@@ -152,7 +127,7 @@ export default function PatientLayout({ children }: PatientLayoutProps) {
                           onClick={() => signOut()}
                           className={`
                             block w-full px-3 py-1 text-sm leading-6 text-left
-                            ${active ? 'bg-gray-50' : ''}
+                            ${active ? "bg-gray-50" : ""}
                           `}
                         >
                           Sign out
@@ -172,4 +147,4 @@ export default function PatientLayout({ children }: PatientLayoutProps) {
       </div>
     </div>
   );
-} 
+}

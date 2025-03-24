@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 import { useAuth } from "../context/AuthContext";
 
@@ -43,7 +43,9 @@ export default function Notifications() {
       {notifications.length > 0 && (
         <div className="absolute right-0 bg-white shadow-lg rounded-lg p-4 w-64">
           {notifications.map((notif, i) => (
-            <p key={i} className="text-sm">{notif.message}</p>
+            <p key={i} className="text-sm">
+              {notif.message}
+            </p>
           ))}
           <button className="text-blue-500 mt-2" onClick={markAsRead}>
             Mark as read

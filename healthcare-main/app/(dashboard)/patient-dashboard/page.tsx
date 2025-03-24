@@ -1,8 +1,8 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { headers } from 'next/headers';
-import { logDashboardAccess, logPatientDataAccess, logPatientAction } from '@/lib/audit-utils';
-import { AuditAction, AuditSeverity } from '@prisma/client';
+import { headers } from "next/headers";
+import { logDashboardAccess, logPatientDataAccess, logPatientAction } from "@/lib/audit-utils";
+import { AuditAction, AuditSeverity } from "@prisma/client";
 
 export default function PatientDashboard() {
   const { data: session, status } = useSession();
@@ -32,13 +32,13 @@ export default function PatientDashboard() {
             userId: session.user.id,
             patientId: session.user.patientId,
             sessionId: session.sessionId,
-            ipAddress: headers().get('x-real-ip') || headers().get('x-forwarded-for'),
-            userAgent: headers().get('user-agent'),
+            ipAddress: headers().get("x-real-ip") || headers().get("x-forwarded-for"),
+            userAgent: headers().get("user-agent"),
           });
         }
       } catch (error) {
-        console.error('Failed to initialize dashboard:', error);
-        setError('Access denied. Please contact support if you believe this is an error.');
+        console.error("Failed to initialize dashboard:", error);
+        setError("Access denied. Please contact support if you believe this is an error.");
         return;
       }
     };
@@ -50,7 +50,7 @@ export default function PatientDashboard() {
   useEffect(() => {
     if (session?.user.patientId && !error) {
       setLoading(true);
-      
+
       const fetchData = async () => {
         try {
           // In a real implementation, you would fetch this data from your API
@@ -61,19 +61,22 @@ export default function PatientDashboard() {
 
           // Log data access
           if (session.user.id) {
-            await logPatientDataAccess({
-              userId: session.user.id,
-              patientId: session.user.patientId,
-              sessionId: session.sessionId,
-              ipAddress: headers().get('x-real-ip') || headers().get('x-forwarded-for'),
-              userAgent: headers().get('user-agent'),
-            }, 'summary');
+            await logPatientDataAccess(
+              {
+                userId: session.user.id,
+                patientId: session.user.patientId,
+                sessionId: session.sessionId,
+                ipAddress: headers().get("x-real-ip") || headers().get("x-forwarded-for"),
+                userAgent: headers().get("user-agent"),
+              },
+              "summary",
+            );
           }
-          
+
           setPatientData(mockPatientData);
         } catch (error) {
-          console.error('Failed to fetch patient data:', error);
-          setError('Failed to load patient data. Please try again later.');
+          console.error("Failed to fetch patient data:", error);
+          setError("Failed to load patient data. Please try again later.");
         } finally {
           setLoading(false);
         }
@@ -101,13 +104,16 @@ export default function PatientDashboard() {
   const handleTabChange = async (value: string) => {
     if (session?.user.id && session?.user.patientId) {
       try {
-        await logPatientDataAccess({
-          userId: session.user.id,
-          patientId: session.user.patientId,
-          sessionId: session.sessionId,
-          ipAddress: headers().get('x-real-ip') || headers().get('x-forwarded-for'),
-          userAgent: headers().get('user-agent'),
-        }, value as 'appointments' | 'medications' | 'vitals' | 'summary');
+        await logPatientDataAccess(
+          {
+            userId: session.user.id,
+            patientId: session.user.patientId,
+            sessionId: session.sessionId,
+            ipAddress: headers().get("x-real-ip") || headers().get("x-forwarded-for"),
+            userAgent: headers().get("user-agent"),
+          },
+          value as "appointments" | "medications" | "vitals" | "summary",
+        );
       } catch (error) {
         console.error(`Failed to log ${value} tab access:`, error);
       }
@@ -118,16 +124,17 @@ export default function PatientDashboard() {
   const handleAction = async (action: string) => {
     if (session?.user.id && session?.user.patientId) {
       try {
-        await logPatientAction({
-          userId: session.user.id,
-          patientId: session.user.patientId,
-          sessionId: session.sessionId,
-          ipAddress: headers().get('x-real-ip') || headers().get('x-forwarded-for'),
-          userAgent: headers().get('user-agent'),
-        },
-        AuditAction.CREATE,
-        `Patient initiated ${action}`,
-        AuditSeverity.LOW
+        await logPatientAction(
+          {
+            userId: session.user.id,
+            patientId: session.user.patientId,
+            sessionId: session.sessionId,
+            ipAddress: headers().get("x-real-ip") || headers().get("x-forwarded-for"),
+            userAgent: headers().get("user-agent"),
+          },
+          AuditAction.CREATE,
+          `Patient initiated ${action}`,
+          AuditSeverity.LOW,
         );
       } catch (error) {
         console.error(`Failed to log action ${action}:`, error);
@@ -141,10 +148,10 @@ export default function PatientDashboard() {
 
       {/* Action buttons with audit logging */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Button 
-          className="py-6 flex flex-col h-auto items-center gap-2" 
+        <Button
+          className="py-6 flex flex-col h-auto items-center gap-2"
           onClick={() => {
-            handleAction('schedule_appointment');
+            handleAction("schedule_appointment");
             router.push("/appointments/schedule");
           }}
         >
@@ -160,4 +167,4 @@ export default function PatientDashboard() {
       </Tabs>
     </div>
   );
-} 
+}

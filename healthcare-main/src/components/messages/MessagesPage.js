@@ -1,14 +1,14 @@
-import React from 'react';
-import { FiEdit, FiMessageSquare } from 'react-icons/fi';
+import React from "react";
+import { FiEdit, FiMessageSquare } from "react-icons/fi";
 
 // Inline PageLayout component to avoid import issues
-const PageLayout = ({ 
-  title, 
-  description, 
-  bgColor = "bg-blue-600", 
-  textColor = "text-blue-100", 
+const PageLayout = ({
+  title,
+  description,
+  bgColor = "bg-blue-600",
+  textColor = "text-blue-100",
   children,
-  actions
+  actions,
 }) => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-screen-xl">
@@ -20,19 +20,13 @@ const PageLayout = ({
               <h1 className="text-2xl font-bold">{title}</h1>
               <p className={`mt-2 ${textColor}`}>{description}</p>
             </div>
-            {actions && (
-              <div className="ml-4">
-                {actions}
-              </div>
-            )}
+            {actions && <div className="ml-4">{actions}</div>}
           </div>
         </div>
       </div>
-      
+
       {/* Content section */}
-      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">
-        {children}
-      </div>
+      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">{children}</div>
     </div>
   );
 };
@@ -70,7 +64,7 @@ const MessagesPage = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Main content area */}
           <div className="w-full md:w-2/3">
             <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
@@ -80,7 +74,7 @@ const MessagesPage = () => {
               <div className="p-4 bg-white dark:bg-gray-800 min-h-[200px]">
                 <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                   <p>Select a conversation or start a new message</p>
-                  
+
                   <button className="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
                     <FiEdit className="inline mr-2" />
                     Compose New Message
@@ -90,7 +84,7 @@ const MessagesPage = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-8 bg-gray-50 dark:bg-gray-700 rounded-lg p-6 text-center">
           <p className="text-gray-600 dark:text-gray-300">
             This page is under development. Check back soon for messaging features.

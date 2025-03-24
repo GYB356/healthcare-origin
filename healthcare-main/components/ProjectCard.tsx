@@ -1,26 +1,26 @@
-'use client'
+"use client";
 
-import { Project } from '../types/project'
+import { Project } from "../types/project";
 
 interface ProjectCardProps {
-  project: Project
-  onEdit: (project: Project) => void
-  onDelete: () => void
+  project: Project;
+  onEdit: (project: Project) => void;
+  onDelete: () => void;
 }
 
 export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
   const statusColors = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    in_progress: 'bg-blue-100 text-blue-800',
-    completed: 'bg-green-100 text-green-800',
-  }
+    pending: "bg-yellow-100 text-yellow-800",
+    in_progress: "bg-blue-100 text-blue-800",
+    completed: "bg-green-100 text-green-800",
+  };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount)
-  }
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -29,8 +29,10 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
           <h3 className="text-xl font-semibold">{project.name}</h3>
           <p className="text-gray-600">{project.address}</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[project.status]}`}>
-          {project.status.replace('_', ' ').charAt(0).toUpperCase() + project.status.slice(1)}
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[project.status]}`}
+        >
+          {project.status.replace("_", " ").charAt(0).toUpperCase() + project.status.slice(1)}
         </span>
       </div>
 
@@ -39,7 +41,8 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
           <span className="font-medium">Client:</span> {project.clientName}
         </p>
         <p className="text-gray-600">
-          <span className="font-medium">Estimated Cost:</span> {formatCurrency(project.estimatedCost)}
+          <span className="font-medium">Estimated Cost:</span>{" "}
+          {formatCurrency(project.estimatedCost)}
         </p>
         {project.description && (
           <p className="text-gray-600">
@@ -48,21 +51,20 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
         )}
         {project.startDate && (
           <p className="text-gray-600">
-            <span className="font-medium">Start Date:</span> {new Date(project.startDate).toLocaleDateString()}
+            <span className="font-medium">Start Date:</span>{" "}
+            {new Date(project.startDate).toLocaleDateString()}
           </p>
         )}
         {project.completionDate && (
           <p className="text-gray-600">
-            <span className="font-medium">Completion Date:</span> {new Date(project.completionDate).toLocaleDateString()}
+            <span className="font-medium">Completion Date:</span>{" "}
+            {new Date(project.completionDate).toLocaleDateString()}
           </p>
         )}
       </div>
 
       <div className="mt-4 flex justify-end space-x-4">
-        <button
-          onClick={onDelete}
-          className="text-red-600 hover:text-red-800 font-medium"
-        >
+        <button onClick={onDelete} className="text-red-600 hover:text-red-800 font-medium">
           Delete
         </button>
         <button
@@ -73,5 +75,5 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
         </button>
       </div>
     </div>
-  )
-} 
+  );
+}

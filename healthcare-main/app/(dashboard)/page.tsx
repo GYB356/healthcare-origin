@@ -1,47 +1,47 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { CalendarIcon, ClockIcon, UserIcon } from "lucide-react"
-import Link from "next/link"
-import { format } from "date-fns"
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon, ClockIcon, UserIcon } from "lucide-react";
+import Link from "next/link";
+import { format } from "date-fns";
 
 interface Appointment {
-  id: string
-  date: string
-  time: string
-  patientName: string
-  reason: string
-  status: string
+  id: string;
+  date: string;
+  time: string;
+  patientName: string;
+  reason: string;
+  status: string;
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession()
-  const [appointments, setAppointments] = useState<Appointment[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: session } = useSession();
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await fetch("/api/appointments")
-        const data = await response.json()
-        setAppointments(data)
+        const response = await fetch("/api/appointments");
+        const data = await response.json();
+        setAppointments(data);
       } catch (error) {
-        console.error("Error fetching appointments:", error)
+        console.error("Error fetching appointments:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchAppointments()
-  }, [])
+    fetchAppointments();
+  }, []);
 
   const upcomingAppointments = appointments
     .filter((apt) => apt.status === "SCHEDULED")
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 5)
+    .slice(0, 5);
 
   return (
     <div className="space-y-8">
@@ -66,9 +66,7 @@ export default function DashboardPage() {
             <ClockIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {upcomingAppointments.length}
-            </div>
+            <div className="text-2xl font-bold">{upcomingAppointments.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -122,5 +120,5 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
     </div>
-  )
-} 
+  );
+}

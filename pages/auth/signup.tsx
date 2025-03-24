@@ -1,26 +1,26 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'patient' as 'doctor' | 'patient',
+    name: "",
+    email: "",
+    password: "",
+    role: "patient" as "doctor" | "patient",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
@@ -28,18 +28,18 @@ export default function SignUp() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create account');
+        throw new Error(data.error || "Failed to create account");
       }
 
-      router.push('/auth/signin');
+      router.push("/auth/signin");
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred during sign up');
+      setError(error instanceof Error ? error.message : "An error occurred during sign up");
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -140,4 +140,4 @@ export default function SignUp() {
       </div>
     </div>
   );
-} 
+}

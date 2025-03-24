@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 // Simple spinner component for loading states
 function Spinner() {
@@ -9,4 +9,4 @@ function Spinner() {
   );
 }
 
-export default Spinner; 
+export default Spinner;

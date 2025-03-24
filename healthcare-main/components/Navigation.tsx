@@ -1,11 +1,11 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { MessageSquare } from 'lucide-react'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { MessageSquare } from "lucide-react";
 
 export default function Navigation() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <nav className="bg-gray-800 p-4">
@@ -17,7 +17,9 @@ export default function Navigation() {
           <Link
             href="/"
             className={`px-3 py-2 rounded-md text-sm font-medium ${
-              pathname === '/' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              pathname === "/"
+                ? "bg-gray-900 text-white"
+                : "text-gray-300 hover:bg-gray-700 hover:text-white"
             }`}
           >
             Dashboard
@@ -25,7 +27,9 @@ export default function Navigation() {
           <Link
             href="/patients"
             className={`px-3 py-2 rounded-md text-sm font-medium ${
-              pathname === '/patients' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              pathname === "/patients"
+                ? "bg-gray-900 text-white"
+                : "text-gray-300 hover:bg-gray-700 hover:text-white"
             }`}
           >
             Patients
@@ -33,7 +37,9 @@ export default function Navigation() {
           <Link
             href="/appointments"
             className={`px-3 py-2 rounded-md text-sm font-medium ${
-              pathname === '/appointments' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              pathname === "/appointments"
+                ? "bg-gray-900 text-white"
+                : "text-gray-300 hover:bg-gray-700 hover:text-white"
             }`}
           >
             Appointments
@@ -41,7 +47,9 @@ export default function Navigation() {
           <Link
             href="/messages"
             className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1 ${
-              pathname === '/messages' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              pathname === "/messages"
+                ? "bg-gray-900 text-white"
+                : "text-gray-300 hover:bg-gray-700 hover:text-white"
             }`}
           >
             <MessageSquare size={16} />
@@ -50,5 +58,5 @@ export default function Navigation() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

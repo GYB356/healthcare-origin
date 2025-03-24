@@ -24,36 +24,39 @@ router.get("/test/:chatId", async (req, res) => {
   try {
     const { chatId } = req.params;
     const { userId } = req.query;
-    
+
     if (!userId) {
       return res.status(400).json({ error: "userId is required" });
     }
-    
+
     // Check if chat exists
     let chat = await Chat.findById(chatId);
-    
+
     // If not, create it with the user as a participant
     if (!chat) {
-      chat = new Chat({ 
+      chat = new Chat({
         _id: chatId,
-        participants: [userId, 'test-user'],
-        lastMessage: 'Welcome to the test chat!',
-        lastMessageTime: new Date()
+        participants: [userId, "test-user"],
+        lastMessage: "Welcome to the test chat!",
+        lastMessageTime: new Date(),
       });
       await chat.save();
-      
+
       // Add a welcome message
       const welcomeMessage = new Message({
         chatId,
-        senderId: 'system',
+        senderId: "system",
         receiverId: userId,
-        message: CryptoJS.AES.encrypt('Welcome to the test chat! This is an encrypted message.', SECRET_KEY).toString(),
+        message: CryptoJS.AES.encrypt(
+          "Welcome to the test chat! This is an encrypted message.",
+          SECRET_KEY,
+        ).toString(),
         createdAt: new Date(),
-        read: false
+        read: false,
       });
       await welcomeMessage.save();
     }
-    
+
     res.json(chat);
   } catch (error) {
     console.error("Error in test chat route:", error);
@@ -74,4 +77,4 @@ router.get("/:chatId/messages", async (req, res) => {
   res.json(decryptedMessages);
 });
 
-export default router; 
+export default router;

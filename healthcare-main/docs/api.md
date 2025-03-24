@@ -13,6 +13,7 @@ GET /api/medical-records
 ```
 
 Query Parameters:
+
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Records per page (default: 10)
 - `search` (optional): Search in description or patient name
@@ -22,6 +23,7 @@ Query Parameters:
 - `patientId` (optional): Filter by patient
 
 Response:
+
 ```json
 {
   "data": [
@@ -67,6 +69,7 @@ POST /api/medical-records
 ```
 
 Request Body (multipart/form-data):
+
 - `patientId` (required): Patient ID
 - `type` (required): Record type (CONSULTATION, DIAGNOSIS, etc.)
 - `date` (required): Record date
@@ -90,6 +93,7 @@ PATCH /api/medical-records/{id}
 ```
 
 Request Body (multipart/form-data):
+
 - `type` (optional): Record type
 - `date` (optional): Record date
 - `description` (optional): Record description
@@ -105,6 +109,7 @@ DELETE /api/medical-records/{id}
 ```
 
 Response:
+
 ```json
 {
   "success": true
@@ -118,6 +123,7 @@ GET /api/medical-records/{id}/attachments/{attachmentId}
 ```
 
 Response:
+
 ```json
 {
   "url": "string",
@@ -135,10 +141,12 @@ GET /api/patients/search
 ```
 
 Query Parameters:
+
 - `q` (required): Search query
 - `limit` (optional): Maximum number of results (default: 10)
 
 Response:
+
 ```json
 [
   {
@@ -157,6 +165,7 @@ Response:
 All endpoints may return the following error responses:
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "Unauthorized"
@@ -164,6 +173,7 @@ All endpoints may return the following error responses:
 ```
 
 ### 403 Forbidden
+
 ```json
 {
   "error": "Insufficient permissions"
@@ -171,6 +181,7 @@ All endpoints may return the following error responses:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "Resource not found"
@@ -178,8 +189,9 @@ All endpoints may return the following error responses:
 ```
 
 ### 500 Internal Server Error
+
 ```json
 {
   "error": "Error message"
 }
-``` 
+```

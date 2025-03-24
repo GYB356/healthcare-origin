@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useSocket } from '../context/SocketContext';
-import axios from 'axios';
-import Calendar from 'react-big-calendar';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { startOfWeek, format } from 'date-fns';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
+import axios from "axios";
+import Calendar from "react-big-calendar";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { startOfWeek, format } from "date-fns";
 
 const Appointments = () => {
   const { user, hasRole } = useAuth();
@@ -16,24 +16,24 @@ const Appointments = () => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    if (!hasRole(['doctor', 'nurse', 'admin', 'patient'])) {
-      setError('Access Denied');
+    if (!hasRole(["doctor", "nurse", "admin", "patient"])) {
+      setError("Access Denied");
       return;
     }
 
     fetchAppointments();
 
     if (socket) {
-      socket.on('appointmentCreated', handleAppointmentUpdate);
-      socket.on('appointmentUpdated', handleAppointmentUpdate);
-      socket.on('appointmentDeleted', handleAppointmentDelete);
+      socket.on("appointmentCreated", handleAppointmentUpdate);
+      socket.on("appointmentUpdated", handleAppointmentUpdate);
+      socket.on("appointmentDeleted", handleAppointmentDelete);
     }
 
     return () => {
       if (socket) {
-        socket.off('appointmentCreated', handleAppointmentUpdate);
-        socket.off('appointmentUpdated', handleAppointmentUpdate);
-        socket.off('appointmentDeleted', handleAppointmentDelete);
+        socket.off("appointmentCreated", handleAppointmentUpdate);
+        socket.off("appointmentUpdated", handleAppointmentUpdate);
+        socket.off("appointmentDeleted", handleAppointmentDelete);
       }
     };
   }, [hasRole, socket]);
@@ -41,11 +41,11 @@ const Appointments = () => {
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/appointments');
+      const response = await axios.get("/api/appointments");
       setAppointments(response.data.map(formatAppointment));
       setError(null);
     } catch (err) {
-      setError('Failed to load appointments');
+      setError("Failed to load appointments");
       console.error(err);
     } finally {
       setLoading(false);
@@ -61,12 +61,12 @@ const Appointments = () => {
     doctorId: appointment.doctorId,
     type: appointment.type,
     status: appointment.status,
-    notes: appointment.notes
+    notes: appointment.notes,
   });
 
   const handleAppointmentUpdate = (appointment) => {
-    setAppointments(prev => {
-      const index = prev.findIndex(apt => apt.id === appointment.id);
+    setAppointments((prev) => {
+      const index = prev.findIndex((apt) => apt.id === appointment.id);
       if (index === -1) {
         return [...prev, formatAppointment(appointment)];
       }
@@ -77,22 +77,20 @@ const Appointments = () => {
   };
 
   const handleAppointmentDelete = (appointmentId) => {
-    setAppointments(prev => 
-      prev.filter(appointment => appointment.id !== appointmentId)
-    );
+    setAppointments((prev) => prev.filter((appointment) => appointment.id !== appointmentId));
   };
 
   const handleSelectSlot = ({ start, end }) => {
-    if (!hasRole(['doctor', 'staff', 'admin'])) return;
+    if (!hasRole(["doctor", "staff", "admin"])) return;
 
     setSelectedAppointment({
       start,
       end,
-      patientId: '',
-      doctorId: '',
-      type: 'consultation',
-      status: 'scheduled',
-      notes: ''
+      patientId: "",
+      doctorId: "",
+      type: "consultation",
+      status: "scheduled",
+      notes: "",
     });
     setShowModal(true);
   };
@@ -107,21 +105,21 @@ const Appointments = () => {
       const appointmentData = {
         ...formData,
         startTime: formData.start.toISOString(),
-        endTime: formData.end.toISOString()
+        endTime: formData.end.toISOString(),
       };
 
       let response;
       if (formData.id) {
         response = await axios.put(`/api/appointments/${formData.id}`, appointmentData);
       } else {
-        response = await axios.post('/api/appointments', appointmentData);
+        response = await axios.post("/api/appointments", appointmentData);
       }
 
       handleAppointmentUpdate(response.data);
       setShowModal(false);
       setSelectedAppointment(null);
     } catch (err) {
-      setError('Failed to save appointment');
+      setError("Failed to save appointment");
       console.error(err);
     }
   };
@@ -133,7 +131,7 @@ const Appointments = () => {
       setShowModal(false);
       setSelectedAppointment(null);
     } catch (err) {
-      setError('Failed to delete appointment');
+      setError("Failed to delete appointment");
       console.error(err);
     }
   };
@@ -154,11 +152,9 @@ const Appointments = () => {
           <div className="px-6 py-4 bg-gray-800 text-white flex justify-between items-center">
             <div>
               <h2 className="text-xl font-semibold">Appointments</h2>
-              <p className="mt-1 text-sm text-gray-300">
-                Schedule and manage appointments
-              </p>
+              <p className="mt-1 text-sm text-gray-300">Schedule and manage appointments</p>
             </div>
-            {hasRole(['doctor', 'staff', 'admin']) && (
+            {hasRole(["doctor", "staff", "admin"]) && (
               <button
                 onClick={() => handleSelectSlot({ start: new Date(), end: new Date() })}
                 className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none"
@@ -180,18 +176,18 @@ const Appointments = () => {
                 startOfWeek: () => startOfWeek(new Date()),
                 format: (date, formatStr) => format(date, formatStr),
                 formats: {
-                  timeGutterFormat: 'HH:mm',
+                  timeGutterFormat: "HH:mm",
                   eventTimeRangeFormat: ({ start, end }) =>
-                    `${format(start, 'HH:mm')} - ${format(end, 'HH:mm')}`,
-                  dayFormat: 'dd'
-                }
+                    `${format(start, "HH:mm")} - ${format(end, "HH:mm")}`,
+                  dayFormat: "dd",
+                },
               }}
               events={appointments}
               defaultView="week"
-              views={['day', 'week', 'month']}
+              views={["day", "week", "month"]}
               step={30}
               timeslots={2}
-              selectable={hasRole(['doctor', 'staff', 'admin'])}
+              selectable={hasRole(["doctor", "staff", "admin"])}
               onSelectSlot={handleSelectSlot}
               onSelectEvent={handleSelectEvent}
               className="h-[600px]"
@@ -206,19 +202,14 @@ const Appointments = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-start">
               <h3 className="text-lg font-semibold text-gray-900">
-                {selectedAppointment.id ? 'Edit Appointment' : 'New Appointment'}
+                {selectedAppointment.id ? "Edit Appointment" : "New Appointment"}
               </h3>
               <button
                 onClick={() => setShowModal(false)}
                 className="text-gray-400 hover:text-gray-500"
               >
                 <span className="sr-only">Close</span>
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -235,21 +226,19 @@ const Appointments = () => {
                 const formData = new FormData(e.target);
                 handleSaveAppointment({
                   id: selectedAppointment.id,
-                  patientId: formData.get('patientId'),
-                  doctorId: formData.get('doctorId'),
-                  type: formData.get('type'),
-                  status: formData.get('status'),
-                  notes: formData.get('notes'),
+                  patientId: formData.get("patientId"),
+                  doctorId: formData.get("doctorId"),
+                  type: formData.get("type"),
+                  status: formData.get("status"),
+                  notes: formData.get("notes"),
                   start: selectedAppointment.start,
-                  end: selectedAppointment.end
+                  end: selectedAppointment.end,
                 });
               }}
               className="mt-4 space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Patient ID
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Patient ID</label>
                 <input
                   type="text"
                   name="patientId"
@@ -260,9 +249,7 @@ const Appointments = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Doctor ID
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Doctor ID</label>
                 <input
                   type="text"
                   name="doctorId"
@@ -273,9 +260,7 @@ const Appointments = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Type
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Type</label>
                 <select
                   name="type"
                   defaultValue={selectedAppointment.type}
@@ -289,9 +274,7 @@ const Appointments = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Status
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Status</label>
                 <select
                   name="status"
                   defaultValue={selectedAppointment.status}
@@ -305,9 +288,7 @@ const Appointments = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Notes
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Notes</label>
                 <textarea
                   name="notes"
                   defaultValue={selectedAppointment.notes}
@@ -324,7 +305,7 @@ const Appointments = () => {
                 >
                   Cancel
                 </button>
-                {selectedAppointment.id && hasRole(['doctor', 'staff', 'admin']) && (
+                {selectedAppointment.id && hasRole(["doctor", "staff", "admin"]) && (
                   <button
                     type="button"
                     onClick={() => handleDeleteAppointment(selectedAppointment.id)}

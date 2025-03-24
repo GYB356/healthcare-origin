@@ -1,16 +1,16 @@
-import axios from 'axios';
+import axios from "axios";
 
 class ProviderService {
   async getProviderProfile() {
-    return axios.get('/api/providers/profile');
+    return axios.get("/api/providers/profile");
   }
 
   async updateProviderProfile(profileData) {
-    return axios.put('/api/providers/profile', profileData);
+    return axios.put("/api/providers/profile", profileData);
   }
 
   async getProjects(filters = {}) {
-    return axios.get('/api/projects', { params: filters });
+    return axios.get("/api/projects", { params: filters });
   }
 
   async getProjectById(id) {
@@ -18,7 +18,7 @@ class ProviderService {
   }
 
   async createProject(projectData) {
-    return axios.post('/api/projects', projectData);
+    return axios.post("/api/projects", projectData);
   }
 
   async updateProject(id, projectData) {
@@ -30,7 +30,7 @@ class ProviderService {
   }
 
   async getClients() {
-    return axios.get('/api/clients');
+    return axios.get("/api/clients");
   }
 
   async getClientById(id) {
@@ -38,7 +38,7 @@ class ProviderService {
   }
 
   async createClient(clientData) {
-    return axios.post('/api/clients', clientData);
+    return axios.post("/api/clients", clientData);
   }
 
   async updateClient(id, clientData) {

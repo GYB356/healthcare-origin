@@ -1,16 +1,16 @@
-'use client'
+"use client";
 
 interface ProjectFiltersProps {
-  searchQuery: string
-  onSearchChange: (query: string) => void
-  statusFilter: string
-  onStatusFilterChange: (status: string) => void
-  sortBy: string
-  onSortChange: (sort: string) => void
-  dateRange: { start: string; end: string }
-  onDateRangeChange: (range: { start: string; end: string }) => void
-  costRange: { min: number; max: number }
-  onCostRangeChange: (range: { min: number; max: number }) => void
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  statusFilter: string;
+  onStatusFilterChange: (status: string) => void;
+  sortBy: string;
+  onSortChange: (sort: string) => void;
+  dateRange: { start: string; end: string };
+  onDateRangeChange: (range: { start: string; end: string }) => void;
+  costRange: { min: number; max: number };
+  onCostRangeChange: (range: { min: number; max: number }) => void;
 }
 
 export default function ProjectFilters({
@@ -84,7 +84,9 @@ export default function ProjectFilters({
           <label className="block text-sm font-medium text-gray-700">Date Range</label>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label htmlFor="startDate" className="block text-xs text-gray-500">Start Date</label>
+              <label htmlFor="startDate" className="block text-xs text-gray-500">
+                Start Date
+              </label>
               <input
                 type="date"
                 id="startDate"
@@ -94,7 +96,9 @@ export default function ProjectFilters({
               />
             </div>
             <div>
-              <label htmlFor="endDate" className="block text-xs text-gray-500">End Date</label>
+              <label htmlFor="endDate" className="block text-xs text-gray-500">
+                End Date
+              </label>
               <input
                 type="date"
                 id="endDate"
@@ -110,7 +114,9 @@ export default function ProjectFilters({
           <label className="block text-sm font-medium text-gray-700">Cost Range</label>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label htmlFor="minCost" className="block text-xs text-gray-500">Min Cost ($)</label>
+              <label htmlFor="minCost" className="block text-xs text-gray-500">
+                Min Cost ($)
+              </label>
               <input
                 type="number"
                 id="minCost"
@@ -122,7 +128,9 @@ export default function ProjectFilters({
               />
             </div>
             <div>
-              <label htmlFor="maxCost" className="block text-xs text-gray-500">Max Cost ($)</label>
+              <label htmlFor="maxCost" className="block text-xs text-gray-500">
+                Max Cost ($)
+              </label>
               <input
                 type="number"
                 id="maxCost"
@@ -137,5 +145,5 @@ export default function ProjectFilters({
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

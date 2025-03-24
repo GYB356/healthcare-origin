@@ -1,27 +1,24 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
-import prisma from '@/lib/prisma';
+import { NextApiRequest, NextApiResponse } from "next";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]";
+import prisma from "@/lib/prisma";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
 
   if (!session) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   switch (req.method) {
-    case 'GET':
+    case "GET":
       try {
         const { patientId } = req.query;
-        const where = patientId 
+        const where = patientId
           ? { patientId: String(patientId) }
-          : session.user.role === 'PATIENT'
-          ? { patientId: session.user.id }
-          : {};
+          : session.user.role === "PATIENT"
+            ? { patientId: session.user.id }
+            : {};
 
         const records = await prisma.medicalRecord.findMany({
           where,
@@ -38,19 +35,19 @@ export default async function handler(
             },
           },
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
         });
 
         return res.status(200).json({ records });
       } catch (error) {
-        return res.status(500).json({ error: 'Failed to fetch medical records' });
+        return res.status(500).json({ error: "Failed to fetch medical records" });
       }
 
-    case 'POST':
+    case "POST":
       try {
-        if (session.user.role !== 'DOCTOR') {
-          return res.status(403).json({ error: 'Only doctors can create medical records' });
+        if (session.user.role !== "DOCTOR") {
+          return res.status(403).json({ error: "Only doctors can create medical records" });
         }
 
         const {
@@ -90,13 +87,13 @@ export default async function handler(
 
         return res.status(201).json(record);
       } catch (error) {
-        return res.status(500).json({ error: 'Failed to create medical record' });
+        return res.status(500).json({ error: "Failed to create medical record" });
       }
 
-    case 'PUT':
+    case "PUT":
       try {
-        if (session.user.role !== 'DOCTOR') {
-          return res.status(403).json({ error: 'Only doctors can update medical records' });
+        if (session.user.role !== "DOCTOR") {
+          return res.status(403).json({ error: "Only doctors can update medical records" });
         }
 
         const {
@@ -135,11 +132,11 @@ export default async function handler(
 
         return res.status(200).json(record);
       } catch (error) {
-        return res.status(500).json({ error: 'Failed to update medical record' });
+        return res.status(500).json({ error: "Failed to update medical record" });
       }
 
     default:
-      res.setHeader('Allow', ['GET', 'POST', 'PUT']);
+      res.setHeader("Allow", ["GET", "POST", "PUT"]);
       return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
-} 
+}

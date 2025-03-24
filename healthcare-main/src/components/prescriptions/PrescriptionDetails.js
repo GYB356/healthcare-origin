@@ -1,15 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { FiArrowLeft, FiCalendar, FiClock, FiDownload, FiRefreshCw, FiAlertTriangle } from 'react-icons/fi';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import {
+  FiArrowLeft,
+  FiCalendar,
+  FiClock,
+  FiDownload,
+  FiRefreshCw,
+  FiAlertTriangle,
+} from "react-icons/fi";
+import { useAuth } from "../../contexts/AuthContext";
 
 const PrescriptionDetails = () => {
   const { id } = useParams();
   const { currentUser, authAxios } = useAuth();
   const [prescription, setPrescription] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [refillRequestStatus, setRefillRequestStatus] = useState('');
+  const [error, setError] = useState("");
+  const [refillRequestStatus, setRefillRequestStatus] = useState("");
 
   useEffect(() => {
     const fetchPrescription = async () => {
@@ -17,10 +24,10 @@ const PrescriptionDetails = () => {
         setLoading(true);
         const response = await authAxios.get(`/api/prescriptions/${id}`);
         setPrescription(response.data);
-        setError('');
+        setError("");
       } catch (err) {
-        console.error('Error fetching prescription:', err);
-        setError('Failed to load prescription details. Please try again later.');
+        console.error("Error fetching prescription:", err);
+        setError("Failed to load prescription details. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -33,14 +40,14 @@ const PrescriptionDetails = () => {
 
   const handleRefillRequest = async () => {
     try {
-      setRefillRequestStatus('processing');
+      setRefillRequestStatus("processing");
       const response = await authAxios.post(`/api/prescriptions/${id}/refill`);
       setPrescription(response.data);
-      setRefillRequestStatus('success');
+      setRefillRequestStatus("success");
     } catch (err) {
-      console.error('Error requesting refill:', err);
-      setRefillRequestStatus('error');
-      setError('Failed to request refill. Please try again later.');
+      console.error("Error requesting refill:", err);
+      setRefillRequestStatus("error");
+      setError("Failed to request refill. Please try again later.");
     }
   };
 
@@ -49,11 +56,7 @@ const PrescriptionDetails = () => {
   }
 
   if (error) {
-    return (
-      <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-        {error}
-      </div>
-    );
+    return <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>;
   }
 
   if (!prescription) {
@@ -90,7 +93,9 @@ const PrescriptionDetails = () => {
               </h3>
               <ul className="list-disc list-inside space-y-1">
                 {prescription.interactions.map((interaction, index) => (
-                  <li key={index} className="text-gray-700">{interaction}</li>
+                  <li key={index} className="text-gray-700">
+                    {interaction}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -120,7 +125,9 @@ const PrescriptionDetails = () => {
               <h3 className="font-semibold mb-2">Potential Side Effects</h3>
               <ul className="list-disc list-inside space-y-1">
                 {prescription.sideEffects.map((effect, index) => (
-                  <li key={index} className="text-gray-700">{effect}</li>
+                  <li key={index} className="text-gray-700">
+                    {effect}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -128,14 +135,16 @@ const PrescriptionDetails = () => {
         </div>
       </div>
 
-      {prescription.status === 'ACTIVE' && prescription.refillsRemaining > 0 && (
+      {prescription.status === "ACTIVE" && prescription.refillsRemaining > 0 && (
         <div className="mt-6 flex justify-end">
           <button
             onClick={handleRefillRequest}
-            disabled={refillRequestStatus === 'processing'}
+            disabled={refillRequestStatus === "processing"}
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300"
           >
-            <FiRefreshCw className={`mr-2 ${refillRequestStatus === 'processing' ? 'animate-spin' : ''}`} />
+            <FiRefreshCw
+              className={`mr-2 ${refillRequestStatus === "processing" ? "animate-spin" : ""}`}
+            />
             Request Refill
           </button>
         </div>

@@ -16,9 +16,15 @@ export default function AdminAnalytics() {
   return (
     <div>
       <h1>Analytics Dashboard</h1>
-      <p><strong>Total Users:</strong> {data.totalUsers}</p>
-      <p><strong>Total Appointments:</strong> {data.totalAppointments}</p>
-      <p><strong>Total Revenue:</strong> ${(data.totalRevenue / 100).toFixed(2)}</p>
+      <p>
+        <strong>Total Users:</strong> {data.totalUsers}
+      </p>
+      <p>
+        <strong>Total Appointments:</strong> {data.totalAppointments}
+      </p>
+      <p>
+        <strong>Total Revenue:</strong> ${(data.totalRevenue / 100).toFixed(2)}
+      </p>
     </div>
   );
 }

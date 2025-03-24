@@ -1,35 +1,39 @@
-import { PrismaClient, Subscription } from '@prisma/client';
-import Stripe from 'stripe';
+import { PrismaClient, Subscription } from "@prisma/client";
+import Stripe from "stripe";
 
 const prisma = new PrismaClient();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2023-10-16",
 });
 
 export class SubscriptionService {
   static async getSubscription(userId: string): Promise<Subscription | null> {
     return await prisma.subscription.findFirst({
-      where: { userId }
+      where: { userId },
     });
   }
 
-  static async createSubscription(userId: string, planId: string, paymentMethodId: string): Promise<any> {
+  static async createSubscription(
+    userId: string,
+    planId: string,
+    paymentMethodId: string,
+  ): Promise<any> {
     // Get the user
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
     });
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     // Get the plan
     const plan = await prisma.subscriptionPlan.findUnique({
-      where: { id: planId }
+      where: { id: planId },
     });
 
     if (!plan) {
-      throw new Error('Plan not found');
+      throw new Error("Plan not found");
     }
 
     try {
@@ -41,8 +45,8 @@ export class SubscriptionService {
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
           metadata: {
-            userId: user.id
-          }
+            userId: user.id,
+          },
         });
 
         stripeCustomerId = customer.id;
@@ -50,27 +54,27 @@ export class SubscriptionService {
         // Update user with Stripe customer ID
         await prisma.user.update({
           where: { id: userId },
-          data: { stripeCustomerId }
+          data: { stripeCustomerId },
         });
       }
 
       // Attach payment method to customer
       await stripe.paymentMethods.attach(paymentMethodId, {
-        customer: stripeCustomerId
+        customer: stripeCustomerId,
       });
 
       // Set as default payment method
       await stripe.customers.update(stripeCustomerId, {
         invoice_settings: {
-          default_payment_method: paymentMethodId
-        }
+          default_payment_method: paymentMethodId,
+        },
       });
 
       // Create Stripe subscription
       const stripeSubscription = await stripe.subscriptions.create({
         customer: stripeCustomerId,
         items: [{ price: plan.stripePriceId }],
-        expand: ['latest_invoice.payment_intent']
+        expand: ["latest_invoice.payment_intent"],
       });
 
       // Create subscription in database
@@ -82,22 +86,22 @@ export class SubscriptionService {
           status: stripeSubscription.status,
           currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
           currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-          cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end
-        }
+          cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+        },
       });
 
       // Update user plan level
       await prisma.user.update({
         where: { id: userId },
-        data: { planLevel: plan.name }
+        data: { planLevel: plan.name },
       });
 
       return {
         subscription,
-        stripeSubscription
+        stripeSubscription,
       };
     } catch (error) {
-      console.error('Stripe subscription error:', error);
+      console.error("Stripe subscription error:", error);
       throw error;
     }
   }
@@ -105,28 +109,28 @@ export class SubscriptionService {
   static async cancelSubscription(userId: string): Promise<Subscription> {
     // Get the current subscription
     const subscription = await prisma.subscription.findFirst({
-      where: { userId }
+      where: { userId },
     });
 
     if (!subscription) {
-      throw new Error('No active subscription found');
+      throw new Error("No active subscription found");
     }
 
     try {
       // Cancel at period end in Stripe
       await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-        cancel_at_period_end: true
+        cancel_at_period_end: true,
       });
 
       // Update our database
       const updatedSubscription = await prisma.subscription.update({
         where: { id: subscription.id },
-        data: { cancelAtPeriodEnd: true }
+        data: { cancelAtPeriodEnd: true },
       });
 
       return updatedSubscription;
     } catch (error) {
-      console.error('Stripe cancellation error:', error);
+      console.error("Stripe cancellation error:", error);
       throw error;
     }
   }
@@ -134,28 +138,28 @@ export class SubscriptionService {
   static async reactivateSubscription(userId: string): Promise<Subscription> {
     // Get the current subscription
     const subscription = await prisma.subscription.findFirst({
-      where: { userId }
+      where: { userId },
     });
 
     if (!subscription) {
-      throw new Error('No subscription found');
+      throw new Error("No subscription found");
     }
 
     try {
       // Reactivate in Stripe
       await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-        cancel_at_period_end: false
+        cancel_at_period_end: false,
       });
 
       // Update our database
       const updatedSubscription = await prisma.subscription.update({
         where: { id: subscription.id },
-        data: { cancelAtPeriodEnd: false }
+        data: { cancelAtPeriodEnd: false },
       });
 
       return updatedSubscription;
     } catch (error) {
-      console.error('Stripe reactivation error:', error);
+      console.error("Stripe reactivation error:", error);
       throw error;
     }
   }
@@ -163,67 +167,70 @@ export class SubscriptionService {
   static async changeSubscriptionPlan(userId: string, newPlanId: string): Promise<Subscription> {
     // Get the current subscription
     const subscription = await prisma.subscription.findFirst({
-      where: { userId }
+      where: { userId },
     });
 
     if (!subscription) {
-      throw new Error('No active subscription found');
+      throw new Error("No active subscription found");
     }
 
     // Get the new plan
     const plan = await prisma.subscriptionPlan.findUnique({
-      where: { id: newPlanId }
+      where: { id: newPlanId },
     });
 
     if (!plan) {
-      throw new Error('Plan not found');
+      throw new Error("Plan not found");
     }
 
     try {
       // Change plan in Stripe
       await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-        items: [{
-          id: (await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId)).items.data[0].id,
-          price: plan.stripePriceId
-        }],
-        proration_behavior: 'create_prorations'
+        items: [
+          {
+            id: (await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId)).items
+              .data[0].id,
+            price: plan.stripePriceId,
+          },
+        ],
+        proration_behavior: "create_prorations",
       });
 
       // Update our database
       const updatedSubscription = await prisma.subscription.update({
         where: { id: subscription.id },
-        data: { planId: newPlanId }
+        data: { planId: newPlanId },
       });
 
       // Update user plan level
       await prisma.user.update({
         where: { id: userId },
-        data: { planLevel: plan.name }
+        data: { planLevel: plan.name },
       });
 
       return updatedSubscription;
     } catch (error) {
-      console.error('Stripe plan change error:', error);
+      console.error("Stripe plan change error:", error);
       throw error;
     }
   }
 
   static async handleWebhook(event: any): Promise<void> {
     switch (event.type) {
-      case 'customer.subscription.updated':
-      case 'customer.subscription.deleted':
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted":
         const subscription = event.data.object;
         await this.updateSubscriptionStatus(subscription);
         break;
 
-      case 'invoice.payment_succeeded':
+      case "invoice.payment_succeeded":
         const invoice = event.data.object;
         if (invoice.subscription) {
           await this.handleSuccessfulPayment(invoice);
         }
         break;
 
-      case 'invoice.payment_failed':
+      case "invoice.payment_failed":
         const failedInvoice = event.data.object;
         if (failedInvoice.subscription) {
           await this.handleFailedPayment(failedInvoice);
@@ -235,7 +242,7 @@ export class SubscriptionService {
   private static async updateSubscriptionStatus(stripeSubscription: any): Promise<void> {
     // Find our subscription
     const subscription = await prisma.subscription.findFirst({
-      where: { stripeSubscriptionId: stripeSubscription.id }
+      where: { stripeSubscriptionId: stripeSubscription.id },
     });
 
     if (!subscription) return;
@@ -247,15 +254,15 @@ export class SubscriptionService {
         status: stripeSubscription.status,
         currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
         currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end
-      }
+        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+      },
     });
 
     // If subscription is canceled or unpaid, update user plan to free
-    if (['canceled', 'unpaid'].includes(stripeSubscription.status)) {
+    if (["canceled", "unpaid"].includes(stripeSubscription.status)) {
       await prisma.user.update({
         where: { id: subscription.userId },
-        data: { planLevel: 'FREE' }
+        data: { planLevel: "FREE" },
       });
     }
   }
@@ -263,7 +270,7 @@ export class SubscriptionService {
   private static async handleSuccessfulPayment(invoice: any): Promise<void> {
     // Find subscription
     const subscription = await prisma.subscription.findFirst({
-      where: { stripeSubscriptionId: invoice.subscription }
+      where: { stripeSubscriptionId: invoice.subscription },
     });
 
     if (!subscription) return;
@@ -271,7 +278,7 @@ export class SubscriptionService {
     // Update payment status
     await prisma.subscription.update({
       where: { id: subscription.id },
-      data: { lastPaymentStatus: 'SUCCEEDED' }
+      data: { lastPaymentStatus: "SUCCEEDED" },
     });
 
     // Log successful payment
@@ -279,17 +286,17 @@ export class SubscriptionService {
       data: {
         userId: subscription.userId,
         amount: invoice.amount_paid / 100, // Convert from cents
-        status: 'SUCCEEDED',
+        status: "SUCCEEDED",
         stripeInvoiceId: invoice.id,
-        paymentDate: new Date(invoice.created * 1000)
-      }
+        paymentDate: new Date(invoice.created * 1000),
+      },
     });
   }
 
   private static async handleFailedPayment(invoice: any): Promise<void> {
     // Find subscription
     const subscription = await prisma.subscription.findFirst({
-      where: { stripeSubscriptionId: invoice.subscription }
+      where: { stripeSubscriptionId: invoice.subscription },
     });
 
     if (!subscription) return;
@@ -297,7 +304,7 @@ export class SubscriptionService {
     // Update payment status
     await prisma.subscription.update({
       where: { id: subscription.id },
-      data: { lastPaymentStatus: 'FAILED' }
+      data: { lastPaymentStatus: "FAILED" },
     });
 
     // Log failed payment
@@ -305,16 +312,16 @@ export class SubscriptionService {
       data: {
         userId: subscription.userId,
         amount: invoice.amount_due / 100, // Convert from cents
-        status: 'FAILED',
+        status: "FAILED",
         stripeInvoiceId: invoice.id,
-        paymentDate: new Date(invoice.created * 1000)
-      }
+        paymentDate: new Date(invoice.created * 1000),
+      },
     });
   }
 
   static async getAllSubscriptionPlans(): Promise<any[]> {
     return await prisma.subscriptionPlan.findMany({
-      orderBy: { price: 'asc' }
+      orderBy: { price: "asc" },
     });
   }
 }

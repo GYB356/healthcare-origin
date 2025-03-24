@@ -12,15 +12,15 @@ const router = Router();
 router.get("/symptoms", requireAuth, async (req, res) => {
   try {
     const symptomsList = await prisma.symptoms.findMany({
-      orderBy: { category: 'asc' }
+      orderBy: { category: "asc" },
     });
 
     res.json(symptomsList);
   } catch (error: any) {
     console.error("Error fetching symptoms:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Failed to fetch symptoms",
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 });
@@ -41,7 +41,7 @@ router.post("/assess", requireAuth, async (req, res) => {
         bloodPressure: "120/80",
         heartRate: 70,
         temperature: 37,
-      }
+      },
     });
 
     // Store assessment with AI predictions
@@ -52,7 +52,7 @@ router.post("/assess", requireAuth, async (req, res) => {
         date: new Date(),
         urgencyLevel: healthPrediction.riskLevel,
         recommendation: healthPrediction.recommendations.join("\n"),
-      }
+      },
     });
 
     // Send notification based on urgency
@@ -60,21 +60,21 @@ router.post("/assess", requireAuth, async (req, res) => {
     await NotificationService.createAlert({
       userId: req.user?.id,
       title: `Symptom Assessment ${isUrgent ? "- Urgent" : ""}`,
-      message: isUrgent 
+      message: isUrgent
         ? "Your symptoms require immediate medical attention. Please contact your healthcare provider."
         : "Your symptom assessment has been recorded.",
-      priority: isUrgent ? "high" : "normal"
+      priority: isUrgent ? "high" : "normal",
     });
 
     res.status(201).json({
       assessment,
-      predictions: healthPrediction
+      predictions: healthPrediction,
     });
   } catch (error: any) {
     console.error("Error creating assessment:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Failed to create assessment",
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 });
@@ -85,22 +85,22 @@ router.get("/history/:patientId", requireAuth, async (req, res) => {
     const patientId = req.params.patientId;
 
     // Ensure user has access to these assessments
-    if (req.user?.role === 'patient' && req.user?.id !== patientId) {
+    if (req.user?.role === "patient" && req.user?.id !== patientId) {
       return res.status(403).json({ message: "Access denied" });
     }
 
     const assessmentHistory = await prisma.assessments.findMany({
       where: { patientId },
-      orderBy: { date: 'desc' },
+      orderBy: { date: "desc" },
       take: 10,
     });
 
     res.json(assessmentHistory);
   } catch (error: any) {
     console.error("Error fetching assessment history:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Failed to fetch assessment history",
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 });

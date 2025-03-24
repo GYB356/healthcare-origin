@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 export interface ErrorResponse {
   message: string;
@@ -11,7 +11,12 @@ export class AppError extends Error {
   code: string;
   details: any;
 
-  constructor(message: string, statusCode: number = 500, code: string = 'SERVER_ERROR', details: any = {}) {
+  constructor(
+    message: string,
+    statusCode: number = 500,
+    code: string = "SERVER_ERROR",
+    details: any = {},
+  ) {
     super(message);
     this.statusCode = statusCode;
     this.code = code;
@@ -21,56 +26,61 @@ export class AppError extends Error {
 }
 
 export const handleError = (error: any): ErrorResponse => {
-  console.error('Error:', error);
-  
+  console.error("Error:", error);
+
   if (error instanceof AppError) {
     return {
       message: error.message,
       code: error.code,
-      details: error.details
+      details: error.details,
     };
   }
-  
-  if (error.name === 'ValidationError') {
+
+  if (error.name === "ValidationError") {
     return {
-      message: 'Validation Error',
-      code: 'VALIDATION_ERROR',
-      details: error.errors
+      message: "Validation Error",
+      code: "VALIDATION_ERROR",
+      details: error.errors,
     };
   }
-  
-  if (error.name === 'MongoError' && error.code === 11000) {
+
+  if (error.name === "MongoError" && error.code === 11000) {
     return {
-      message: 'Duplicate data error',
-      code: 'DUPLICATE_ERROR',
-      details: error.keyValue
+      message: "Duplicate data error",
+      code: "DUPLICATE_ERROR",
+      details: error.keyValue,
     };
   }
-  
+
   // Handle other specific error types
-  if (error.name === 'JsonWebTokenError') {
+  if (error.name === "JsonWebTokenError") {
     return {
-      message: 'Invalid token',
-      code: 'INVALID_TOKEN'
+      message: "Invalid token",
+      code: "INVALID_TOKEN",
     };
   }
-  
-  if (error.name === 'TokenExpiredError') {
+
+  if (error.name === "TokenExpiredError") {
     return {
-      message: 'Token expired',
-      code: 'TOKEN_EXPIRED'
+      message: "Token expired",
+      code: "TOKEN_EXPIRED",
     };
   }
-  
+
   return {
-    message: error.message || 'Internal Server Error',
-    code: 'SERVER_ERROR'
+    message: error.message || "Internal Server Error",
+    code: "SERVER_ERROR",
   };
 };
 
-export const errorMiddleware = (err: any, req: Request, res: Response, next: NextFunction): void => {
+export const errorMiddleware = (
+  err: any,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void => {
   const error = handleError(err);
   const statusCode = err instanceof AppError ? err.statusCode : 500;
-  
+
   res.status(statusCode).json(error);
 };

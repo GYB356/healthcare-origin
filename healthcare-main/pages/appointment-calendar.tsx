@@ -17,7 +17,7 @@ export default function AppointmentCalendar() {
           res.data.map((appt) => ({
             title: `Doctor ${appt.doctorId}`,
             start: `${appt.date}T${appt.time}`,
-          }))
+          })),
         );
       })
       .catch((err) => console.error(err));

@@ -1,43 +1,43 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { submitHealthMetric } from '../../services/healthMetricsService';
+import React, { useState } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { submitHealthMetric } from "../../services/healthMetricsService";
 
 export default function MetricEntryForm({ metricType, unit, onSuccess }) {
   const { authAxios } = useAuth();
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState("");
   const [timestamp, setTimestamp] = useState(new Date().toISOString());
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const validateInput = () => {
     if (!value) {
-      setError('Please enter a value');
+      setError("Please enter a value");
       return false;
     }
-    
+
     const numValue = parseFloat(value);
     if (isNaN(numValue)) {
-      setError('Please enter a valid number');
+      setError("Please enter a valid number");
       return false;
     }
 
     // Metric-specific validation
-    switch(metricType) {
-      case 'blood_pressure':
-        if (!value.includes('/')) {
-          setError('Enter blood pressure as systolic/diastolic (e.g. 120/80)');
+    switch (metricType) {
+      case "blood_pressure":
+        if (!value.includes("/")) {
+          setError("Enter blood pressure as systolic/diastolic (e.g. 120/80)");
           return false;
         }
         break;
-      case 'medication_adherence':
+      case "medication_adherence":
         if (numValue < 0 || numValue > 100) {
-          setError('Adherence must be between 0-100%');
+          setError("Adherence must be between 0-100%");
           return false;
         }
         break;
       default:
         if (numValue <= 0) {
-          setError('Value must be greater than 0');
+          setError("Value must be greater than 0");
           return false;
         }
     }
@@ -47,25 +47,25 @@ export default function MetricEntryForm({ metricType, unit, onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (!validateInput()) return;
 
     try {
       await submitHealthMetric(authAxios, {
         metricType,
-        value: metricType === 'blood_pressure' ? value : parseFloat(value),
-        timestamp
+        value: metricType === "blood_pressure" ? value : parseFloat(value),
+        timestamp,
       });
-      
-      setSuccess('Entry added successfully');
-      setValue('');
+
+      setSuccess("Entry added successfully");
+      setValue("");
       onSuccess();
-      setTimeout(() => setSuccess(''), 3000);
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      setError('Failed to submit entry. Please try again.');
-      console.error('Submission error:', err);
+      setError("Failed to submit entry. Please try again.");
+      console.error("Submission error:", err);
     }
   };
 
@@ -85,14 +85,14 @@ export default function MetricEntryForm({ metricType, unit, onSuccess }) {
             />
           </label>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Date & Time
             <input
               type="datetime-local"
               value={timestamp.slice(0, 16)}
-              onChange={(e) => setTimestamp(e.target.value + ':00Z')}
+              onChange={(e) => setTimestamp(e.target.value + ":00Z")}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               aria-label="Select entry timestamp"
             />

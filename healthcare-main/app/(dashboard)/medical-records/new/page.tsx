@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -15,20 +15,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "sonner"
-import { format } from "date-fns"
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = [
   "image/jpeg",
   "image/png",
@@ -36,7 +36,7 @@ const ACCEPTED_FILE_TYPES = [
   "application/pdf",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-]
+];
 
 const recordFormSchema = z.object({
   patientId: z.string().min(1, "Please select a patient"),
@@ -57,32 +57,32 @@ const recordFormSchema = z.object({
   attachments: z
     .array(
       z.object({
-        file: z.instanceof(File).refine(
-          (file) => file.size <= MAX_FILE_SIZE,
-          `File size should be less than ${MAX_FILE_SIZE / 1024 / 1024}MB`
-        ).refine(
-          (file) => ACCEPTED_FILE_TYPES.includes(file.type),
-          "Invalid file type"
-        ),
-      })
+        file: z
+          .instanceof(File)
+          .refine(
+            (file) => file.size <= MAX_FILE_SIZE,
+            `File size should be less than ${MAX_FILE_SIZE / 1024 / 1024}MB`,
+          )
+          .refine((file) => ACCEPTED_FILE_TYPES.includes(file.type), "Invalid file type"),
+      }),
     )
     .optional(),
-})
+});
 
-type RecordFormValues = z.infer<typeof recordFormSchema>
+type RecordFormValues = z.infer<typeof recordFormSchema>;
 
 interface Patient {
-  id: string
-  name: string
-  dateOfBirth: string
+  id: string;
+  name: string;
+  dateOfBirth: string;
 }
 
 export default function NewMedicalRecordPage() {
-  const { data: session } = useSession()
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [patients, setPatients] = useState<Patient[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const form = useForm<RecordFormValues>({
     resolver: zodResolver(recordFormSchema),
@@ -93,71 +93,71 @@ export default function NewMedicalRecordPage() {
       description: "",
       attachments: [],
     },
-  })
+  });
 
   const searchPatients = async (query: string) => {
     try {
-      const response = await fetch(`/api/patients/search?q=${encodeURIComponent(query)}`)
+      const response = await fetch(`/api/patients/search?q=${encodeURIComponent(query)}`);
       if (!response.ok) {
-        throw new Error("Failed to search patients")
+        throw new Error("Failed to search patients");
       }
 
-      const data = await response.json()
-      setPatients(data)
+      const data = await response.json();
+      setPatients(data);
     } catch (error) {
-      console.error("Error searching patients:", error)
-      toast.error("Failed to search patients")
+      console.error("Error searching patients:", error);
+      toast.error("Failed to search patients");
     }
-  }
+  };
 
   const onSubmit = async (data: RecordFormValues) => {
     if (!session?.user.role === "DOCTOR") {
-      toast.error("Unauthorized")
-      return
+      toast.error("Unauthorized");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const formData = new FormData()
-      formData.append("patientId", data.patientId)
-      formData.append("type", data.type)
-      formData.append("date", data.date)
-      formData.append("description", data.description)
+      const formData = new FormData();
+      formData.append("patientId", data.patientId);
+      formData.append("type", data.type);
+      formData.append("date", data.date);
+      formData.append("description", data.description);
 
       if (data.attachments) {
         data.attachments.forEach((attachment, index) => {
-          formData.append(`attachments`, attachment.file)
-        })
+          formData.append(`attachments`, attachment.file);
+        });
       }
 
       const response = await fetch("/api/medical-records", {
         method: "POST",
         body: formData,
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to create medical record")
+        throw new Error("Failed to create medical record");
       }
 
-      const record = await response.json()
-      toast.success("Medical record created successfully")
-      router.push(`/medical-records/${record.id}`)
+      const record = await response.json();
+      toast.success("Medical record created successfully");
+      router.push(`/medical-records/${record.id}`);
     } catch (error) {
-      console.error("Error creating medical record:", error)
-      toast.error("Failed to create medical record")
+      console.error("Error creating medical record:", error);
+      toast.error("Failed to create medical record");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || [])
-    const currentAttachments = form.getValues("attachments") || []
+    const files = Array.from(event.target.files || []);
+    const currentAttachments = form.getValues("attachments") || [];
 
-    const newAttachments = files.map((file) => ({ file }))
-    form.setValue("attachments", [...currentAttachments, ...newAttachments])
-  }
+    const newAttachments = files.map((file) => ({ file }));
+    form.setValue("attachments", [...currentAttachments, ...newAttachments]);
+  };
 
   return (
     <div className="space-y-6">
@@ -187,18 +187,16 @@ export default function NewMedicalRecordPage() {
                           placeholder="Search patients..."
                           value={searchQuery}
                           onChange={(e) => {
-                            setSearchQuery(e.target.value)
-                            searchPatients(e.target.value)
+                            setSearchQuery(e.target.value);
+                            searchPatients(e.target.value);
                           }}
                         />
                         {patients.length > 0 && (
                           <Select
                             onValueChange={(value) => {
-                              field.onChange(value)
-                              setSearchQuery(
-                                patients.find((p) => p.id === value)?.name || ""
-                              )
-                              setPatients([])
+                              field.onChange(value);
+                              setSearchQuery(patients.find((p) => p.id === value)?.name || "");
+                              setPatients([]);
                             }}
                           >
                             <FormControl>
@@ -209,8 +207,8 @@ export default function NewMedicalRecordPage() {
                             <SelectContent>
                               {patients.map((patient) => (
                                 <SelectItem key={patient.id} value={patient.id}>
-                                  {patient.name} (DOB:{" "}
-                                  {format(new Date(patient.dateOfBirth), "PP")})
+                                  {patient.name} (DOB: {format(new Date(patient.dateOfBirth), "PP")}
+                                  )
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -228,10 +226,7 @@ export default function NewMedicalRecordPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Record Type</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select record type" />
@@ -299,10 +294,7 @@ export default function NewMedicalRecordPage() {
                       {field.value && field.value.length > 0 && (
                         <div className="mt-2 space-y-1">
                           {field.value.map((attachment, index) => (
-                            <div
-                              key={index}
-                              className="text-sm text-gray-500"
-                            >
+                            <div key={index} className="text-sm text-gray-500">
                               {attachment.file.name}
                             </div>
                           ))}
@@ -331,5 +323,5 @@ export default function NewMedicalRecordPage() {
         </form>
       </Form>
     </div>
-  )
-} 
+  );
+}

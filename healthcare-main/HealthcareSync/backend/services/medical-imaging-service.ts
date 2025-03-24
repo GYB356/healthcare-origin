@@ -1,14 +1,14 @@
-import { prisma } from '../../lib/prisma';
-import { AppError } from '../utils/app-error';
-import * as crypto from 'crypto';
-import * as path from 'path';
-import * as fs from 'fs';
+import { prisma } from "../../lib/prisma";
+import { AppError } from "../utils/app-error";
+import * as crypto from "crypto";
+import * as path from "path";
+import * as fs from "fs";
 
 export interface MedicalImage {
   id: string;
   patientId: number;
   providerId: number;
-  imageType: 'xray' | 'mri' | 'ct' | 'ultrasound' | 'other';
+  imageType: "xray" | "mri" | "ct" | "ultrasound" | "other";
   description: string;
   filePath: string;
   fileHash: string;
@@ -23,12 +23,8 @@ export interface MedicalImage {
 }
 
 export class MedicalImagingService {
-  private static readonly UPLOAD_DIR = process.env.MEDICAL_IMAGES_DIR || 'uploads/medical-images';
-  private static readonly ALLOWED_MIME_TYPES = [
-    'image/jpeg',
-    'image/png',
-    'image/dicom'
-  ];
+  private static readonly UPLOAD_DIR = process.env.MEDICAL_IMAGES_DIR || "uploads/medical-images";
+  private static readonly ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/dicom"];
 
   static async initialize() {
     // Ensure upload directory exists
@@ -41,22 +37,19 @@ export class MedicalImagingService {
     file: Express.Multer.File,
     patientId: number,
     providerId: number,
-    metadata: Partial<MedicalImage['metadata']> & {
-      imageType: MedicalImage['imageType'];
+    metadata: Partial<MedicalImage["metadata"]> & {
+      imageType: MedicalImage["imageType"];
       description: string;
-    }
+    },
   ): Promise<MedicalImage> {
     try {
       // Validate file type
       if (!this.ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-        throw new AppError('Invalid file type', 400);
+        throw new AppError("Invalid file type", 400);
       }
 
       // Generate secure filename
-      const fileHash = crypto
-        .createHash('sha256')
-        .update(file.buffer)
-        .digest('hex');
+      const fileHash = crypto.createHash("sha256").update(file.buffer).digest("hex");
       const fileExt = path.extname(file.originalname);
       const secureFilename = `${fileHash}${fileExt}`;
       const filePath = path.join(this.UPLOAD_DIR, secureFilename);
@@ -74,13 +67,13 @@ export class MedicalImagingService {
           filePath: secureFilename,
           fileHash,
           metadata: metadata,
-          uploadedAt: new Date().toISOString()
-        }
+          uploadedAt: new Date().toISOString(),
+        },
       });
 
       return image;
     } catch (error) {
-      console.error('Error uploading medical image:', error);
+      console.error("Error uploading medical image:", error);
       throw error;
     }
   }
@@ -89,10 +82,10 @@ export class MedicalImagingService {
     try {
       return await prisma.medicalImage.findMany({
         where: { patientId },
-        orderBy: { uploadedAt: 'desc' }
+        orderBy: { uploadedAt: "desc" },
       });
     } catch (error) {
-      console.error('Error fetching patient images:', error);
+      console.error("Error fetching patient images:", error);
       throw error;
     }
   }
@@ -100,16 +93,16 @@ export class MedicalImagingService {
   static async getImage(imageId: string): Promise<MedicalImage> {
     try {
       const image = await prisma.medicalImage.findUnique({
-        where: { id: imageId }
+        where: { id: imageId },
       });
 
       if (!image) {
-        throw new AppError('Image not found', 404);
+        throw new AppError("Image not found", 404);
       }
 
       return image;
     } catch (error) {
-      console.error('Error fetching image:', error);
+      console.error("Error fetching image:", error);
       throw error;
     }
   }
@@ -126,25 +119,25 @@ export class MedicalImagingService {
 
       // Delete database record
       await prisma.medicalImage.delete({
-        where: { id: imageId }
+        where: { id: imageId },
       });
     } catch (error) {
-      console.error('Error deleting image:', error);
+      console.error("Error deleting image:", error);
       throw error;
     }
   }
 
   static async updateImageMetadata(
     imageId: string,
-    metadata: Partial<MedicalImage['metadata']>
+    metadata: Partial<MedicalImage["metadata"]>,
   ): Promise<MedicalImage> {
     try {
       return await prisma.medicalImage.update({
         where: { id: imageId },
-        data: { metadata }
+        data: { metadata },
       });
     } catch (error) {
-      console.error('Error updating image metadata:', error);
+      console.error("Error updating image metadata:", error);
       throw error;
     }
   }

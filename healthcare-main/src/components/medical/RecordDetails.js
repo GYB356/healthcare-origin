@@ -1,6 +1,6 @@
-import React from 'react';
-import { FiX, FiDownload, FiEdit2, FiTrash2, FiAlertTriangle, FiActivity } from 'react-icons/fi';
-import { useAuth } from '../../contexts/AuthContext';
+import React from "react";
+import { FiX, FiDownload, FiEdit2, FiTrash2, FiAlertTriangle, FiActivity } from "react-icons/fi";
+import { useAuth } from "../../contexts/AuthContext";
 
 const RecordDetails = ({ record, onClose, onEdit, onDelete }) => {
   const { currentUser } = useAuth();
@@ -9,11 +9,11 @@ const RecordDetails = ({ record, onClose, onEdit, onDelete }) => {
   // HIPAA compliance check
   const hasAccess = () => {
     if (!currentUser) return false;
-    const allowedRoles = ['admin', 'doctor', 'nurse'];
-    
+    const allowedRoles = ["admin", "doctor", "nurse"];
+
     if (allowedRoles.includes(currentUser.role)) {
-      if (['doctor', 'nurse'].includes(currentUser.role)) {
-        return currentUser.hipaaConsent && currentUser.hipaaConsent.status === 'accepted';
+      if (["doctor", "nurse"].includes(currentUser.role)) {
+        return currentUser.hipaaConsent && currentUser.hipaaConsent.status === "accepted";
       }
       return true;
     }
@@ -23,22 +23,22 @@ const RecordDetails = ({ record, onClose, onEdit, onDelete }) => {
   const handleDownload = async () => {
     try {
       if (!hasAccess()) {
-        throw new Error('You do not have permission to download this record');
+        throw new Error("You do not have permission to download this record");
       }
       // TODO: Implement secure document download with encryption
       const response = await fetch(`/api/records/${record.id}/download`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to download record');
+        throw new Error("Failed to download record");
       }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `medical-record-${record.id}.pdf`;
       document.body.appendChild(a);
@@ -46,7 +46,7 @@ const RecordDetails = ({ record, onClose, onEdit, onDelete }) => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Error downloading record:', error);
+      console.error("Error downloading record:", error);
       alert(error.message);
     }
   };
@@ -60,7 +60,8 @@ const RecordDetails = ({ record, onClose, onEdit, onDelete }) => {
             <h2 className="text-xl font-semibold">Access Denied</h2>
           </div>
           <p className="text-gray-600 mb-4">
-            You do not have permission to view this medical record. This feature is only available to authorized healthcare providers.
+            You do not have permission to view this medical record. This feature is only available
+            to authorized healthcare providers.
           </p>
           <button
             onClick={onClose}
@@ -119,42 +120,44 @@ const RecordDetails = ({ record, onClose, onEdit, onDelete }) => {
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Blood Pressure</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {record.vitalSigns?.bloodPressure || 'N/A'}
+                      {record.vitalSigns?.bloodPressure || "N/A"}
                       <span className="text-xs text-gray-500 ml-1">mmHg</span>
                     </dd>
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Heart Rate</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {record.vitalSigns?.heartRate || 'N/A'}
+                      {record.vitalSigns?.heartRate || "N/A"}
                       <span className="text-xs text-gray-500 ml-1">bpm</span>
                     </dd>
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Temperature</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {record.vitalSigns?.temperature || 'N/A'}
+                      {record.vitalSigns?.temperature || "N/A"}
                       <span className="text-xs text-gray-500 ml-1">°F</span>
                     </dd>
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Respiratory Rate</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {record.vitalSigns?.respiratoryRate || 'N/A'}
+                      {record.vitalSigns?.respiratoryRate || "N/A"}
                       <span className="text-xs text-gray-500 ml-1">breaths/min</span>
                     </dd>
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Oxygen Saturation</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {record.vitalSigns?.oxygenSaturation || 'N/A'}
+                      {record.vitalSigns?.oxygenSaturation || "N/A"}
                       <span className="text-xs text-gray-500 ml-1">%</span>
                     </dd>
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Last Updated</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {record.vitalSigns?.lastUpdated ? new Date(record.vitalSigns.lastUpdated).toLocaleString() : 'N/A'}
+                      {record.vitalSigns?.lastUpdated
+                        ? new Date(record.vitalSigns.lastUpdated).toLocaleString()
+                        : "N/A"}
                     </dd>
                   </div>
                 </div>
@@ -165,7 +168,7 @@ const RecordDetails = ({ record, onClose, onEdit, onDelete }) => {
               <h3 className="text-lg font-medium text-gray-900 mb-4">Record Details</h3>
               <div className="prose prose-sm max-w-none">
                 <p className="text-gray-600">
-                  {record.details || 'No detailed information available.'}
+                  {record.details || "No detailed information available."}
                 </p>
               </div>
 

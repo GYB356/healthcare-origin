@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { addMinutes, format, parse, setHours, setMinutes } from 'date-fns';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { addMinutes, format, parse, setHours, setMinutes } from "date-fns";
 
 const prisma = new PrismaClient();
 
@@ -14,22 +14,16 @@ const SLOT_DURATION = 30; // minutes
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const dateStr = searchParams.get('date');
+    const dateStr = searchParams.get("date");
 
     if (!dateStr) {
-      return NextResponse.json(
-        { error: 'Date parameter is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Date parameter is required" }, { status: 400 });
     }
 
     const date = new Date(dateStr);
@@ -42,7 +36,7 @@ export async function GET(request: Request) {
         date: {
           equals: date,
         },
-        status: 'SCHEDULED',
+        status: "SCHEDULED",
       },
       select: {
         time: true,
@@ -55,14 +49,14 @@ export async function GET(request: Request) {
     let currentTime = startTime;
 
     while (currentTime < endTime) {
-      const timeStr = format(currentTime, 'HH:mm');
-      
+      const timeStr = format(currentTime, "HH:mm");
+
       // Check if slot is available
-      const isBooked = existingAppointments.some(apt => {
-        const aptTime = parse(apt.time, 'HH:mm', new Date());
+      const isBooked = existingAppointments.some((apt) => {
+        const aptTime = parse(apt.time, "HH:mm", new Date());
         const aptEndTime = addMinutes(aptTime, apt.duration);
         const slotEndTime = addMinutes(currentTime, SLOT_DURATION);
-        
+
         return (
           (currentTime >= aptTime && currentTime < aptEndTime) ||
           (slotEndTime > aptTime && slotEndTime <= aptEndTime)
@@ -79,10 +73,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ slots });
   } catch (error) {
-    console.error('Error fetching available slots:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch available slots' },
-      { status: 500 }
-    );
+    console.error("Error fetching available slots:", error);
+    return NextResponse.json({ error: "Failed to fetch available slots" }, { status: 500 });
   }
-} 
+}

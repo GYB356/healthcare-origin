@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Appointment {
   id: string;
@@ -9,7 +9,7 @@ interface Appointment {
   patientId: string;
   date: string;
   time: string;
-  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
 }
 
 interface MedicalHistory {
@@ -25,11 +25,11 @@ export default function ConsultationPage({ params }: { params: { id: string } })
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [medicalHistory, setMedicalHistory] = useState<MedicalHistory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    diagnosis: '',
-    prescription: '',
-    notes: '',
+    diagnosis: "",
+    prescription: "",
+    notes: "",
   });
 
   useEffect(() => {
@@ -37,26 +37,29 @@ export default function ConsultationPage({ params }: { params: { id: string } })
       try {
         // Fetch appointment details
         const appointmentRes = await fetch(`/api/appointments/${params.id}`, {
-          credentials: 'include',
+          credentials: "include",
         });
         if (appointmentRes.ok) {
           const data = await appointmentRes.json();
           setAppointment(data.appointment);
 
           // Fetch patient's medical history
-          const historyRes = await fetch(`/api/patients/${data.appointment.patientId}/medical-history`, {
-            credentials: 'include',
-          });
+          const historyRes = await fetch(
+            `/api/patients/${data.appointment.patientId}/medical-history`,
+            {
+              credentials: "include",
+            },
+          );
           if (historyRes.ok) {
             const historyData = await historyRes.json();
             setMedicalHistory(historyData.medicalHistory);
           }
         } else {
-          setError('Failed to load appointment details');
+          setError("Failed to load appointment details");
         }
       } catch (error) {
-        console.error('Error fetching consultation data:', error);
-        setError('Failed to load consultation data');
+        console.error("Error fetching consultation data:", error);
+        setError("Failed to load consultation data");
       } finally {
         setLoading(false);
       }
@@ -67,7 +70,7 @@ export default function ConsultationPage({ params }: { params: { id: string } })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -79,23 +82,23 @@ export default function ConsultationPage({ params }: { params: { id: string } })
 
     try {
       const response = await fetch(`/api/appointments/${appointment.id}/complete`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        router.push('/dashboard/doctor');
+        router.push("/dashboard/doctor");
       } else {
         const data = await response.json();
-        setError(data.error || 'Failed to complete consultation');
+        setError(data.error || "Failed to complete consultation");
       }
     } catch (error) {
-      console.error('Error completing consultation:', error);
-      setError('Failed to complete consultation');
+      console.error("Error completing consultation:", error);
+      setError("Failed to complete consultation");
     }
   };
 
@@ -228,4 +231,4 @@ export default function ConsultationPage({ params }: { params: { id: string } })
       </div>
     </div>
   );
-} 
+}

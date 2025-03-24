@@ -1,0 +1,52 @@
+f70c7a07d8ce0a07d56d6e2830446188
+/* istanbul ignore next */
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AppointmentStatus = void 0;
+function cov_1sxm1qjxfc() {
+  var path = "C:\\Users\\olari\\Downloads\\healthcare-main\\types\\Appointment.ts";
+  var hash = "cab51597f85a30c3786a1b878dfea39d3254d36b";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "C:\\Users\\olari\\Downloads\\healthcare-main\\types\\Appointment.ts",
+    statementMap: {},
+    fnMap: {},
+    branchMap: {},
+    s: {},
+    f: {},
+    b: {},
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "cab51597f85a30c3786a1b878dfea39d3254d36b"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_1sxm1qjxfc = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_1sxm1qjxfc();
+/**
+ * Appointment interface definition
+ */
+// Appointment status enum
+let AppointmentStatus = exports.AppointmentStatus = /*#__PURE__*/function (AppointmentStatus) {
+  AppointmentStatus["SCHEDULED"] = "SCHEDULED";
+  AppointmentStatus["CONFIRMED"] = "CONFIRMED";
+  AppointmentStatus["CANCELLED"] = "CANCELLED";
+  AppointmentStatus["COMPLETED"] = "COMPLETED";
+  AppointmentStatus["NO_SHOW"] = "NO_SHOW";
+  AppointmentStatus["RESCHEDULED"] = "RESCHEDULED";
+  return AppointmentStatus;
+}({});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfMXN4bTFxanhmYyIsImFjdHVhbENvdmVyYWdlIiwiQXBwb2ludG1lbnRTdGF0dXMiLCJleHBvcnRzIl0sInNvdXJjZXMiOlsiQXBwb2ludG1lbnQudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLyoqXHJcbiAqIEFwcG9pbnRtZW50IGludGVyZmFjZSBkZWZpbml0aW9uXHJcbiAqL1xyXG5cclxuLy8gQXBwb2ludG1lbnQgc3RhdHVzIGVudW1cclxuZXhwb3J0IGVudW0gQXBwb2ludG1lbnRTdGF0dXMge1xyXG4gIFNDSEVEVUxFRCA9ICdTQ0hFRFVMRUQnLFxyXG4gIENPTkZJUk1FRCA9ICdDT05GSVJNRUQnLFxyXG4gIENBTkNFTExFRCA9ICdDQU5DRUxMRUQnLFxyXG4gIENPTVBMRVRFRCA9ICdDT01QTEVURUQnLFxyXG4gIE5PX1NIT1cgPSAnTk9fU0hPVycsXHJcbiAgUkVTQ0hFRFVMRUQgPSAnUkVTQ0hFRFVMRUQnXHJcbn1cclxuXHJcbmV4cG9ydCBpbnRlcmZhY2UgQXBwb2ludG1lbnQge1xyXG4gIGlkOiBzdHJpbmc7XHJcbiAgcGF0aWVudElkOiBzdHJpbmc7XHJcbiAgZG9jdG9ySWQ6IHN0cmluZztcclxuICBkYXRlOiBEYXRlO1xyXG4gIGR1cmF0aW9uOiBudW1iZXI7IC8vIGluIG1pbnV0ZXNcclxuICBzdGF0dXM6IEFwcG9pbnRtZW50U3RhdHVzO1xyXG4gIHJlYXNvbjogc3RyaW5nO1xyXG4gIG5vdGVzPzogc3RyaW5nO1xyXG4gIGNyZWF0ZWRBdD86IERhdGU7XHJcbiAgdXBkYXRlZEF0PzogRGF0ZTtcclxufSAiXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0lBZVk7SUFBQUEsY0FBQSxZQUFBQSxDQUFBO01BQUEsT0FBQUMsY0FBQTtJQUFBO0VBQUE7RUFBQSxPQUFBQSxjQUFBO0FBQUE7QUFBQUQsY0FBQTtBQWZaO0FBQ0E7QUFDQTtBQUVBO0FBQUEsSUFDWUUsaUJBQWlCLEdBQUFDLE9BQUEsQ0FBQUQsaUJBQUEsMEJBQWpCQSxpQkFBaUI7RUFBakJBLGlCQUFpQjtFQUFqQkEsaUJBQWlCO0VBQWpCQSxpQkFBaUI7RUFBakJBLGlCQUFpQjtFQUFqQkEsaUJBQWlCO0VBQWpCQSxpQkFBaUI7RUFBQSxPQUFqQkEsaUJBQWlCO0FBQUEiLCJpZ25vcmVMaXN0IjpbXX0=

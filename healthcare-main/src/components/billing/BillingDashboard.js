@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { FiDollarSign, FiTrendingUp, FiDownload, FiAlertCircle } from 'react-icons/fi';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { FiDollarSign, FiTrendingUp, FiDownload, FiAlertCircle } from "react-icons/fi";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function BillingDashboard() {
   const { authAxios } = useAuth();
   const [metrics, setMetrics] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchBillingData = async () => {
       try {
         const [metricsRes, transactionsRes] = await Promise.all([
-          authAxios.get('/api/billing/metrics'),
-          authAxios.get('/api/billing/recent')
+          authAxios.get("/api/billing/metrics"),
+          authAxios.get("/api/billing/recent"),
         ]);
-        
+
         setMetrics(metricsRes.data);
         setTransactions(transactionsRes.data);
-        setError('');
+        setError("");
       } catch (err) {
-        setError('Failed to load billing data');
-        console.error('Billing dashboard error:', err);
+        setError("Failed to load billing data");
+        console.error("Billing dashboard error:", err);
       } finally {
         setLoading(false);
       }
@@ -33,9 +33,9 @@ export default function BillingDashboard() {
   }, []);
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(amount / 100);
   };
 
@@ -56,7 +56,7 @@ export default function BillingDashboard() {
         </h2>
         <button
           className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          onClick={() => window.open('/api/billing/export', '_blank')}
+          onClick={() => window.open("/api/billing/export", "_blank")}
         >
           <FiDownload className="mr-2" />
           Export Report
@@ -101,8 +101,8 @@ export default function BillingDashboard() {
           <BarChart data={metrics?.revenueTrend}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
-            <YAxis tickFormatter={value => `$${value / 100}`} />
-            <Tooltip formatter={value => [formatCurrency(value), 'Revenue']} />
+            <YAxis tickFormatter={(value) => `$${value / 100}`} />
+            <Tooltip formatter={(value) => [formatCurrency(value), "Revenue"]} />
             <Bar dataKey="amount" fill="#3B82F6" />
           </BarChart>
         </ResponsiveContainer>
@@ -112,10 +112,18 @@ export default function BillingDashboard() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Patient
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Amount
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Status
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -129,13 +137,15 @@ export default function BillingDashboard() {
                   {formatCurrency(transaction.amount)}
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    transaction.status === 'paid' 
-                      ? 'bg-green-100 text-green-800'
-                      : transaction.status === 'overdue'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      transaction.status === "paid"
+                        ? "bg-green-100 text-green-800"
+                        : transaction.status === "overdue"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
                     {transaction.status}
                   </span>
                 </td>

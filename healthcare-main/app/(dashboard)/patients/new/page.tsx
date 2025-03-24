@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { format } from "date-fns"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { format } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -16,17 +16,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "sonner"
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 const patientFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -46,14 +46,14 @@ const patientFormSchema = z.object({
   insuranceProvider: z.string().optional(),
   insurancePolicyNumber: z.string().optional(),
   insuranceExpirationDate: z.string().optional(),
-})
+});
 
-type PatientFormValues = z.infer<typeof patientFormSchema>
+type PatientFormValues = z.infer<typeof patientFormSchema>;
 
 export default function NewPatientPage() {
-  const { data: session } = useSession()
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(patientFormSchema),
@@ -74,15 +74,15 @@ export default function NewPatientPage() {
       insurancePolicyNumber: "",
       insuranceExpirationDate: "",
     },
-  })
+  });
 
   const onSubmit = async (data: PatientFormValues) => {
     if (!session?.user.role === "DOCTOR") {
-      toast.error("Unauthorized")
-      return
+      toast.error("Unauthorized");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       const response = await fetch("/api/patients", {
@@ -111,22 +111,22 @@ export default function NewPatientPage() {
               }
             : null,
         }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to create patient")
+        throw new Error("Failed to create patient");
       }
 
-      const patient = await response.json()
-      toast.success("Patient created successfully")
-      router.push(`/patients/${patient.id}`)
+      const patient = await response.json();
+      toast.success("Patient created successfully");
+      router.push(`/patients/${patient.id}`);
     } catch (error) {
-      console.error("Error creating patient:", error)
-      toast.error("Failed to create patient")
+      console.error("Error creating patient:", error);
+      toast.error("Failed to create patient");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -206,10 +206,7 @@ export default function NewPatientPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Gender</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select gender" />
@@ -239,10 +236,7 @@ export default function NewPatientPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Blood Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select blood type" />
@@ -422,5 +416,5 @@ export default function NewPatientPage() {
         </form>
       </Form>
     </div>
-  )
-} 
+  );
+}

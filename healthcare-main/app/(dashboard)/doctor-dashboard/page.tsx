@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { 
-  Users, 
-  CalendarDays, 
-  FileText, 
+import {
+  Users,
+  CalendarDays,
+  FileText,
   Clock,
   MessageSquare,
   Activity,
@@ -15,11 +15,18 @@ import {
   Search,
   Bell,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -53,9 +60,9 @@ interface Task {
   id: string;
   title: string;
   dueDate: Date;
-  priority: 'high' | 'medium' | 'low';
-  status: 'pending' | 'in-progress' | 'completed';
-  type: 'prescription' | 'review' | 'followup' | 'referral';
+  priority: "high" | "medium" | "low";
+  status: "pending" | "in-progress" | "completed";
+  type: "prescription" | "review" | "followup" | "referral";
 }
 
 interface DoctorData {
@@ -93,13 +100,13 @@ export default function DoctorDashboard() {
       // In a real implementation, you would fetch this data from your API
       // For now, we'll use mock data
       setLoading(true);
-      
+
       // Simulate API call with setTimeout
       setTimeout(() => {
         const today = new Date();
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        
+
         const mockDoctorData: DoctorData = {
           patients: [
             {
@@ -254,7 +261,7 @@ export default function DoctorDashboard() {
           appointmentsCompleted: 2,
           unreadMessages: 3,
         };
-        
+
         setDoctorData(mockDoctorData);
         setLoading(false);
       }, 1000);
@@ -263,25 +270,26 @@ export default function DoctorDashboard() {
 
   // Format date and time
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
   // Filter patients by search term
-  const filteredPatients = doctorData?.patients.filter(patient => 
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredPatients =
+    doctorData?.patients.filter((patient) =>
+      patient.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    ) || [];
 
   // Loading state
   if (loading || !doctorData) {
@@ -296,13 +304,15 @@ export default function DoctorDashboard() {
   }
 
   // Calculate completion percentage
-  const completionPercentage = Math.round((doctorData.appointmentsCompleted / doctorData.totalPatientsToday) * 100);
+  const completionPercentage = Math.round(
+    (doctorData.appointmentsCompleted / doctorData.totalPatientsToday) * 100,
+  );
 
   // Get next appointment
   const getNextAppointment = () => {
     const now = new Date();
     return doctorData.todayAppointments.find(
-      appointment => appointment.status === "scheduled" && new Date(appointment.startTime) > now
+      (appointment) => appointment.status === "scheduled" && new Date(appointment.startTime) > now,
     );
   };
 
@@ -312,16 +322,24 @@ export default function DoctorDashboard() {
     <div className="container mx-auto py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Welcome, Dr. {session?.user.name?.split(' ')[0]}</h1>
+          <h1 className="text-3xl font-bold">Welcome, Dr. {session?.user.name?.split(" ")[0]}</h1>
           <p className="text-gray-600">
-            {new Date().toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'})}
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}
           </p>
         </div>
         <div className="flex items-center gap-4">
           <Button variant="outline" className="relative">
             <Bell size={20} />
             {doctorData.unreadMessages > 0 && (
-              <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-2" variant="destructive">
+              <Badge
+                className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-2"
+                variant="destructive"
+              >
                 {doctorData.unreadMessages}
               </Badge>
             )}
@@ -370,13 +388,18 @@ export default function DoctorDashboard() {
               </div>
             </div>
             <div className="mt-4 space-y-1">
-              {doctorData.pendingTasks.slice(0, 2).map(task => (
+              {doctorData.pendingTasks.slice(0, 2).map((task) => (
                 <div key={task.id} className="text-sm truncate text-gray-600">
                   • {task.title}
                 </div>
               ))}
               {doctorData.pendingTasks.length > 2 && (
-                <Button variant="ghost" size="sm" className="px-0 text-sm h-auto py-0 hover:bg-transparent" onClick={() => router.push("/tasks")}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="px-0 text-sm h-auto py-0 hover:bg-transparent"
+                  onClick={() => router.push("/tasks")}
+                >
                   See all tasks...
                 </Button>
               )}
@@ -396,7 +419,12 @@ export default function DoctorDashboard() {
               </div>
             </div>
             <div className="mt-4">
-              <Button className="w-full" size="sm" variant="outline" onClick={() => router.push("/messages")}>
+              <Button
+                className="w-full"
+                size="sm"
+                variant="outline"
+                onClick={() => router.push("/messages")}
+              >
                 View Messages
               </Button>
             </div>
@@ -421,13 +449,17 @@ export default function DoctorDashboard() {
               </div>
               <div className="text-right">
                 <p className="text-lg font-semibold">{formatTime(nextAppointment.startTime)}</p>
-                <p className="text-sm text-gray-500">
-                  {formatDate(nextAppointment.startTime)}
-                </p>
+                <p className="text-sm text-gray-500">{formatDate(nextAppointment.startTime)}</p>
               </div>
             </div>
             <div className="mt-4 flex justify-end gap-3">
-              <Button variant="outline" size="sm" onClick={() => router.push(`/medical-records?patientId=${nextAppointment.patientId}`)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  router.push(`/medical-records?patientId=${nextAppointment.patientId}`)
+                }
+              >
                 View Records
               </Button>
               <Button size="sm" onClick={() => router.push(`/appointments/${nextAppointment.id}`)}>
@@ -447,7 +479,7 @@ export default function DoctorDashboard() {
               <TabsTrigger value="today">Today's Schedule</TabsTrigger>
               <TabsTrigger value="upcoming">Upcoming Appointments</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="today">
               <Card>
                 <CardHeader className="pb-2">
@@ -458,8 +490,11 @@ export default function DoctorDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {doctorData.todayAppointments.map(appointment => (
-                      <div key={appointment.id} className="flex items-center justify-between border-b pb-4">
+                    {doctorData.todayAppointments.map((appointment) => (
+                      <div
+                        key={appointment.id}
+                        className="flex items-center justify-between border-b pb-4"
+                      >
                         <div className="flex items-center gap-3">
                           <Avatar>
                             <AvatarImage src={appointment.patientImage || ""} />
@@ -471,12 +506,15 @@ export default function DoctorDashboard() {
                             <div className="font-medium">
                               {appointment.patientName}
                               {appointment.isNew && (
-                                <Badge className="ml-2" variant="outline">New</Badge>
+                                <Badge className="ml-2" variant="outline">
+                                  New
+                                </Badge>
                               )}
                             </div>
                             <div className="text-sm text-gray-500">{appointment.reason}</div>
                             <div className="text-sm text-gray-500">
-                              {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
+                              {formatTime(appointment.startTime)} -{" "}
+                              {formatTime(appointment.endTime)}
                             </div>
                           </div>
                         </div>
@@ -492,7 +530,10 @@ export default function DoctorDashboard() {
                               In Progress
                             </Badge>
                           ) : (
-                            <Button size="sm" onClick={() => router.push(`/appointments/${appointment.id}`)}>
+                            <Button
+                              size="sm"
+                              onClick={() => router.push(`/appointments/${appointment.id}`)}
+                            >
                               Start
                             </Button>
                           )}
@@ -502,26 +543,31 @@ export default function DoctorDashboard() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" className="w-full" onClick={() => router.push("/appointments/schedule")}>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => router.push("/appointments/schedule")}
+                  >
                     Manage Schedule
                   </Button>
                 </CardFooter>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="upcoming">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle>Upcoming Appointments</CardTitle>
-                  <CardDescription>
-                    Your scheduled appointments for the next 7 days
-                  </CardDescription>
+                  <CardDescription>Your scheduled appointments for the next 7 days</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {doctorData.upcomingAppointments.length > 0 ? (
                     <div className="space-y-4">
-                      {doctorData.upcomingAppointments.map(appointment => (
-                        <div key={appointment.id} className="flex items-center justify-between border-b pb-4">
+                      {doctorData.upcomingAppointments.map((appointment) => (
+                        <div
+                          key={appointment.id}
+                          className="flex items-center justify-between border-b pb-4"
+                        >
                           <div className="flex items-center gap-3">
                             <Avatar>
                               <AvatarImage src={appointment.patientImage || ""} />
@@ -533,11 +579,16 @@ export default function DoctorDashboard() {
                               <div className="font-medium">{appointment.patientName}</div>
                               <div className="text-sm text-gray-500">{appointment.reason}</div>
                               <div className="text-sm text-gray-500">
-                                {formatDate(appointment.startTime)}, {formatTime(appointment.startTime)}
+                                {formatDate(appointment.startTime)},{" "}
+                                {formatTime(appointment.startTime)}
                               </div>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => router.push(`/appointments/${appointment.id}`)}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push(`/appointments/${appointment.id}`)}
+                          >
                             Details
                           </Button>
                         </div>
@@ -550,7 +601,11 @@ export default function DoctorDashboard() {
                   )}
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" className="w-full" onClick={() => router.push("/appointments")}>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => router.push("/appointments")}
+                  >
                     View All Appointments
                   </Button>
                 </CardFooter>
@@ -564,9 +619,7 @@ export default function DoctorDashboard() {
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>Pending Tasks</CardTitle>
-                  <CardDescription>
-                    Tasks that require your attention
-                  </CardDescription>
+                  <CardDescription>Tasks that require your attention</CardDescription>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => router.push("/tasks")}>
                   View All
@@ -575,7 +628,7 @@ export default function DoctorDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {doctorData.pendingTasks.map(task => (
+                {doctorData.pendingTasks.map((task) => (
                   <div key={task.id} className="flex items-start justify-between border-b pb-3">
                     <div>
                       <div className="flex items-center gap-2">
@@ -588,7 +641,9 @@ export default function DoctorDashboard() {
                         Due: {formatDate(task.dueDate)}
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">Complete</Button>
+                    <Button variant="outline" size="sm">
+                      Complete
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -601,11 +656,12 @@ export default function DoctorDashboard() {
           <Card className="h-full flex flex-col">
             <CardHeader className="pb-2">
               <CardTitle>My Patients</CardTitle>
-              <CardDescription>
-                Quick access to patient records
-              </CardDescription>
+              <CardDescription>Quick access to patient records</CardDescription>
               <div className="relative mt-2">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={16}
+                />
                 <Input
                   placeholder="Search patients..."
                   className="pl-9"
@@ -617,9 +673,9 @@ export default function DoctorDashboard() {
             <CardContent className="flex-grow overflow-auto">
               <div className="space-y-3">
                 {filteredPatients.length > 0 ? (
-                  filteredPatients.map(patient => (
-                    <div 
-                      key={patient.id} 
+                  filteredPatients.map((patient) => (
+                    <div
+                      key={patient.id}
                       className="flex items-center justify-between border-b pb-3 cursor-pointer hover:bg-gray-50 rounded-md p-2"
                       onClick={() => router.push(`/patients/${patient.id}`)}
                     >
@@ -648,14 +704,16 @@ export default function DoctorDashboard() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-6 text-gray-500">
-                    No patients found.
-                  </div>
+                  <div className="text-center py-6 text-gray-500">No patients found.</div>
                 )}
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full flex items-center justify-between" onClick={() => router.push("/patients")}>
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-between"
+                onClick={() => router.push("/patients")}
+              >
                 <span>View All Patients</span>
                 <ChevronRight size={16} />
               </Button>
@@ -665,4 +723,4 @@ export default function DoctorDashboard() {
       </div>
     </div>
   );
-} 
+}

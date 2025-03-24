@@ -9,9 +9,15 @@ const router = express.Router();
 router.post("/", authenticate, async (req, res) => {
   try {
     const { appointmentId, patientId, medications } = req.body;
-    if (!appointmentId || !patientId || !medications) return res.status(400).json({ message: "Missing required fields" });
+    if (!appointmentId || !patientId || !medications)
+      return res.status(400).json({ message: "Missing required fields" });
 
-    const prescription = new Prescription({ appointmentId, patient: patientId, doctor: req.user.id, medications });
+    const prescription = new Prescription({
+      appointmentId,
+      patient: patientId,
+      doctor: req.user.id,
+      medications,
+    });
     await prescription.save();
 
     // Emit a real-time notification to the patient
@@ -19,7 +25,7 @@ router.post("/", authenticate, async (req, res) => {
       type: "prescription",
       message: `New prescription created by Dr. ${req.user.name}.`,
       prescriptionId: prescription._id,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
 
     res.json({ message: "Prescription created", prescription });
@@ -35,7 +41,8 @@ router.put("/:id/sign", authenticate, async (req, res) => {
     const prescription = await Prescription.findById(req.params.id);
     if (!prescription) return res.status(404).json({ message: "Prescription not found" });
 
-    if (prescription.doctor.toString() !== req.user.id) return res.status(403).json({ message: "Unauthorized" });
+    if (prescription.doctor.toString() !== req.user.id)
+      return res.status(403).json({ message: "Unauthorized" });
 
     prescription.signedByDoctor = true;
     prescription.signature = `Signed by Dr. ${req.user.name} on ${new Date().toISOString()}`;
@@ -47,7 +54,7 @@ router.put("/:id/sign", authenticate, async (req, res) => {
       type: "prescription_signed",
       message: `Your prescription has been signed by Dr. ${req.user.name} and is ready to download.`,
       prescriptionId: prescription._id,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
 
     res.json({ message: "Prescription signed", prescription });
@@ -60,7 +67,10 @@ router.put("/:id/sign", authenticate, async (req, res) => {
 // 📌 Get prescriptions for a patient
 router.get("/patient/:patientId", authenticate, async (req, res) => {
   try {
-    const prescriptions = await Prescription.find({ patient: req.params.patientId }).populate("doctor", "name");
+    const prescriptions = await Prescription.find({ patient: req.params.patientId }).populate(
+      "doctor",
+      "name",
+    );
     res.json(prescriptions);
   } catch (err) {
     console.error("Error fetching patient prescriptions:", err);
@@ -71,21 +81,24 @@ router.get("/patient/:patientId", authenticate, async (req, res) => {
 // 📌 Get a single prescription by ID
 router.get("/:id", authenticate, async (req, res) => {
   try {
-    const prescription = await Prescription.findById(req.params.id).populate("doctor", "name email");
-    
+    const prescription = await Prescription.findById(req.params.id).populate(
+      "doctor",
+      "name email",
+    );
+
     if (!prescription) {
       return res.status(404).json({ message: "Prescription not found" });
     }
-    
+
     // Check if user is authorized to view this prescription
     if (
-      req.user.role !== "admin" && 
-      prescription.doctor.toString() !== req.user.id && 
+      req.user.role !== "admin" &&
+      prescription.doctor.toString() !== req.user.id &&
       prescription.patient.toString() !== req.user.id
     ) {
       return res.status(403).json({ message: "Unauthorized to view this prescription" });
     }
-    
+
     res.json(prescription);
   } catch (err) {
     console.error("Error fetching prescription:", err);
@@ -93,4 +106,4 @@ router.get("/:id", authenticate, async (req, res) => {
   }
 });
 
-export default router; 
+export default router;

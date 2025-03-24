@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -13,14 +13,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Pagination,
   PaginationContent,
@@ -28,54 +28,54 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
-import { Search, UserPlus } from "lucide-react"
-import { toast } from "sonner"
-import Link from "next/link"
+} from "@/components/ui/pagination";
+import { Search, UserPlus } from "lucide-react";
+import { toast } from "sonner";
+import Link from "next/link";
 
 interface Doctor {
-  id: string
-  name: string
-  email: string
-  phone: string
-  specialization: string
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  specialization: string;
   doctorProfile: {
-    qualifications: string
-    experience: string
-    acceptingPatients: boolean
-  } | null
+    qualifications: string;
+    experience: string;
+    acceptingPatients: boolean;
+  } | null;
   availability: Array<{
-    dayOfWeek: string
-    startTime: string
-    endTime: string
-  }>
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+  }>;
 }
 
 interface PaginationData {
-  total: number
-  pages: number
-  page: number
-  limit: number
+  total: number;
+  pages: number;
+  page: number;
+  limit: number;
 }
 
 export default function DoctorsPage() {
-  const { data: session } = useSession()
-  const router = useRouter()
-  const [doctors, setDoctors] = useState<Doctor[]>([])
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     pages: 0,
     page: 1,
     limit: 10,
-  })
-  const [search, setSearch] = useState("")
-  const [specialization, setSpecialization] = useState("")
-  const [acceptingPatients, setAcceptingPatients] = useState<boolean | "">("")
-  const [loading, setLoading] = useState(true)
+  });
+  const [search, setSearch] = useState("");
+  const [specialization, setSpecialization] = useState("");
+  const [acceptingPatients, setAcceptingPatients] = useState<boolean | "">("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDoctors()
-  }, [pagination.page, search, specialization, acceptingPatients])
+    fetchDoctors();
+  }, [pagination.page, search, specialization, acceptingPatients]);
 
   const fetchDoctors = async () => {
     try {
@@ -87,42 +87,42 @@ export default function DoctorsPage() {
         ...(acceptingPatients !== "" && {
           acceptingPatients: acceptingPatients.toString(),
         }),
-      })
+      });
 
-      const response = await fetch(`/api/doctors?${searchParams}`)
+      const response = await fetch(`/api/doctors?${searchParams}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch doctors")
+        throw new Error("Failed to fetch doctors");
       }
 
-      const data = await response.json()
-      setDoctors(data.doctors)
-      setPagination(data.pagination)
+      const data = await response.json();
+      setDoctors(data.doctors);
+      setPagination(data.pagination);
     } catch (error) {
-      console.error("Error fetching doctors:", error)
-      toast.error("Failed to load doctors")
+      console.error("Error fetching doctors:", error);
+      toast.error("Failed to load doctors");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSearch = (value: string) => {
-    setSearch(value)
-    setPagination((prev) => ({ ...prev, page: 1 }))
-  }
+    setSearch(value);
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
 
   const handleSpecializationChange = (value: string) => {
-    setSpecialization(value)
-    setPagination((prev) => ({ ...prev, page: 1 }))
-  }
+    setSpecialization(value);
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
 
   const handleAcceptingPatientsChange = (value: string) => {
-    setAcceptingPatients(value === "" ? "" : value === "true")
-    setPagination((prev) => ({ ...prev, page: 1 }))
-  }
+    setAcceptingPatients(value === "" ? "" : value === "true");
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
 
   const handlePageChange = (page: number) => {
-    setPagination((prev) => ({ ...prev, page }))
-  }
+    setPagination((prev) => ({ ...prev, page }));
+  };
 
   return (
     <div className="space-y-6">
@@ -150,10 +150,7 @@ export default function DoctorsPage() {
                 className="max-w-sm"
               />
             </div>
-            <Select
-              value={specialization}
-              onValueChange={handleSpecializationChange}
-            >
+            <Select value={specialization} onValueChange={handleSpecializationChange}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Specialization" />
               </SelectTrigger>
@@ -212,9 +209,7 @@ export default function DoctorsPage() {
                         <TableCell>
                           <div>
                             <p className="font-medium">{doctor.name}</p>
-                            <p className="text-sm text-gray-500">
-                              {doctor.email}
-                            </p>
+                            <p className="text-sm text-gray-500">{doctor.email}</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -251,14 +246,8 @@ export default function DoctorsPage() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                          >
-                            <Link href={`/doctors/${doctor.id}`}>
-                              View Profile
-                            </Link>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/doctors/${doctor.id}`}>View Profile</Link>
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -305,5 +294,5 @@ export default function DoctorsPage() {
         </CardContent>
       </Card>
     </div>
-  )
-} 
+  );
+}

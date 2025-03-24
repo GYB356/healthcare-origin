@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
-import { useSocket } from '../contexts/SocketContext';
-import { useAuth } from '../contexts/AuthContext';
-import useMediaDevices from '../hooks/useMediaDevices';
-import { encryptData } from '../utils/security';
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { useSocket } from "../contexts/SocketContext";
+import { useAuth } from "../contexts/AuthContext";
+import useMediaDevices from "../hooks/useMediaDevices";
+import { encryptData } from "../utils/security";
 
 const ICE_SERVERS = {
   iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:global.stun.twilio.com:3478?transport=udp' }
-  ]
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:global.stun.twilio.com:3478?transport=udp" },
+  ],
 };
 
 const TelemedicinePage = () => {
@@ -17,16 +17,16 @@ const TelemedicinePage = () => {
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [peerConnection, setPeerConnection] = useState(null);
-  const [consultationNotes, setConsultationNotes] = useState('');
+  const [consultationNotes, setConsultationNotes] = useState("");
   const [isCallActive, setIsCallActive] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const mediaConstraints = {
     video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-    audio: true
+    audio: true,
   };
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const TelemedicinePage = () => {
         localVideoRef.current.srcObject = stream;
         setLoading(false);
       } catch (err) {
-        setError('Failed to access media devices. Please check permissions.');
+        setError("Failed to access media devices. Please check permissions.");
         setLoading(false);
       }
     };
@@ -45,20 +45,23 @@ const TelemedicinePage = () => {
     initializeMedia();
 
     return () => {
-      localStream?.getTracks().forEach(track => track.stop());
+      localStream?.getTracks().forEach((track) => track.stop());
     };
   }, []);
 
   const createPeerConnection = async () => {
     const pc = new RTCPeerConnection(ICE_SERVERS);
-    
+
     pc.onicecandidate = ({ candidate }) => {
       if (candidate) {
-        socket.emit('ice-candidate', encryptData({
-          candidate,
-          sessionId: user.currentSession,
-          userId: user.id
-        }));
+        socket.emit(
+          "ice-candidate",
+          encryptData({
+            candidate,
+            sessionId: user.currentSession,
+            userId: user.id,
+          }),
+        );
       }
     };
 
@@ -67,9 +70,7 @@ const TelemedicinePage = () => {
       remoteVideoRef.current.srcObject = event.streams[0];
     };
 
-    localStream.getTracks().forEach(track =>
-      pc.addTrack(track, localStream)
-    );
+    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
 
     setPeerConnection(pc);
   };
@@ -81,48 +82,51 @@ const TelemedicinePage = () => {
   const handleEndCall = () => {
     peerConnection?.close();
     setIsCallActive(false);
-    socket.emit('end-call', { sessionId: user.currentSession });
+    socket.emit("end-call", { sessionId: user.currentSession });
   };
 
   useEffect(() => {
     const handleSocketEvents = () => {
-      socket.on('offer', async ({ offer, sessionId }) => {
+      socket.on("offer", async ({ offer, sessionId }) => {
         try {
           await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
           const answer = await peerConnection.createAnswer();
           await peerConnection.setLocalDescription(answer);
-          socket.emit('answer', encryptData({
-            answer,
-            sessionId,
-            userId: user.id
-          }));
+          socket.emit(
+            "answer",
+            encryptData({
+              answer,
+              sessionId,
+              userId: user.id,
+            }),
+          );
         } catch (err) {
-          setError('Failed to handle call offer');
+          setError("Failed to handle call offer");
         }
       });
-    
-      socket.on('answer', ({ answer }) => {
+
+      socket.on("answer", ({ answer }) => {
         peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
       });
-    
-      socket.on('ice-candidate', ({ candidate }) => {
+
+      socket.on("ice-candidate", ({ candidate }) => {
         peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
       });
-    
-      socket.on('call-ended', () => {
+
+      socket.on("call-ended", () => {
         handleEndCall();
-        setError('Call ended by remote participant');
+        setError("Call ended by remote participant");
       });
     };
-  
+
     if (socket) handleSocketEvents();
-  
+
     return () => {
       if (socket) {
-        socket.off('offer');
-        socket.off('answer');
-        socket.off('ice-candidate');
-        socket.off('call-ended');
+        socket.off("offer");
+        socket.off("answer");
+        socket.off("ice-candidate");
+        socket.off("call-ended");
       }
     };
   }, [socket, peerConnection, user.id]);
@@ -132,16 +136,19 @@ const TelemedicinePage = () => {
       await createPeerConnection();
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
-      
-      socket.emit('start-call', encryptData({
-        offer,
-        participantId,
-        userId: user.id,
-        sessionType: 'telemedicine'
-      }));
+
+      socket.emit(
+        "start-call",
+        encryptData({
+          offer,
+          participantId,
+          userId: user.id,
+          sessionType: "telemedicine",
+        }),
+      );
       setIsCallActive(true);
     } catch (err) {
-      setError('Failed to initiate call');
+      setError("Failed to initiate call");
     }
   };
 
@@ -151,17 +158,8 @@ const TelemedicinePage = () => {
   return (
     <div className="telemedicine-container bg-gray-900 text-white p-6 rounded-lg">
       <div className="video-grid grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <video
-          ref={localVideoRef}
-          autoPlay
-          muted
-          className="local-video bg-gray-800 rounded-lg"
-        />
-        <video
-          ref={remoteVideoRef}
-          autoPlay
-          className="remote-video bg-gray-800 rounded-lg"
-        />
+        <video ref={localVideoRef} autoPlay muted className="local-video bg-gray-800 rounded-lg" />
+        <video ref={remoteVideoRef} autoPlay className="remote-video bg-gray-800 rounded-lg" />
       </div>
 
       <div className="consultation-notes mb-6">

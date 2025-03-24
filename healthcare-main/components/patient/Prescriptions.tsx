@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import {
   ClipboardDocumentListIcon,
   CalendarIcon,
   ClockIcon,
   UserIcon,
   ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 interface Prescription {
   id: string;
@@ -27,8 +27,8 @@ export default function Prescriptions() {
   const { data: session } = useSession();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
-  const [filter, setFilter] = useState<string>('all'); // all, active, completed
+  const [error, setError] = useState<string>("");
+  const [filter, setFilter] = useState<string>("all"); // all, active, completed
 
   useEffect(() => {
     fetchPrescriptions();
@@ -39,23 +39,23 @@ export default function Prescriptions() {
       setLoading(true);
       const response = await fetch(`/api/patient/prescriptions?filter=${filter}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch prescriptions');
+        throw new Error("Failed to fetch prescriptions");
       }
       const data = await response.json();
       setPrescriptions(data);
     } catch (error) {
-      console.error('Error fetching prescriptions:', error);
-      setError('Failed to load prescriptions');
+      console.error("Error fetching prescriptions:", error);
+      setError("Failed to load prescriptions");
     } finally {
       setLoading(false);
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -73,11 +73,7 @@ export default function Prescriptions() {
   }
 
   if (error) {
-    return (
-      <div className="text-red-500 text-center p-4">
-        {error}
-      </div>
-    );
+    return <div className="text-red-500 text-center p-4">{error}</div>;
   }
 
   return (
@@ -86,31 +82,31 @@ export default function Prescriptions() {
         <h2 className="text-2xl font-bold text-gray-900">Prescriptions</h2>
         <div className="flex space-x-4">
           <button
-            onClick={() => setFilter('all')}
+            onClick={() => setFilter("all")}
             className={`px-4 py-2 rounded ${
-              filter === 'all'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              filter === "all"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             All Prescriptions
           </button>
           <button
-            onClick={() => setFilter('active')}
+            onClick={() => setFilter("active")}
             className={`px-4 py-2 rounded ${
-              filter === 'active'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              filter === "active"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Active
           </button>
           <button
-            onClick={() => setFilter('completed')}
+            onClick={() => setFilter("completed")}
             className={`px-4 py-2 rounded ${
-              filter === 'completed'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              filter === "completed"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Completed
@@ -135,9 +131,7 @@ export default function Prescriptions() {
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {prescription.medication}
-                  </h3>
+                  <h3 className="text-lg font-medium text-gray-900">{prescription.medication}</h3>
                   <p className="mt-1 text-sm text-gray-500">
                     {prescription.dosage} - {prescription.frequency}
                   </p>
@@ -148,9 +142,9 @@ export default function Prescriptions() {
                   )}
                   <span
                     className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      prescription.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
+                      prescription.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-800"
                     }`}
                   >
                     {prescription.status}
@@ -189,4 +183,4 @@ export default function Prescriptions() {
       )}
     </div>
   );
-} 
+}

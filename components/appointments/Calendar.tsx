@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { EventClickArg, DateSelectArg } from '@fullcalendar/core';
-import { useSession } from 'next-auth/react';
-import { toast } from 'react-toastify';
+import { useEffect, useState } from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import { EventClickArg, DateSelectArg } from "@fullcalendar/core";
+import { useSession } from "next-auth/react";
+import { toast } from "react-toastify";
 
 interface Appointment {
   id: string;
@@ -32,7 +32,12 @@ interface CalendarProps {
   patientId?: string;
 }
 
-export default function Calendar({ onEventClick, onSelectSlot, doctorId, patientId }: CalendarProps) {
+export default function Calendar({
+  onEventClick,
+  onSelectSlot,
+  doctorId,
+  patientId,
+}: CalendarProps) {
   const { data: session } = useSession();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,31 +48,31 @@ export default function Calendar({ onEventClick, onSelectSlot, doctorId, patient
 
   const fetchAppointments = async () => {
     try {
-      let url = '/api/appointments';
+      let url = "/api/appointments";
       const params = new URLSearchParams();
-      
-      if (doctorId) params.append('doctorId', doctorId);
-      if (patientId) params.append('patientId', patientId);
-      
+
+      if (doctorId) params.append("doctorId", doctorId);
+      if (patientId) params.append("patientId", patientId);
+
       if (params.toString()) {
         url += `?${params.toString()}`;
       }
 
       const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch appointments');
-      
+      if (!response.ok) throw new Error("Failed to fetch appointments");
+
       const data = await response.json();
       setAppointments(data);
     } catch (error) {
-      console.error('Error fetching appointments:', error);
-      toast.error('Failed to load appointments');
+      console.error("Error fetching appointments:", error);
+      toast.error("Failed to load appointments");
     } finally {
       setLoading(false);
     }
   };
 
   const handleEventClick = (arg: EventClickArg) => {
-    const appointment = appointments.find(apt => apt.id === arg.event.id);
+    const appointment = appointments.find((apt) => apt.id === arg.event.id);
     if (appointment && onEventClick) {
       onEventClick(appointment);
     }
@@ -79,7 +84,7 @@ export default function Calendar({ onEventClick, onSelectSlot, doctorId, patient
     }
   };
 
-  const events = appointments.map(appointment => ({
+  const events = appointments.map((appointment) => ({
     id: appointment.id,
     title: appointment.title,
     start: new Date(`${appointment.date}T${appointment.startTime}`),
@@ -100,9 +105,9 @@ export default function Calendar({ onEventClick, onSelectSlot, doctorId, patient
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"
         headerToolbar={{
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay',
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,timeGridWeek,timeGridDay",
         }}
         events={events}
         eventClick={handleEventClick}
@@ -119,7 +124,7 @@ export default function Calendar({ onEventClick, onSelectSlot, doctorId, patient
         stickyHeaderDates={true}
         nowIndicator={true}
         eventContent={renderEventContent}
-        loading={loading}
+        loading={(isLoading: boolean) => setLoading(isLoading)}
       />
     </div>
   );
@@ -127,14 +132,12 @@ export default function Calendar({ onEventClick, onSelectSlot, doctorId, patient
 
 function renderEventContent(eventInfo: any) {
   const { isVirtual, patient, doctor } = eventInfo.event.extendedProps;
-  
+
   return (
     <div className="p-1 overflow-hidden">
-      <div className="font-semibold text-sm truncate">
-        {eventInfo.event.title}
-      </div>
+      <div className="font-semibold text-sm truncate">{eventInfo.event.title}</div>
       <div className="text-xs truncate">
-        {isVirtual && '🎥 '}
+        {isVirtual && "🎥 "}
         {patient?.name} with Dr. {doctor?.name}
       </div>
     </div>
@@ -143,15 +146,15 @@ function renderEventContent(eventInfo: any) {
 
 function getEventColor(status: string): string {
   switch (status.toUpperCase()) {
-    case 'SCHEDULED':
-      return '#3B82F6'; // blue-500
-    case 'COMPLETED':
-      return '#10B981'; // emerald-500
-    case 'CANCELLED':
-      return '#EF4444'; // red-500
-    case 'RESCHEDULED':
-      return '#F59E0B'; // amber-500
+    case "SCHEDULED":
+      return "#3B82F6"; // blue-500
+    case "COMPLETED":
+      return "#10B981"; // emerald-500
+    case "CANCELLED":
+      return "#EF4444"; // red-500
+    case "RESCHEDULED":
+      return "#F59E0B"; // amber-500
     default:
-      return '#6B7280'; // gray-500
+      return "#6B7280"; // gray-500
   }
-} 
+}

@@ -1,12 +1,4 @@
 {
-  "presets": [
-    ["next/babel"],
-    ["@babel/preset-env", {
-      "targets": {
-        "node": "current"
-      }
-    }],
-    "@babel/preset-typescript"
-  ],
-  "plugins": []
-} 
+  "presets": ["next/babel"],
+  "plugins": ["@babel/plugin-transform-class-properties"]
+}

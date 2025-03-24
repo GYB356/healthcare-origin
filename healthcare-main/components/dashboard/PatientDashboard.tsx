@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Appointment, MedicalRecord, BillingRecord } from '@/types';
+import { useEffect, useState } from "react";
+import { Appointment, MedicalRecord, BillingRecord } from "@/types";
 import {
   CalendarIcon,
   DocumentTextIcon,
   CreditCardIcon,
   ChatBubbleLeftRightIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 export default function PatientDashboard() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -19,9 +19,9 @@ export default function PatientDashboard() {
     const fetchDashboardData = async () => {
       try {
         const [appointmentsRes, medicalRecordsRes, billingRecordsRes] = await Promise.all([
-          fetch('/api/patient/appointments'),
-          fetch('/api/patient/medical-records'),
-          fetch('/api/patient/billing'),
+          fetch("/api/patient/appointments"),
+          fetch("/api/patient/medical-records"),
+          fetch("/api/patient/billing"),
         ]);
 
         if (appointmentsRes.ok) {
@@ -39,7 +39,7 @@ export default function PatientDashboard() {
           setBillingRecords(data.records);
         }
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error("Error fetching dashboard data:", error);
       } finally {
         setLoading(false);
       }
@@ -65,9 +65,11 @@ export default function PatientDashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Upcoming Appointments</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Upcoming Appointments
+                  </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {appointments.filter(a => a.status === 'scheduled').length}
+                    {appointments.filter((a) => a.status === "scheduled").length}
                   </dd>
                 </dl>
               </div>
@@ -101,7 +103,7 @@ export default function PatientDashboard() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Pending Bills</dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {billingRecords.filter(b => b.status === 'pending').length}
+                    {billingRecords.filter((b) => b.status === "pending").length}
                   </dd>
                 </dl>
               </div>
@@ -131,12 +133,12 @@ export default function PatientDashboard() {
           <div className="px-4 py-5 sm:p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900">Upcoming Appointments</h3>
             <div className="mt-5">
-              {appointments.filter(a => a.status === 'scheduled').length > 0 ? (
+              {appointments.filter((a) => a.status === "scheduled").length > 0 ? (
                 <ul className="divide-y divide-gray-200">
                   {appointments
-                    .filter(a => a.status === 'scheduled')
+                    .filter((a) => a.status === "scheduled")
                     .slice(0, 5)
-                    .map(appointment => (
+                    .map((appointment) => (
                       <li key={appointment.id} className="py-4">
                         <div className="flex items-center space-x-4">
                           <div className="flex-1 min-w-0">
@@ -144,7 +146,8 @@ export default function PatientDashboard() {
                               {appointment.type}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
+                              {new Date(appointment.date).toLocaleDateString()} at{" "}
+                              {appointment.time}
                             </p>
                           </div>
                         </div>
@@ -164,7 +167,7 @@ export default function PatientDashboard() {
             <div className="mt-5">
               {medicalRecords.length > 0 ? (
                 <ul className="divide-y divide-gray-200">
-                  {medicalRecords.slice(0, 5).map(record => (
+                  {medicalRecords.slice(0, 5).map((record) => (
                     <li key={record.id} className="py-4">
                       <div className="flex items-center space-x-4">
                         <div className="flex-1 min-w-0">
@@ -188,4 +191,4 @@ export default function PatientDashboard() {
       </div>
     </div>
   );
-} 
+}

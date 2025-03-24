@@ -1,14 +1,14 @@
-import React from 'react';
-import { FiDollarSign, FiCreditCard, FiFileText } from 'react-icons/fi';
+import React from "react";
+import { FiDollarSign, FiCreditCard, FiFileText } from "react-icons/fi";
 
 // Inline PageLayout component to avoid import issues
-const PageLayout = ({ 
-  title, 
-  description, 
-  bgColor = "bg-blue-600", 
-  textColor = "text-blue-100", 
+const PageLayout = ({
+  title,
+  description,
+  bgColor = "bg-blue-600",
+  textColor = "text-blue-100",
   children,
-  actions
+  actions,
 }) => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-screen-xl">
@@ -20,19 +20,13 @@ const PageLayout = ({
               <h1 className="text-2xl font-bold">{title}</h1>
               <p className={`mt-2 ${textColor}`}>{description}</p>
             </div>
-            {actions && (
-              <div className="ml-4">
-                {actions}
-              </div>
-            )}
+            {actions && <div className="ml-4">{actions}</div>}
           </div>
         </div>
       </div>
-      
+
       {/* Content section */}
-      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">
-        {children}
-      </div>
+      <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg p-6">{children}</div>
     </div>
   );
 };
@@ -62,7 +56,7 @@ const BillingPage = () => {
           <p className="text-3xl font-bold">$0.00</p>
           <p className="text-sm text-gray-500 mt-1">No outstanding payments</p>
         </div>
-        
+
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <div className="flex items-center mb-4">
             <FiFileText className="h-8 w-8 text-yellow-500 mr-3" />
@@ -71,7 +65,7 @@ const BillingPage = () => {
           <p className="text-gray-600 dark:text-gray-300">No recent invoices found.</p>
         </div>
       </div>
-      
+
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 text-center">
         <p className="text-gray-600 dark:text-gray-300">
           This page is under development. Check back soon for billing features.

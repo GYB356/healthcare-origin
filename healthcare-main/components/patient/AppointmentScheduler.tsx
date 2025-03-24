@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { Calendar } from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
+import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { Calendar } from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
 interface Doctor {
   id: string;
@@ -19,13 +19,13 @@ export default function AppointmentScheduler() {
   const { data: session } = useSession();
   const [date, setDate] = useState<Date>(new Date());
   const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [selectedDoctor, setSelectedDoctor] = useState<string>('');
+  const [selectedDoctor, setSelectedDoctor] = useState<string>("");
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const [selectedTime, setSelectedTime] = useState<string>('');
-  const [appointmentType, setAppointmentType] = useState<string>('regular');
-  const [notes, setNotes] = useState<string>('');
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [appointmentType, setAppointmentType] = useState<string>("regular");
+  const [notes, setNotes] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     fetchDoctors();
@@ -39,36 +39,38 @@ export default function AppointmentScheduler() {
 
   const fetchDoctors = async () => {
     try {
-      const response = await fetch('/api/doctors');
+      const response = await fetch("/api/doctors");
       const data = await response.json();
       setDoctors(data);
     } catch (error) {
-      console.error('Error fetching doctors:', error);
-      setError('Failed to load doctors');
+      console.error("Error fetching doctors:", error);
+      setError("Failed to load doctors");
     }
   };
 
   const fetchTimeSlots = async () => {
     try {
-      const response = await fetch(`/api/appointments/slots?doctorId=${selectedDoctor}&date=${date.toISOString()}`);
+      const response = await fetch(
+        `/api/appointments/slots?doctorId=${selectedDoctor}&date=${date.toISOString()}`,
+      );
       const data = await response.json();
       setTimeSlots(data);
     } catch (error) {
-      console.error('Error fetching time slots:', error);
-      setError('Failed to load available time slots');
+      console.error("Error fetching time slots:", error);
+      setError("Failed to load available time slots");
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('/api/appointments', {
-        method: 'POST',
+      const response = await fetch("/api/appointments", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           doctorId: selectedDoctor,
@@ -80,21 +82,21 @@ export default function AppointmentScheduler() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to schedule appointment');
+        throw new Error("Failed to schedule appointment");
       }
 
       // Reset form
       setDate(new Date());
-      setSelectedDoctor('');
-      setSelectedTime('');
-      setAppointmentType('regular');
-      setNotes('');
+      setSelectedDoctor("");
+      setSelectedTime("");
+      setAppointmentType("regular");
+      setNotes("");
       setTimeSlots([]);
-      
-      alert('Appointment scheduled successfully!');
+
+      alert("Appointment scheduled successfully!");
     } catch (error) {
-      console.error('Error scheduling appointment:', error);
-      setError('Failed to schedule appointment');
+      console.error("Error scheduling appointment:", error);
+      setError("Failed to schedule appointment");
     } finally {
       setLoading(false);
     }
@@ -103,7 +105,7 @@ export default function AppointmentScheduler() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Schedule an Appointment</h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Doctor Selection */}
         <div>
@@ -126,12 +128,7 @@ export default function AppointmentScheduler() {
         {/* Calendar */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
-          <Calendar
-            onChange={setDate}
-            value={date}
-            minDate={new Date()}
-            className="mx-auto"
-          />
+          <Calendar onChange={setDate} value={date} minDate={new Date()} className="mx-auto" />
         </div>
 
         {/* Time Slots */}
@@ -146,10 +143,10 @@ export default function AppointmentScheduler() {
                   onClick={() => setSelectedTime(slot.time)}
                   className={`p-2 rounded ${
                     selectedTime === slot.time
-                      ? 'bg-blue-500 text-white'
+                      ? "bg-blue-500 text-white"
                       : slot.available
-                      ? 'bg-gray-100 hover:bg-gray-200'
-                      : 'bg-gray-300 cursor-not-allowed'
+                        ? "bg-gray-100 hover:bg-gray-200"
+                        : "bg-gray-300 cursor-not-allowed"
                   }`}
                   disabled={!slot.available}
                 >
@@ -187,9 +184,7 @@ export default function AppointmentScheduler() {
         </div>
 
         {/* Error Message */}
-        {error && (
-          <div className="text-red-500 text-sm">{error}</div>
-        )}
+        {error && <div className="text-red-500 text-sm">{error}</div>}
 
         {/* Submit Button */}
         <button
@@ -197,13 +192,13 @@ export default function AppointmentScheduler() {
           disabled={loading || !selectedDoctor || !selectedTime}
           className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
             loading || !selectedDoctor || !selectedTime
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700'
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
           }`}
         >
-          {loading ? 'Scheduling...' : 'Schedule Appointment'}
+          {loading ? "Scheduling..." : "Schedule Appointment"}
         </button>
       </form>
     </div>
   );
-} 
+}
