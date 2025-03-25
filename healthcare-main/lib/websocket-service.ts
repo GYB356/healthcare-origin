@@ -1,18 +1,26 @@
 import { Server, Socket } from "socket.io";
 import { Server as HttpServer } from "http";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db } from "@/lib/db";
 
 interface UserSocket {
   userId: string;
   socketId: string;
+  lastPing: number;
+}
+
+interface WebSocketEvent {
+  type: string;
+  payload: any;
 }
 
 class WebSocketService {
   private static instance: WebSocketService;
   private io: Server | null = null;
-  private connectedUsers: UserSocket[] = [];
+  private connectedUsers: Map<string, UserSocket> = new Map();
+  private reconnectAttempts: Map<string, number> = new Map();
+  private readonly MAX_RECONNECT_ATTEMPTS = 5;
+  private readonly PING_INTERVAL = 30000; // 30 seconds
+  private readonly PING_TIMEOUT = 60000; // 60 seconds
 
   private constructor() {}
 
@@ -29,138 +37,134 @@ class WebSocketService {
         origin: process.env.FRONTEND_URL || "http://localhost:3000",
         methods: ["GET", "POST"],
       },
+      pingTimeout: this.PING_TIMEOUT,
+      pingInterval: this.PING_INTERVAL,
+      transports: ["websocket", "polling"],
     });
 
     this.io.on("connection", (socket: Socket) => {
       console.log("User connected:", socket.id);
 
-      // Handle user authentication
+      // Set up ping monitoring
+      const pingInterval = setInterval(() => {
+        const userSocket = this.getUserSocketBySocketId(socket.id);
+        if (userSocket) {
+          const timeSinceLastPing = Date.now() - userSocket.lastPing;
+          if (timeSinceLastPing > this.PING_TIMEOUT) {
+            console.log(`User ${userSocket.userId} disconnected due to timeout`);
+            this.handleDisconnect(socket);
+          }
+        }
+      }, this.PING_INTERVAL);
+
       socket.on("authenticate", async (userId: string) => {
-        this.connectedUsers.push({ userId, socketId: socket.id });
+        try {
+          this.connectedUsers.set(userId, {
+            userId,
+            socketId: socket.id,
+            lastPing: Date.now(),
+          });
         console.log(`User ${userId} authenticated with socket ${socket.id}`);
 
         // Send initial unread count
         const unreadCount = await this.getUnreadCount(userId);
         socket.emit("unreadCount", unreadCount);
-      });
-
-      // Handle new message
-      socket.on(
-        "sendMessage",
-        async (message: {
-          senderId: string;
-          receiverId: string;
-          content: string;
-          conversationId: string;
-        }) => {
-          try {
-            // Store message in database
-            const newMessage = await prisma.message.create({
-              data: {
-                content: message.content,
-                senderId: message.senderId,
-                receiverId: message.receiverId,
-                conversationId: message.conversationId,
-                read: false,
-              },
-              include: {
-                sender: {
-                  select: {
-                    id: true,
-                    name: true,
-                    role: true,
-                  },
-                },
-              },
-            });
-
-            // Emit to receiver if online
-            const receiverSocket = this.getUserSocket(message.receiverId);
-            if (receiverSocket) {
-              receiverSocket.emit("newMessage", newMessage);
-
-              // Update unread count for receiver
-              const unreadCount = await this.getUnreadCount(message.receiverId);
-              receiverSocket.emit("unreadCount", unreadCount);
-            }
-
-            // Confirm message sent to sender
-            socket.emit("messageSent", newMessage);
-          } catch (error) {
-            console.error("Error sending message:", error);
-            socket.emit("error", { message: "Failed to send message" });
-          }
-        },
-      );
-
-      // Handle message read status
-      socket.on("markAsRead", async (data: { messageId: string; userId: string }) => {
-        try {
-          await prisma.message.update({
-            where: { id: data.messageId },
-            data: { read: true },
-          });
-
-          // Update unread count for user
-          const unreadCount = await this.getUnreadCount(data.userId);
-          socket.emit("unreadCount", unreadCount);
-
-          // Notify sender that message was read
-          const message = await prisma.message.findUnique({
-            where: { id: data.messageId },
-            select: { senderId: true },
-          });
-
-          if (message) {
-            const senderSocket = this.getUserSocket(message.senderId);
-            if (senderSocket) {
-              senderSocket.emit("messageRead", data.messageId);
-            }
-          }
         } catch (error) {
-          console.error("Error marking message as read:", error);
-          socket.emit("error", { message: "Failed to mark message as read" });
+          console.error("Authentication error:", error);
+          socket.emit("error", { message: "Authentication failed" });
         }
       });
 
-      // Handle disconnection
+      socket.on("ping", () => {
+        const userSocket = this.getUserSocketBySocketId(socket.id);
+        if (userSocket) {
+          userSocket.lastPing = Date.now();
+          socket.emit("pong");
+        }
+      });
+
       socket.on("disconnect", () => {
-        const index = this.connectedUsers.findIndex((user) => user.socketId === socket.id);
-        if (index !== -1) {
-          this.connectedUsers.splice(index, 1);
-        }
-        console.log("User disconnected:", socket.id);
+        clearInterval(pingInterval);
+        this.handleDisconnect(socket);
+      });
+
+      socket.on("error", (error) => {
+        console.error("Socket error:", error);
+        this.handleError(socket, error);
       });
     });
   }
 
-  private getUserSocket(userId: string): Socket | null {
-    const userSocket = this.connectedUsers.find((user) => user.userId === userId);
-    if (!userSocket || !this.io) return null;
-    return this.io.sockets.sockets.get(userSocket.socketId) || null;
-  }
-
-  private async getUnreadCount(userId: string): Promise<number> {
-    return await prisma.message.count({
-      where: {
-        receiverId: userId,
-        read: false,
-      },
-    });
-  }
-
-  sendToUser(userId: string, event: string, data: any) {
-    const socket = this.getUserSocket(userId);
-    if (socket) {
-      socket.emit(event, data);
+  private handleDisconnect(socket: Socket) {
+    for (const [userId, userSocket] of this.connectedUsers.entries()) {
+      if (userSocket.socketId === socket.id) {
+        this.connectedUsers.delete(userId);
+        this.reconnectAttempts.delete(userId);
+        break;
+      }
     }
   }
 
-  broadcast(event: string, data: any) {
-    if (this.io) {
+  private handleError(socket: Socket, error: Error) {
+    const userId = this.getUserIdBySocket(socket);
+    if (userId) {
+      const attempts = this.reconnectAttempts.get(userId) || 0;
+      if (attempts < this.MAX_RECONNECT_ATTEMPTS) {
+        this.reconnectAttempts.set(userId, attempts + 1);
+        socket.connect();
+      } else {
+        this.connectedUsers.delete(userId);
+        this.reconnectAttempts.delete(userId);
+      }
+    }
+  }
+
+  private getUserSocketBySocketId(socketId: string): UserSocket | null {
+    for (const userSocket of this.connectedUsers.values()) {
+      if (userSocket.socketId === socketId) {
+        return userSocket;
+      }
+    }
+    return null;
+  }
+
+  private getUserIdBySocket(socket: Socket): string | null {
+    for (const [userId, userSocket] of this.connectedUsers.entries()) {
+      if (userSocket.socketId === socket.id) {
+        return userId;
+      }
+    }
+    return null;
+  }
+
+  // Public methods for sending messages
+  async sendToUser(userId: string, event: string, data: any) {
+    const userSocket = this.connectedUsers.get(userId);
+    if (userSocket && this.io) {
+      this.io.to(userSocket.socketId).emit(event, data);
+    }
+  }
+
+  async broadcast(event: string, data: any, excludeUserId?: string) {
+    if (!this.io) return;
+
+    if (excludeUserId) {
+      const excludeSocket = this.connectedUsers.get(excludeUserId);
+      this.io.except(excludeSocket?.socketId || "").emit(event, data);
+    } else {
       this.io.emit(event, data);
+    }
+  }
+
+  // Cleanup method
+  cleanup() {
+    if (this.io) {
+      this.io.close();
+      this.io = null;
+      this.connectedUsers.clear();
+      this.reconnectAttempts.clear();
     }
   }
 }
 
-export default WebSocketService;
+export const websocketService = WebSocketService.getInstance();

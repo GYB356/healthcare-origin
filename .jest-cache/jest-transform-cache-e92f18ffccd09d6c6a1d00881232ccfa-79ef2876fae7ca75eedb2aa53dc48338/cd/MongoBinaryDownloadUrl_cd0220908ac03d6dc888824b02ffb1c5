@@ -1,0 +1,538 @@
+519cbc1fea0a0d795403571a4f6ad190
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MongoBinaryDownloadUrl = exports.DEFAULT_UBUNTU_YEAR = void 0;
+const tslib_1 = require("tslib");
+const getos_1 = require("./getos");
+const resolveConfig_1 = require("./resolveConfig");
+const debug_1 = tslib_1.__importDefault(require("debug"));
+const semver = tslib_1.__importStar(require("semver"));
+const utils_1 = require("./utils");
+const url_1 = require("url");
+const errors_1 = require("./errors");
+const log = (0, debug_1.default)('MongoMS:MongoBinaryDownloadUrl');
+/** Set the default ubuntu version number */
+exports.DEFAULT_UBUNTU_YEAR = 22; // TODO: try to keep this up-to-date to the latest LTS
+/**
+ * Download URL generator
+ */
+class MongoBinaryDownloadUrl {
+  constructor(opts) {
+    this.version = opts.version;
+    this.platform = this.translatePlatform(opts.platform);
+    this.arch = MongoBinaryDownloadUrl.translateArch(opts.arch);
+    this.os = opts.os;
+  }
+  /**
+   * Assemble the URL to download
+   * Calls all the necessary functions to determine the URL
+   */
+  async getDownloadUrl() {
+    const downloadUrl = (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.DOWNLOAD_URL);
+    if (downloadUrl) {
+      log(`Using "${downloadUrl}" as the Download-URL`);
+      const url = new url_1.URL(downloadUrl); // check if this is an valid url
+      return url.toString();
+    }
+    const archive = await this.getArchiveName();
+    log(`Using "${archive}" as the Archive String`);
+    const mirror = (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.DOWNLOAD_MIRROR) ?? 'https://fastdl.mongodb.org';
+    log(`Using "${mirror}" as the mirror`);
+    const url = new url_1.URL(mirror);
+    // ensure that the "mirror" path ends with "/"
+    if (!url.pathname.endsWith('/')) {
+      url.pathname = url.pathname + '/';
+    }
+    // no extra "/" between "pathname" and "platfrom", because of the "if" statement above to ensure "url.pathname" to end with "/"
+    url.pathname = `${url.pathname}${this.platform}/${archive}`;
+    return url.toString();
+  }
+  /**
+   * Get the archive
+   */
+  async getArchiveName() {
+    const archive_name = (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.ARCHIVE_NAME);
+    // double-"!" to not include falsy values
+    if (!!archive_name) {
+      return archive_name;
+    }
+    switch (this.platform) {
+      case 'osx':
+        return this.getArchiveNameOsx();
+      case 'win32':
+      case 'windows':
+        return this.getArchiveNameWin();
+      case 'linux':
+        return this.getArchiveNameLinux();
+      default:
+        throw new errors_1.UnknownPlatformError(this.platform);
+    }
+  }
+  /**
+   * Get the archive for Windows
+   * (from: https://www.mongodb.org/dl/win32)
+   */
+  getArchiveNameWin() {
+    let name = `mongodb-${this.platform}-${this.arch}`;
+    const coercedVersion = semver.coerce(this.version);
+    if (!(0, utils_1.isNullOrUndefined)(coercedVersion)) {
+      if (semver.satisfies(coercedVersion, '4.2.x')) {
+        name += '-2012plus';
+      } else if (semver.lt(coercedVersion, '4.1.0')) {
+        name += '-2008plus-ssl';
+      }
+    }
+    name += `-${this.version}.zip`;
+    return name;
+  }
+  /**
+   * Get the archive for OSX (Mac)
+   * (from: https://www.mongodb.org/dl/osx)
+   */
+  getArchiveNameOsx() {
+    let name = `mongodb-osx`;
+    const coercedVersion = semver.coerce(this.version);
+    if (!(0, utils_1.isNullOrUndefined)(coercedVersion) && semver.gte(coercedVersion, '3.2.0')) {
+      name += '-ssl';
+    }
+    if ((0, utils_1.isNullOrUndefined)(coercedVersion) || semver.gte(coercedVersion, '4.2.0')) {
+      name = `mongodb-macos`; // somehow these files are not listed in https://www.mongodb.org/dl/osx
+    }
+    // mongodb has native arm64
+    if (this.arch === 'aarch64') {
+      // force usage of "x86_64" binary for all versions below than 6.0.0
+      if (!(0, utils_1.isNullOrUndefined)(coercedVersion) && semver.lt(coercedVersion, '6.0.0')) {
+        log('getArchiveNameOsx: Arch is "aarch64" and version is below 6.0.0, using x64 binary');
+        this.arch = 'x86_64';
+      } else {
+        log('getArchiveNameOsx: Arch is "aarch64" and version is above or equal to 6.0.0, using arm64 binary');
+        // naming for macos is still "arm64" instead of "aarch64"
+        this.arch = 'arm64';
+      }
+    }
+    name += `-${this.arch}-${this.version}.tgz`;
+    return name;
+  }
+  /**
+   * Get the archive for Linux
+   * (from: https://www.mongodb.org/dl/linux)
+   */
+  async getArchiveNameLinux() {
+    if (!this.os && (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.DISTRO)) {
+      this.os = await (0, getos_1.getOS)();
+    }
+    if ((0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.DISTRO)) {
+      this.overwriteDistro();
+    }
+    const osString = this.getLinuxOSVersionString(this.os);
+    // this is below, to allow overwriting the arch (like arm64 to aarch64)
+    let name = `mongodb-linux-${this.arch}`;
+    // guard against any falsy values
+    if (!!osString) {
+      name += `-${osString}`;
+    }
+    name += `-${this.version}.tgz`;
+    return name;
+  }
+  /**
+   * Parse and apply config option DISTRO
+   */
+  overwriteDistro() {
+    const env = (0, resolveConfig_1.resolveConfig)(resolveConfig_1.ResolveConfigVariables.DISTRO);
+    if ((0, utils_1.isNullOrUndefined)(env)) {
+      return;
+    }
+    const split = env.split('-');
+    const distro = split[0];
+    const release = split[1];
+    if ((0, utils_1.isNullOrUndefined)(distro)) {
+      throw new errors_1.GenericMMSError('Expected DISTRO option to have a distro like "ubuntu-18.04"');
+    }
+    if ((0, utils_1.isNullOrUndefined)(release)) {
+      throw new errors_1.GenericMMSError('Expected DISTRO option to have a release like "ubuntu-18.04" (delimited by "-")');
+    }
+    this.os = {
+      os: 'linux',
+      dist: distro,
+      release: release
+    };
+  }
+  /**
+   * Get the version string (with distro)
+   * @param os LinuxOS Object
+   */
+  getLinuxOSVersionString(os) {
+    if (regexHelper(/ubuntu/i, os)) {
+      return this.getUbuntuVersionString(os);
+    } else if (regexHelper(/amzn/i, os)) {
+      return this.getAmazonVersionString(os);
+    } else if (regexHelper(/suse/i, os)) {
+      return this.getSuseVersionString(os);
+      // handle "oracle linux"(ol) as "rhel", because they define "id_like: fedora", but the versions themself match up with rhel
+    } else if (regexHelper(/(rhel|centos|scientific|^ol$)/i, os)) {
+      return this.getRhelVersionString(os);
+    } else if (regexHelper(/fedora/i, os)) {
+      return this.getFedoraVersionString(os);
+    } else if (regexHelper(/debian/i, os)) {
+      return this.getDebianVersionString(os);
+    } else if (regexHelper(/alpine/i, os)) {
+      console.warn('There is no official build of MongoDB for Alpine!');
+      // Match "arch", "archlinux", "manjaro", "manjarolinux", "arco", "arcolinux"
+    } else if (regexHelper(/(arch|manjaro|arco)(?:linux)?$/i, os)) {
+      console.warn(`There is no official build of MongoDB for ArchLinux (${os.dist}). Falling back to Ubuntu 22.04 release.`);
+      return this.getUbuntuVersionString({
+        os: 'linux',
+        dist: 'Ubuntu Linux',
+        release: '22.04'
+      });
+    } else if (regexHelper(/gentoo/i, os)) {
+      // it seems like debian binaries work for gentoo too (at least most), see https://github.com/typegoose/mongodb-memory-server/issues/639
+      console.warn(`There is no official build of MongoDB for Gentoo (${os.dist}). Falling back to Debian.`);
+      return this.getDebianVersionString({
+        os: 'linux',
+        dist: 'Debian',
+        release: '11'
+      });
+    } else if (regexHelper(/unknown/i, os)) {
+      // "unknown" is likely to happen if no release file / command could be found
+      console.warn('Couldnt parse dist information, please report this to https://github.com/typegoose/mongodb-memory-server/issues');
+    }
+    // mongodb does not ship generic linux builds anymore
+    throw new errors_1.UnknownLinuxDistro(os.dist, os.id_like ?? []);
+  }
+  /**
+   * Get the version string for Debian
+   * @param os LinuxOS Object
+   */
+  getDebianVersionString(os) {
+    let name = 'debian';
+    const release = parseFloat(os.release);
+    const coercedVersion = semver.coerce(this.version);
+    if ((0, utils_1.isNullOrUndefined)(coercedVersion)) {
+      throw new errors_1.UnknownVersionError(this.version);
+    }
+    // without any "release"(empty string), fallback to testing
+    // see https://tracker.debian.org/news/1433360/accepted-base-files-13-source-into-unstable/
+    const isTesting = ['unstable', 'testing', ''].includes(os.release);
+    if (isTesting || release >= 12) {
+      name += '12';
+    } else if (release >= 11) {
+      // Debian 11 is compatible with the binaries for debian 10
+      // but does not have binaries for before 5.0.8
+      // and only set to use "debian10" if the requested version is not a latest version
+      if (semver.lt(coercedVersion, '5.0.8') && !testVersionIsLatest(this.version)) {
+        log('debian11 detected, but version below 5.0.8 requested, using debian10');
+        name += '10';
+      } else {
+        name += '11';
+      }
+    } else if (release >= 10) {
+      name += '10';
+    } else if (release >= 9) {
+      name += '92';
+    } else if (release >= 8.1) {
+      name += '81';
+    } else if (release >= 7.1) {
+      name += '71';
+    }
+    if (isTesting || release >= 12) {
+      if (semver.lt(coercedVersion, '7.0.3') && !testVersionIsLatest(this.version)) {
+        throw new errors_1.KnownVersionIncompatibilityError(`Debian ${release || os.release || os.codename}`, this.version, '>=7.0.3', 'Mongodb does not provide binaries for versions before 7.0.3 for Debian 12+ and also cannot be mapped to a previous Debian release');
+      }
+    } else if (release >= 10) {
+      if (semver.lt(coercedVersion, '4.2.1') && !testVersionIsLatest(this.version)) {
+        throw new errors_1.KnownVersionIncompatibilityError(`Debian ${release || os.release || os.codename}`, this.version, '>=4.2.1', 'Mongodb does not provide binaries for versions before 4.2.1 for Debian 10+ and also cannot be mapped to a previous Debian release');
+      }
+    }
+    return name;
+  }
+  /**
+   * Get the version string for Fedora
+   * @param os LinuxOS Object
+   */
+  getFedoraVersionString(os) {
+    const fedoraVer = parseInt(os.release, 10);
+    const rhelOS = {
+      os: 'linux',
+      dist: 'rhel',
+      // fallback to 8.0
+      release: '8.0'
+    };
+    // 36 and onwards dont ship with libcrypto.so.1.1 anymore and need to be manually installed ("openssl1.1")
+    // 34 onward dosnt have "compat-openssl10" anymore, and only build from 4.0.24 are available for "rhel80"
+    if (fedoraVer >= 34) {
+      rhelOS.release = '8.0';
+    } else if (fedoraVer >= 19) {
+      rhelOS.release = '7.0';
+    } else if (fedoraVer >= 12) {
+      rhelOS.release = '6.2';
+    } else if (fedoraVer >= 6) {
+      rhelOS.release = '5.5';
+    }
+    return this.getRhelVersionString(rhelOS);
+  }
+  /**
+   * Get the version string for Red Hat Enterprise Linux
+   * @param os LinuxOS Object
+   */
+  getRhelVersionString(os) {
+    let name = 'rhel';
+    const {
+      release
+    } = os;
+    const releaseAsSemver = semver.coerce(release); // coerce "8" to "8.0.0" and "8.2" to "8.2.0", makes comparing easier than "parseInt" or "parseFloat"
+    const coercedVersion = semver.coerce(this.version);
+    if ((0, utils_1.isNullOrUndefined)(coercedVersion)) {
+      throw new errors_1.UnknownVersionError(this.version);
+    }
+    if (releaseAsSemver) {
+      // extra checks for architecture aarch64 (arm64)
+      // should not assign "name" by itself
+      if (this.arch === 'aarch64') {
+        // there are no versions for aarch64 before rhel 8.2 (or currently after)
+        if (semver.lt(releaseAsSemver, '8.2.0')) {
+          throw new errors_1.KnownVersionIncompatibilityError(`Rhel ${release} arm64`, this.version, '>=4.4.2', 'ARM64(aarch64) support for rhel is only for rhel82 or higher');
+        }
+        // there are no versions for aarch64 before mongodb 4.4.2
+        // Note: version 4.4.2 and 4.4.3 are NOT listed at the list, but are existing; list: https://www.mongodb.com/download-center/community/releases/archive
+        if (semver.lt(coercedVersion, '4.4.2') && !testVersionIsLatest(this.version)) {
+          throw new errors_1.KnownVersionIncompatibilityError(`Rhel ${release} arm64`, this.version, '>=4.4.2');
+        }
+        // rhel 9 does not provide openssl 1.1 anymore, making it incompatible with previous versions
+        // lowest rhel9 arm64 is 6.0.7
+        if (semver.satisfies(releaseAsSemver, '>=9.0.0') && semver.lt(coercedVersion, '6.0.7')) {
+          throw new errors_1.KnownVersionIncompatibilityError(`Rhel ${release} arm64`, this.version, '>=6.0.7');
+        }
+      }
+      if (semver.satisfies(releaseAsSemver, '>=9.0.0')) {
+        // there are only binaries for rhel90 since 6.0.4
+        name += '90';
+      } else if (semver.satisfies(releaseAsSemver, '8.2.0') && this.arch == 'aarch64') {
+        // Mongodb changed its naming for rhel8 only https://jira.mongodb.org/browse/SERVER-92375
+        // NOTE: as of 10.10.2024 `(rhel8|rhel80)-7.0.13` is not downloadable but `7.0.14` is
+        if (semver.satisfies(coercedVersion, '^5.0.29 || ^6.0.17 || ^7.0.13 || ^8.0.0')) {
+          name += '8';
+        } else {
+          name += '82';
+        }
+      } else if (semver.satisfies(releaseAsSemver, '^8.0.0')) {
+        // Mongodb changed its naming for rhel8 only https://jira.mongodb.org/browse/SERVER-92375
+        // NOTE: as of 10.10.2024 `(rhel8|rhel80)-7.0.13` is not downloadable but `7.0.14` is
+        if (semver.satisfies(coercedVersion, '^5.0.29 || ^6.0.17 || ^7.0.13 || ^8.0.0')) {
+          name += '8';
+        } else {
+          name += '80';
+        }
+      } else if (semver.satisfies(releaseAsSemver, '^7.0.0')) {
+        name += '70';
+      } else if (semver.satisfies(releaseAsSemver, '^6.0.0')) {
+        name += '62';
+      } else if (semver.satisfies(releaseAsSemver, '^5.0.0')) {
+        name += '55';
+      } else {
+        console.warn(`Unhandled RHEL version: "${release}"("${this.arch}")`);
+      }
+    } else {
+      console.warn(`Couldnt coerce RHEL version "${release}"`);
+    }
+    // fallback if name has not been modified yet
+    if (name === 'rhel') {
+      log('getRhelVersionString: falling back to "70"');
+      // fallback to "70", because that is what currently is supporting 3.6 to 5.0 and should work with many
+      name += '70';
+    }
+    return name;
+  }
+  /**
+   * Get the version string for Amazon Distro
+   * @param os LinuxOS Object
+   */
+  getAmazonVersionString(os) {
+    let name = 'amazon';
+    const release = parseInt(os.release, 10);
+    if (release >= 2) {
+      name += release.toString();
+    }
+    // dont add anthing as fallback, because for "amazon 1", mongodb just uses "amazon"
+    return name;
+  }
+  /**
+   * Get the version string for Suse / OpenSuse
+   * @param os LinuxOS Object
+   */
+  // TODO: add tests for getSuseVersionString
+  getSuseVersionString(os) {
+    const releaseMatch = os.release.match(/(^11|^12|^15)/);
+    return releaseMatch ? `suse${releaseMatch[0]}` : '';
+  }
+  /**
+   * Get the version string for Ubuntu
+   * @param os LinuxOS Object
+   */
+  getUbuntuVersionString(os) {
+    let ubuntuOS = undefined;
+    const coercedVersion = semver.coerce(this.version);
+    if ((0, utils_1.isNullOrUndefined)(coercedVersion)) {
+      throw new errors_1.UnknownVersionError(this.version);
+    }
+    // "id_like" processing (version conversion) [this is an block to be collapsible]
+    {
+      if (/^linux\s?mint\s*$/i.test(os.dist)) {
+        const mintToUbuntuRelease = {
+          17: '14.04',
+          18: '16.04',
+          19: '18.04',
+          20: '20.04',
+          21: '22.04',
+          22: '24.04'
+        };
+        ubuntuOS = {
+          os: 'linux',
+          dist: 'ubuntu',
+          release: mintToUbuntuRelease[parseInt(os.release.split('.')[0])] || mintToUbuntuRelease[21]
+        };
+      }
+      if (/^elementary(?:\s?os)?\s*$/i.test(os.dist)) {
+        const elementaryToUbuntuRelease = {
+          3: '14.04',
+          4: '16.04',
+          5: '18.04',
+          6: '20.04',
+          7: '22.04'
+        };
+        // untangle elemenatary versioning from hell https://en.wikipedia.org/wiki/Elementary_OS#Development
+        const [elementaryMajor, elementaryMinor] = os.release.split('.').map(el => parseInt(el));
+        // versions below 5.0 were named 0.X, and so use the minor version if major is 0
+        const realMajor = elementaryMajor || elementaryMinor;
+        ubuntuOS = {
+          os: 'linux',
+          dist: 'ubuntu',
+          release: elementaryToUbuntuRelease[realMajor] || elementaryToUbuntuRelease[7]
+        };
+      }
+    }
+    if ((0, utils_1.isNullOrUndefined)(ubuntuOS)) {
+      // Warn against distros that have a ID_LIKE set to "ubuntu", but no other upstream information and are not specially mapped (see above)
+      if (!/^ubuntu(?:| linux)\s*$/i.test(os.dist)) {
+        console.warn(`Unmapped distro "${os.dist}" with ID_LIKE "ubuntu", defaulting to highest ubuntu version!\n` + 'This means that your distro does not have a internal mapping in MMS or does not have a upstream release file (like "/etc/upstream-release/lsb-release"), but has set a ID_LIKE');
+        ubuntuOS = {
+          os: 'linux',
+          dist: 'ubuntu',
+          release: `${exports.DEFAULT_UBUNTU_YEAR}.04`
+        };
+      } else {
+        ubuntuOS = os;
+      }
+    }
+    let ubuntuYear = parseInt(ubuntuOS.release.split('.')[0], 10);
+    if (Number.isNaN(ubuntuYear)) {
+      console.warn(`Could not parse ubuntu year from "${ubuntuOS.release}", using default`);
+      ubuntuYear = exports.DEFAULT_UBUNTU_YEAR;
+    }
+    if (this.arch === 'aarch64') {
+      // this is because, before version 4.1.10, everything for "arm64" / "aarch64" were just "arm64" and for "ubuntu1604"
+      if (semver.satisfies(coercedVersion, '<4.1.10')) {
+        this.arch = 'arm64';
+        return 'ubuntu1604';
+      }
+      // this is because versions below "4.4.0" did not provide an binary for anything above 1804
+      if (semver.satisfies(coercedVersion, '>=4.1.10 <4.4.0')) {
+        return 'ubuntu1804';
+      }
+    }
+    if (ubuntuOS.release === '14.10') {
+      return 'ubuntu1410-clang';
+    }
+    // there are no MongoDB 3.x binary distributions for ubuntu >= 18
+    // https://www.mongodb.org/dl/linux/x86_64-ubuntu1604
+    if (ubuntuYear >= 18 && semver.satisfies(coercedVersion, '3.x.x')) {
+      log(`getUbuntuVersionString: ubuntuYear is "${ubuntuYear}", which dosnt have an 3.x.x version, defaulting to "1604"`);
+      return 'ubuntu1604';
+    }
+    // there are no MongoDB <=4.3.x binary distributions for ubuntu > 18
+    // https://www.mongodb.org/dl/linux/x86_64-ubuntu1804
+    if (ubuntuYear > 18 && semver.satisfies(coercedVersion, '<=4.3.x')) {
+      log(`getUbuntuVersionString: ubuntuYear is "${ubuntuYear}", which dosnt have an "<=4.3.x" version, defaulting to "1804"`);
+      return 'ubuntu1804';
+    }
+    // there are only binaries for 2204 since 6.0.4 (and not binaries for ubuntu2104)
+    if (ubuntuYear >= 21 && semver.satisfies(coercedVersion, '<6.0.4')) {
+      return 'ubuntu2004';
+    }
+    // there are only binaries for 2404 since 8.0.0, not in 7.x
+    if (ubuntuYear >= 22 && semver.satisfies(coercedVersion, '<8.0.0')) {
+      return 'ubuntu2204';
+    }
+    // base case for higher than mongodb supported ubuntu versions
+    {
+      // TODO: try to keep this up-to-date to the latest mongodb supported ubuntu version
+      /**
+       * Highest ubuntu year supported by mongodb binaries
+       * @see https://www.mongodb.com/download-center/community/releases/archive
+       */
+      const highestUbuntuYear = 24; // 24 is the highest supported as of mongodb 8.0.1
+      if (ubuntuYear > highestUbuntuYear) {
+        log(`getUbuntuVersionString: ubuntuYear "${ubuntuYear}" is higher than the currently supported mongodb year of "${highestUbuntuYear}", using highest known`);
+        return 'ubuntu2404';
+      }
+    }
+    // the "04" version always exists for ubuntu, use that as default
+    return `ubuntu${ubuntuYear}04`;
+  }
+  /**
+   * Translate input platform to mongodb-archive useable platform
+   * @param platform The Platform to translate to a mongodb archive platform
+   * @example
+   * darwin -> osx
+   */
+  translatePlatform(platform) {
+    switch (platform) {
+      case 'darwin':
+        return 'osx';
+      case 'win32':
+        const version = semver.coerce(this.version);
+        if ((0, utils_1.isNullOrUndefined)(version)) {
+          return 'windows';
+        }
+        return semver.gte(version, '4.3.0') ? 'windows' : 'win32';
+      case 'linux':
+        return 'linux';
+      default:
+        throw new errors_1.UnknownPlatformError(platform);
+    }
+  }
+  /**
+   * Translate input arch to mongodb-archive useable arch
+   * @param arch The Architecture to translate to a mongodb archive architecture
+   * @example
+   * x64 -> x86_64
+   */
+  static translateArch(arch) {
+    switch (arch) {
+      case 'x86_64':
+      case 'x64':
+        return 'x86_64';
+      case 'arm64':
+      case 'aarch64':
+        return 'aarch64';
+      default:
+        throw new errors_1.UnknownArchitectureError(arch);
+    }
+  }
+}
+exports.MongoBinaryDownloadUrl = MongoBinaryDownloadUrl;
+exports.default = MongoBinaryDownloadUrl;
+/**
+ * Helper function to reduce code / regex duplication
+ */
+function regexHelper(regex, os) {
+  return regex.test(os.dist) || (!(0, utils_1.isNullOrUndefined)(os.id_like) ? os.id_like.filter(v => regex.test(v)).length >= 1 : false);
+}
+/** Helper to consistently test if a version is a "-latest" version, like "v5.0-latest" */
+function testVersionIsLatest(version) {
+  return /^v\d+\.\d+-latest$/.test(version);
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJnZXRvc18xIiwicmVxdWlyZSIsInJlc29sdmVDb25maWdfMSIsImRlYnVnXzEiLCJ0c2xpYl8xIiwiX19pbXBvcnREZWZhdWx0Iiwic2VtdmVyIiwiX19pbXBvcnRTdGFyIiwidXRpbHNfMSIsInVybF8xIiwiZXJyb3JzXzEiLCJsb2ciLCJkZWZhdWx0IiwiZXhwb3J0cyIsIkRFRkFVTFRfVUJVTlRVX1lFQVIiLCJNb25nb0JpbmFyeURvd25sb2FkVXJsIiwiY29uc3RydWN0b3IiLCJvcHRzIiwidmVyc2lvbiIsInBsYXRmb3JtIiwidHJhbnNsYXRlUGxhdGZvcm0iLCJhcmNoIiwidHJhbnNsYXRlQXJjaCIsIm9zIiwiZ2V0RG93bmxvYWRVcmwiLCJkb3dubG9hZFVybCIsInJlc29sdmVDb25maWciLCJSZXNvbHZlQ29uZmlnVmFyaWFibGVzIiwiRE9XTkxPQURfVVJMIiwidXJsIiwiVVJMIiwidG9TdHJpbmciLCJhcmNoaXZlIiwiZ2V0QXJjaGl2ZU5hbWUiLCJtaXJyb3IiLCJET1dOTE9BRF9NSVJST1IiLCJwYXRobmFtZSIsImVuZHNXaXRoIiwiYXJjaGl2ZV9uYW1lIiwiQVJDSElWRV9OQU1FIiwiZ2V0QXJjaGl2ZU5hbWVPc3giLCJnZXRBcmNoaXZlTmFtZVdpbiIsImdldEFyY2hpdmVOYW1lTGludXgiLCJVbmtub3duUGxhdGZvcm1FcnJvciIsIm5hbWUiLCJjb2VyY2VkVmVyc2lvbiIsImNvZXJjZSIsImlzTnVsbE9yVW5kZWZpbmVkIiwic2F0aXNmaWVzIiwibHQiLCJndGUiLCJESVNUUk8iLCJnZXRPUyIsIm92ZXJ3cml0ZURpc3RybyIsIm9zU3RyaW5nIiwiZ2V0TGludXhPU1ZlcnNpb25TdHJpbmciLCJlbnYiLCJzcGxpdCIsImRpc3RybyIsInJlbGVhc2UiLCJHZW5lcmljTU1TRXJyb3IiLCJkaXN0IiwicmVnZXhIZWxwZXIiLCJnZXRVYnVudHVWZXJzaW9uU3RyaW5nIiwiZ2V0QW1hem9uVmVyc2lvblN0cmluZyIsImdldFN1c2VWZXJzaW9uU3RyaW5nIiwiZ2V0UmhlbFZlcnNpb25TdHJpbmciLCJnZXRGZWRvcmFWZXJzaW9uU3RyaW5nIiwiZ2V0RGViaWFuVmVyc2lvblN0cmluZyIsImNvbnNvbGUiLCJ3YXJuIiwiVW5rbm93bkxpbnV4RGlzdHJvIiwiaWRfbGlrZSIsInBhcnNlRmxvYXQiLCJVbmtub3duVmVyc2lvbkVycm9yIiwiaXNUZXN0aW5nIiwiaW5jbHVkZXMiLCJ0ZXN0VmVyc2lvbklzTGF0ZXN0IiwiS25vd25WZXJzaW9uSW5jb21wYXRpYmlsaXR5RXJyb3IiLCJjb2RlbmFtZSIsImZlZG9yYVZlciIsInBhcnNlSW50IiwicmhlbE9TIiwicmVsZWFzZUFzU2VtdmVyIiwicmVsZWFzZU1hdGNoIiwibWF0Y2giLCJ1YnVudHVPUyIsInVuZGVmaW5lZCIsInRlc3QiLCJtaW50VG9VYnVudHVSZWxlYXNlIiwiZWxlbWVudGFyeVRvVWJ1bnR1UmVsZWFzZSIsImVsZW1lbnRhcnlNYWpvciIsImVsZW1lbnRhcnlNaW5vciIsIm1hcCIsImVsIiwicmVhbE1ham9yIiwidWJ1bnR1WWVhciIsIk51bWJlciIsImlzTmFOIiwiaGlnaGVzdFVidW50dVllYXIiLCJVbmtub3duQXJjaGl0ZWN0dXJlRXJyb3IiLCJyZWdleCIsImZpbHRlciIsInYiLCJsZW5ndGgiXSwic291cmNlcyI6WyIuLi8uLi9zcmMvdXRpbC9Nb25nb0JpbmFyeURvd25sb2FkVXJsLnRzIl0sInNvdXJjZXNDb250ZW50IjpbbnVsbF0sIm1hcHBpbmdzIjoiOzs7Ozs7O0FBQUEsTUFBQUEsT0FBQSxHQUFBQyxPQUFBO0FBQ0EsTUFBQUMsZUFBQSxHQUFBRCxPQUFBO0FBQ0EsTUFBQUUsT0FBQSxHQUFBQyxPQUFBLENBQUFDLGVBQUEsQ0FBQUosT0FBQTtBQUNBLE1BQUFLLE1BQUEsR0FBQUYsT0FBQSxDQUFBRyxZQUFBLENBQUFOLE9BQUE7QUFDQSxNQUFBTyxPQUFBLEdBQUFQLE9BQUE7QUFDQSxNQUFBUSxLQUFBLEdBQUFSLE9BQUE7QUFDQSxNQUFBUyxRQUFBLEdBQUFU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

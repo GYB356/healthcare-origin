@@ -6,18 +6,22 @@ import { getServerSession } from "next-auth";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
-  useRouter: vi.fn(() => ({
+  useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
     refresh: vi.fn(),
-  })),
-  useSearchParams: vi.fn(() => new URLSearchParams()),
-  usePathname: vi.fn(() => "/"),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/",
 }));
 
 // Mock next-auth
 vi.mock("next-auth", () => ({
   getServerSession: vi.fn(),
+  useSession: () => ({
+    data: null,
+    status: "unauthenticated",
+  }),
 }));
 
 // Mock bcrypt
@@ -89,6 +93,47 @@ vi.mock("@prisma/client", () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mockReset(prismaMock);
+});
+
+// Mock next-themes
+vi.mock("next-themes", () => ({
+  useTheme: () => ({
+    theme: "light",
+    setTheme: vi.fn(),
+  }),
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="theme-provider">{children}</div>
+  ),
+}));
+
+// Mock socket.io-client
+vi.mock("socket.io-client", () => ({
+  io: vi.fn(() => ({
+    on: vi.fn(),
+    emit: vi.fn(),
+    off: vi.fn(),
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+  })),
+}));
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+global.localStorage = localStorageMock;
+
+// Suppress console.error in tests
+const consoleError = console.error;
+beforeAll(() => {
+  console.error = vi.fn();
+});
+
+afterAll(() => {
+  console.error = consoleError;
 });
 
 export { prismaMock };

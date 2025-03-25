@@ -1,0 +1,521 @@
+e92bdfb0e3c6bc9792bd525104c7ec37
+"use strict";
+
+var _defineProperty = require("@babel/runtime/helpers/defineProperty");
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MongoMemoryServer = exports.MongoMemoryServerStates = exports.MongoMemoryServerEvents = void 0;
+const tslib_1 = require("tslib");
+const getport_1 = require("./util/getport");
+const utils_1 = require("./util/utils");
+const MongoInstance_1 = require("./util/MongoInstance");
+const debug_1 = tslib_1.__importDefault(require("debug"));
+const events_1 = require("events");
+const fs_1 = require("fs");
+const mongodb_1 = require("mongodb");
+const errors_1 = require("./util/errors");
+const os = tslib_1.__importStar(require("os"));
+const DryMongoBinary_1 = require("./util/DryMongoBinary");
+const semver = tslib_1.__importStar(require("semver"));
+const log = (0, debug_1.default)('MongoMS:MongoMemoryServer');
+/**
+ * All Events for "MongoMemoryServer"
+ */
+var MongoMemoryServerEvents;
+(function (MongoMemoryServerEvents) {
+  MongoMemoryServerEvents["stateChange"] = "stateChange";
+})(MongoMemoryServerEvents || (exports.MongoMemoryServerEvents = MongoMemoryServerEvents = {}));
+/**
+ * All States for "MongoMemoryServer._state"
+ */
+var MongoMemoryServerStates;
+(function (MongoMemoryServerStates) {
+  MongoMemoryServerStates["new"] = "new";
+  MongoMemoryServerStates["starting"] = "starting";
+  MongoMemoryServerStates["running"] = "running";
+  MongoMemoryServerStates["stopped"] = "stopped";
+})(MongoMemoryServerStates || (exports.MongoMemoryServerStates = MongoMemoryServerStates = {}));
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+class MongoMemoryServer extends events_1.EventEmitter {
+  /**
+   * Create a Mongo-Memory-Sever Instance
+   * @param opts Mongo-Memory-Sever Options
+   */
+  constructor(opts) {
+    super();
+    /**
+     * The Current State of this instance
+     */
+    this._state = MongoMemoryServerStates.new;
+    this.opts = _objectSpread({}, opts);
+    // instance option "auth" will be automatically set and handled via AutomaticAuth
+    if ('auth' in (this.opts.instance ?? {})) {
+      log('opts.instance.auth was defined, but will be set automatically, ignoring');
+      delete this.opts.instance?.auth;
+    }
+    if (this.opts.auth?.enable === true) {
+      // assign defaults
+      this.auth = (0, utils_1.authDefault)(this.opts.auth);
+    }
+  }
+  /**
+   * Create a Mongo-Memory-Sever Instance that can be awaited
+   * @param opts Mongo-Memory-Sever Options
+   */
+  static async create(opts) {
+    log('create: Called .create() method');
+    const instance = new MongoMemoryServer(_objectSpread({}, opts));
+    await instance.start();
+    return instance;
+  }
+  /**
+   * Start the Mongod Instance
+   * @param forceSamePort Force to use the port defined in `options.instance` (disabled port generation)
+   * @throws if state is not "new" or "stopped"
+   */
+  async start(forceSamePort) {
+    this.debug('start: Called .start() method');
+    switch (this._state) {
+      case MongoMemoryServerStates.new:
+      case MongoMemoryServerStates.stopped:
+        break;
+      case MongoMemoryServerStates.running:
+      case MongoMemoryServerStates.starting:
+      default:
+        throw new errors_1.StateError([MongoMemoryServerStates.new, MongoMemoryServerStates.stopped], this.state);
+    }
+    (0, utils_1.assertion)((0, utils_1.isNullOrUndefined)(this._instanceInfo?.instance.mongodProcess), new Error('Cannot start because "instance.mongodProcess" is already defined!'));
+    this.stateChange(MongoMemoryServerStates.starting);
+    await this._startUpInstance(forceSamePort).catch(async err => {
+      // add error information on macos-arm because "spawn Unknown system error -86" does not say much
+      if (err instanceof Error && err.message?.includes('spawn Unknown system error -86')) {
+        if (os.platform() === 'darwin' && os.arch() === 'arm64') {
+          err.message += err.message += ', Is Rosetta Installed and Setup correctly?';
+        }
+      }
+      if (!debug_1.default.enabled('MongoMS:MongoMemoryServer')) {
+        console.warn('Starting the MongoMemoryServer Instance failed, enable debug log for more information. Error:\n', err);
+      }
+      this.debug('_startUpInstance threw a Error: ', err);
+      await this.stop({
+        doCleanup: false,
+        force: false
+      }); // still try to close the instance that was spawned, without cleanup for investigation
+      this.stateChange(MongoMemoryServerStates.stopped);
+      throw err;
+    });
+    this.stateChange(MongoMemoryServerStates.running);
+    this.debug('start: Instance fully Started');
+  }
+  /**
+   * Change "this._state" to "newState" and emit "stateChange" with "newState"
+   * @param newState The new State to set & emit
+   */
+  stateChange(newState) {
+    this._state = newState;
+    this.emit(MongoMemoryServerEvents.stateChange, newState);
+  }
+  /**
+   * Debug-log with template applied
+   * @param msg The Message to log
+   */
+  debug(msg, ...extra) {
+    const port = this._instanceInfo?.port ?? 'unknown';
+    log(`Mongo[${port}]: ${msg}`, ...extra);
+  }
+  /**
+   * Find a new unlocked port
+   * @param port A User defined default port
+   */
+  async getNewPort(port) {
+    const newPort = await (0, getport_1.getFreePort)(port);
+    // only log this message if a custom port was provided
+    if (port != newPort && typeof port === 'number') {
+      this.debug(`getNewPort: starting with port "${newPort}", since "${port}" was locked`);
+    }
+    return newPort;
+  }
+  /**
+   * Construct Instance Starting Options
+   * @param forceSamePort Force to use the port defined in `options.instance` (disabled port generation)
+   */
+  async getStartOptions(forceSamePort = false) {
+    this.debug(`getStartOptions: forceSamePort: ${forceSamePort}`);
+    /** Shortcut to this.opts.instance */
+    const instOpts = this.opts.instance ?? {};
+    /**
+     * This variable is used for determining if "createAuth" should be run
+     */
+    let isNew = true;
+    const opts = await DryMongoBinary_1.DryMongoBinary.generateOptions(this.opts.binary);
+    let storageEngine = instOpts.storageEngine;
+    // try to convert a string to a valid semver, like "v6.0-latest" (compiles to "6.0.0")
+    // use "0.0.0" as a fallback to have a valid semver for later checks, but warn on invalid
+    const coercedVersion = semver.coerce(opts.version) ?? new semver.SemVer('0.0.0');
+    // warn on invalid version here, a invalid version will be thrown in MongoBinaryDownloadUrl if downloading
+    if (semver.eq(coercedVersion, '0.0.0')) {
+      console.warn(new errors_1.UnknownVersionError(opts.version));
+    }
+    storageEngine = (0, utils_1.getStorageEngine)(storageEngine, coercedVersion);
+    // use pre-defined port if available, otherwise generate a new port
+    let port = typeof instOpts.port === 'number' ? instOpts.port : undefined;
+    // if "forceSamePort" is not true, and get a available port
+    if (!forceSamePort || (0, utils_1.isNullOrUndefined)(port)) {
+      port = await this.getNewPort(port);
+    }
+    // consider directly using "this.opts.instance", to pass through all options, even if not defined in "StartupInstanceData"
+    const data = {
+      port: port,
+      dbName: (0, utils_1.generateDbName)(instOpts.dbName),
+      ip: instOpts.ip ?? '127.0.0.1',
+      storageEngine: storageEngine,
+      replSet: instOpts.replSet,
+      dbPath: instOpts.dbPath,
+      tmpDir: undefined,
+      keyfileLocation: instOpts.keyfileLocation,
+      launchTimeout: instOpts.launchTimeout
+    };
+    if ((0, utils_1.isNullOrUndefined)(this._instanceInfo)) {
+      // create a tmpDir instance if no "dbPath" is given
+      if (!data.dbPath) {
+        data.tmpDir = await (0, utils_1.createTmpDir)('mongo-mem-');
+        data.dbPath = data.tmpDir;
+        isNew = true; // just to ensure "isNew" is "true" because a new temporary directory got created
+      } else {
+        this.debug(`getStartOptions: Checking if "${data.dbPath}}" (no new tmpDir) already has data`);
+        const files = await fs_1.promises.readdir(data.dbPath);
+        isNew = files.length === 0; // if there are no files in the directory, assume that the database is new
+      }
+    } else {
+      isNew = false;
+    }
+    const enableAuth = this.authObjectEnable();
+    const createAuth = enableAuth &&
+    // re-use all the checks from "enableAuth"
+    !(0, utils_1.isNullOrUndefined)(this.auth) && (
+    // needs to be re-checked because typescript complains
+    this.auth.force || isNew) &&
+    // check that either "isNew" or "this.auth.force" is "true"
+    !instOpts.replSet; // dont run "createAuth" when its a replset, it will be run by the replset controller
+    return {
+      data: data,
+      createAuth: createAuth,
+      mongodOptions: {
+        instance: _objectSpread(_objectSpread({}, data), {}, {
+          args: instOpts.args,
+          auth: enableAuth
+        }),
+        binary: this.opts.binary,
+        spawn: this.opts.spawn
+      }
+    };
+  }
+  /**
+   * Internal Function to start an instance
+   * @param forceSamePort Force to use the port defined in `options.instance` (disabled port generation)
+   * @private
+   */
+  async _startUpInstance(forceSamePort) {
+    this.debug('_startUpInstance: Called MongoMemoryServer._startUpInstance() method');
+    const useSamePort = forceSamePort ?? !(this.opts.instance?.portGeneration ?? true);
+    if (!(0, utils_1.isNullOrUndefined)(this._instanceInfo)) {
+      this.debug('_startUpInstance: "instanceInfo" already defined, reusing instance');
+      if (!useSamePort) {
+        const newPort = await this.getNewPort(this._instanceInfo.port);
+        this._instanceInfo.instance.instanceOpts.port = newPort;
+        this._instanceInfo.port = newPort;
+      }
+      await this._instanceInfo.instance.start();
+      return;
+    }
+    const {
+      mongodOptions,
+      createAuth,
+      data
+    } = await this.getStartOptions(useSamePort);
+    this.debug(`_startUpInstance: Creating new MongoDB instance with options:`, mongodOptions);
+    const instance = await MongoInstance_1.MongoInstance.create(mongodOptions);
+    this._instanceInfo = _objectSpread(_objectSpread({}, data), {}, {
+      dbPath: data.dbPath,
+      // because otherwise the types would be incompatible
+      instance
+    });
+    // log after "_instanceInfo" is set so that the port shows up in the message
+    this.debug(`_startUpInstance: Instance Started, createAuth: "${createAuth}"`);
+    // always set the "extraConnectionOptions" when "auth" is enabled, regardless of if "createAuth" gets run
+    if (this.authObjectEnable() && mongodOptions.instance?.auth === true && !(0, utils_1.isNullOrUndefined)(this.auth) // extra check again for typescript, because it cant reuse checks from "enableAuth" yet
+    ) {
+      instance.extraConnectionOptions = {
+        authSource: 'admin',
+        authMechanism: 'SCRAM-SHA-256',
+        auth: {
+          username: this.auth.customRootName,
+          password: this.auth.customRootPwd
+        }
+      };
+    }
+    // "isNullOrUndefined" because otherwise typescript complains about "this.auth" possibly being not defined
+    if (!(0, utils_1.isNullOrUndefined)(this.auth) && createAuth) {
+      this.debug(`_startUpInstance: Running "createAuth" (force: "${this.auth.force}")`);
+      await this.createAuth(data);
+    }
+  }
+  /**
+   * Stop the current In-Memory Instance
+   * @param cleanupOptions Set how to run ".cleanup", by default only `{ doCleanup: true }` is used
+   */
+  async stop(cleanupOptions) {
+    this.debug('stop: Called .stop() method');
+    /** Default to cleanup temporary, but not custom dbpaths */
+    let cleanup = {
+      doCleanup: true,
+      force: false
+    };
+    // handle the new way of setting what and how to cleanup
+    if (typeof cleanupOptions === 'object') {
+      cleanup = cleanupOptions;
+    }
+    // just return "true" if there was never an instance
+    if ((0, utils_1.isNullOrUndefined)(this._instanceInfo)) {
+      this.debug('stop: "instanceInfo" is not defined (never ran?)');
+      return false;
+    }
+    if (this._state === MongoMemoryServerStates.stopped) {
+      this.debug('stop: state is "stopped", trying to stop / kill anyway');
+    }
+    this.debug(`stop: Stopping MongoDB server on port ${this._instanceInfo.port} with pid ${this._instanceInfo.instance?.mongodProcess?.pid}` // "undefined" would say more than ""
+    );
+    await this._instanceInfo.instance.stop();
+    this.stateChange(MongoMemoryServerStates.stopped);
+    if (cleanup.doCleanup) {
+      await this.cleanup(cleanup);
+    }
+    return true;
+  }
+  /**
+   * Remove the defined dbPath
+   * @param options Set how to run a cleanup, by default `{ doCleanup: true }` is used
+   * @throws If "state" is not "stopped"
+   * @throws If "instanceInfo" is not defined
+   * @throws If an fs error occured
+   */
+  async cleanup(options) {
+    assertionIsMMSState(MongoMemoryServerStates.stopped, this.state);
+    /** Default to doing cleanup, but not forcing it */
+    let cleanup = {
+      doCleanup: true,
+      force: false
+    };
+    // handle the new way of setting what and how to cleanup
+    if (typeof options === 'object') {
+      cleanup = options;
+    }
+    this.debug(`cleanup:`, cleanup);
+    // dont do cleanup, if "doCleanup" is false
+    if (!cleanup.doCleanup) {
+      this.debug('cleanup: "doCleanup" is set to false');
+      return;
+    }
+    if ((0, utils_1.isNullOrUndefined)(this._instanceInfo)) {
+      this.debug('cleanup: "instanceInfo" is undefined');
+      return;
+    }
+    (0, utils_1.assertion)((0, utils_1.isNullOrUndefined)(this._instanceInfo.instance.mongodProcess), new Error('Cannot cleanup because "instance.mongodProcess" is still defined'));
+    const tmpDir = this._instanceInfo.tmpDir;
+    if (!(0, utils_1.isNullOrUndefined)(tmpDir)) {
+      this.debug(`cleanup: removing tmpDir at ${tmpDir}`);
+      await (0, utils_1.removeDir)(tmpDir);
+    }
+    if (cleanup.force) {
+      const dbPath = this._instanceInfo.dbPath;
+      const res = await (0, utils_1.statPath)(dbPath);
+      if ((0, utils_1.isNullOrUndefined)(res)) {
+        this.debug(`cleanup: force is true, but path "${dbPath}" dosnt exist anymore`);
+      } else {
+        (0, utils_1.assertion)(res.isDirectory(), new Error('Defined dbPath is not a directory'));
+        await (0, utils_1.removeDir)(dbPath);
+      }
+    }
+    this.stateChange(MongoMemoryServerStates.new); // reset "state" to new, because the dbPath got removed
+    this._instanceInfo = undefined;
+  }
+  /**
+   * Get Information about the currently running instance, if it is not running it returns "undefined"
+   */
+  get instanceInfo() {
+    return this._instanceInfo;
+  }
+  /**
+   * Get Current state of this class
+   */
+  get state() {
+    return this._state;
+  }
+  /**
+   * Ensure that the instance is running
+   * -> throws if instance cannot be started
+   */
+  async ensureInstance() {
+    this.debug('ensureInstance: Called .ensureInstance() method');
+    switch (this._state) {
+      case MongoMemoryServerStates.running:
+        if (this._instanceInfo) {
+          return this._instanceInfo;
+        }
+        throw new errors_1.InstanceInfoError('MongoMemoryServer.ensureInstance (state: running)');
+      case MongoMemoryServerStates.new:
+      case MongoMemoryServerStates.stopped:
+        break;
+      case MongoMemoryServerStates.starting:
+        return new Promise((res, rej) => this.once(MongoMemoryServerEvents.stateChange, state => {
+          if (state != MongoMemoryServerStates.running) {
+            rej(new Error(`"ensureInstance" waited for "running" but got a different state: "${state}"`));
+            return;
+          }
+          // this assertion is mainly for types (typescript otherwise would complain that "_instanceInfo" might be "undefined")
+          (0, utils_1.assertion)(!(0, utils_1.isNullOrUndefined)(this._instanceInfo), new Error('InstanceInfo is undefined!'));
+          res(this._instanceInfo);
+        }));
+      default:
+        throw new errors_1.StateError([MongoMemoryServerStates.running, MongoMemoryServerStates.new, MongoMemoryServerStates.stopped, MongoMemoryServerStates.starting], this.state);
+    }
+    this.debug('ensureInstance: no running instance, calling "start()" command');
+    await this.start();
+    this.debug('ensureInstance: "start()" command was succesfully resolved');
+    // check again for 1. Typescript-type reasons and 2. if .start failed to throw an error
+    (0, utils_1.assertion)(!!this._instanceInfo, new errors_1.InstanceInfoError('MongoMemoryServer.ensureInstance (after starting)'));
+    return this._instanceInfo;
+  }
+  /**
+   * Generate the Connection string used by mongodb
+   * @param otherDb add a database into the uri (in mongodb its the auth database, in mongoose its the default database for models)
+   * @param otherIp change the ip in the generated uri, default will otherwise always be "127.0.0.1"
+   * @throws if state is not "running" (or "starting")
+   * @throws if a server doesnt have "instanceInfo.port" defined
+   * @returns a valid mongo URI, by the definition of https://docs.mongodb.com/manual/reference/connection-string/
+   */
+  getUri(otherDb, otherIp) {
+    this.debug('getUri:', this.state, otherDb, otherIp);
+    switch (this.state) {
+      case MongoMemoryServerStates.running:
+      case MongoMemoryServerStates.starting:
+        break;
+      case MongoMemoryServerStates.stopped:
+      default:
+        throw new errors_1.StateError([MongoMemoryServerStates.running, MongoMemoryServerStates.starting], this.state);
+    }
+    assertionInstanceInfo(this._instanceInfo);
+    return (0, utils_1.uriTemplate)(otherIp || '127.0.0.1', this._instanceInfo.port, (0, utils_1.generateDbName)(otherDb));
+  }
+  /**
+   * Create the Root user and additional users using the [localhost exception](https://www.mongodb.com/docs/manual/core/localhost-exception/#std-label-localhost-exception)
+   * This Function assumes "this.opts.auth" is already processed into "this.auth"
+   * @param data Used to get "ip" and "port"
+   * @internal
+   */
+  async createAuth(data) {
+    (0, utils_1.assertion)(!(0, utils_1.isNullOrUndefined)(this.auth), new Error('"createAuth" got called, but "this.auth" is undefined!'));
+    assertionInstanceInfo(this._instanceInfo);
+    this.debug('createAuth: options:', this.auth);
+    let con = await mongodb_1.MongoClient.connect((0, utils_1.uriTemplate)(data.ip, data.port, 'admin'));
+    try {
+      let db = con.db('admin'); // just to ensure it is actually the "admin" database AND to have the "Db" data
+      // Create the root user
+      this.debug(`createAuth: Creating Root user, name: "${this.auth.customRootName}"`);
+      await db.command({
+        createUser: this.auth.customRootName,
+        pwd: this.auth.customRootPwd,
+        mechanisms: ['SCRAM-SHA-256'],
+        customData: {
+          createdBy: 'mongodb-memory-server',
+          as: 'ROOTUSER'
+        },
+        roles: ['root'],
+        // "writeConcern" is needced, otherwise replset servers might fail with "auth failed: such user does not exist"
+        writeConcern: {
+          w: 'majority'
+        }
+      });
+      if (this.auth.extraUsers.length > 0) {
+        this.debug(`createAuth: Creating "${this.auth.extraUsers.length}" Custom Users`);
+        this.auth.extraUsers.sort((a, b) => {
+          if (a.database === 'admin') {
+            return -1; // try to make all "admin" at the start of the array
+          }
+          return a.database === b.database ? 0 : 1; // "0" to sort all databases that are the same after each other, and "1" to for pushing it back
+        });
+        // reconnecting the database because the root user now exists and the "localhost exception" only allows the first user
+        await con.close();
+        con = await mongodb_1.MongoClient.connect(this.getUri('admin'), this._instanceInfo.instance.extraConnectionOptions ?? {});
+        db = con.db('admin');
+        for (const user of this.auth.extraUsers) {
+          user.database = (0, utils_1.isNullOrUndefined)(user.database) ? 'admin' : user.database;
+          // just to have not to call "con.db" everytime in the loop if its the same
+          if (user.database !== db.databaseName) {
+            db = con.db(user.database);
+          }
+          this.debug('createAuth: Creating User: ', user);
+          await db.command({
+            createUser: user.createUser,
+            pwd: user.pwd,
+            customData: _objectSpread(_objectSpread({}, user.customData), {}, {
+              createdBy: 'mongodb-memory-server',
+              as: 'EXTRAUSER'
+            }),
+            roles: user.roles,
+            authenticationRestrictions: user.authenticationRestrictions ?? [],
+            mechanisms: user.mechanisms ?? ['SCRAM-SHA-256'],
+            digestPassword: user.digestPassword ?? true,
+            // "writeConcern" is needced, otherwise replset servers might fail with "auth failed: such user does not exist"
+            writeConcern: {
+              w: 'majority'
+            }
+          });
+        }
+      }
+    } finally {
+      // close connection in any case (even if throwing a error or being successfull)
+      await con.close();
+    }
+  }
+  /**
+   * Helper function to determine if the "auth" object is set and not to be disabled
+   * This function expectes to be run after the auth object has been transformed to a object
+   * @returns "true" when "auth" should be enabled
+   */
+  authObjectEnable() {
+    if ((0, utils_1.isNullOrUndefined)(this.auth)) {
+      return false;
+    }
+    return typeof this.auth.enable === 'boolean' // if "this._replSetOpts.auth.enable" is defined, use that
+    ? this.auth.enable : false; // if "this._replSetOpts.auth.enable" is not defined, default to false
+  }
+  // Symbol for "Explicit Resource Management"
+  async [Symbol.asyncDispose]() {
+    if (this.opts.dispose?.enabled ?? true) {
+      await this.stop(this.opts.dispose?.cleanup);
+    }
+  }
+}
+exports.MongoMemoryServer = MongoMemoryServer;
+exports.default = MongoMemoryServer;
+/**
+ * This function is to de-duplicate code
+ * -> this couldnt be included in the class, because "asserts this.instanceInfo" is not allowed
+ * @param val this.instanceInfo
+ */
+function assertionInstanceInfo(val) {
+  (0, utils_1.assertion)(!(0, utils_1.isNullOrUndefined)(val), new Error('"instanceInfo" is undefined'));
+}
+/**
+ * Helper function to de-duplicate state checking for "MongoMemoryServerStates"
+ * @param wantedState The State that is wanted
+ * @param currentState The current State ("this._state")
+ */
+function assertionIsMMSState(wantedState, currentState) {
+  (0, utils_1.assertion)(currentState === wantedState, new errors_1.StateError([wantedState], currentState));
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJnZXRwb3J0XzEiLCJyZXF1aXJlIiwidXRpbHNfMSIsIk1vbmdvSW5zdGFuY2VfMSIsImRlYnVnXzEiLCJ0c2xpYl8xIiwiX19pbXBvcnREZWZhdWx0IiwiZXZlbnRzXzEiLCJmc18xIiwibW9uZ29kYl8xIiwiZXJyb3JzXzEiLCJvcyIsIl9faW1wb3J0U3RhciIsIkRyeU1vbmdvQmluYXJ5XzEiLCJzZW12ZXIiLCJsb2ciLCJkZWZhdWx0IiwiTW9uZ29NZW1vcnlTZXJ2ZXJFdmVudHMiLCJleHBvcnRzIiwiTW9uZ29NZW1vcnlTZXJ2ZXJTdGF0ZXMiLCJNb25nb01lbW9yeVNlcnZlciIsIkV2ZW50RW1pdHRlciIsImNvbnN0cnVjdG9yIiwib3B0cyIsIl9zdGF0ZSIsIm5ldyIsIl9vYmplY3RTcHJlYWQiLCJpbnN0YW5jZSIsImF1dGgiLCJlbmFibGUiLCJhdXRoRGVmYXVsdCIsImNyZWF0ZSIsInN0YXJ0IiwiZm9yY2VTYW1lUG9ydCIsImRlYnVnIiwic3RvcHBlZCIsInJ1bm5pbmciLCJzdGFydGluZyIsIlN0YXRlRXJyb3IiLCJzdGF0ZSIsImFzc2VydGlvbiIsImlzTnVsbE9yVW5kZWZpbmVkIiwiX2luc3RhbmNlSW5mbyIsIm1vbmdvZFByb2Nlc3MiLCJFcnJvciIsInN0YXRlQ2hhbmdlIiwiX3N0YXJ0VXBJbnN0YW5jZSIsImNhdGNoIiwiZXJyIiwibWVzc2FnZSIsImluY2x1ZGVzIiwicGxhdGZvcm0iLCJhcmNoIiwiZW5hYmxlZCIsImNvbnNvbGUiLCJ3YXJuIiwic3RvcCIsImRvQ2xlYW51cCIsImZvcmNlIiwibmV3U3RhdGUiLCJlbWl0IiwibXNnIiwiZXh0cmEiLCJwb3J0IiwiZ2V0TmV3UG9ydCIsIm5ld1BvcnQiLCJnZXRGcmVlUG9ydCIsImdldFN0YXJ0T3B0aW9ucyIsImluc3RPcHRzIiwiaXNOZXciLCJEcnlNb25nb0JpbmFyeSIsImdlbmVyYXRlT3B0aW9ucyIsImJpbmFyeSIsInN0b3JhZ2VFbmdpbmUiLCJjb2VyY2VkVmVyc2lvbiIsImNvZXJjZSIsInZlcnNpb24iLCJTZW1WZXIiLCJlcSIsIlVua25vd25WZXJzaW9uRXJyb3IiLCJnZXRTdG9yYWdlRW5naW5lIiwidW5kZWZpbmVkIiwiZGF0YSIsImRiTmFtZSIsImdlbmVyYXRlRGJOYW1lIiwiaXAiLCJyZXBsU2V0IiwiZGJQYXRoIiwidG1wRGlyIiwia2V5ZmlsZUxvY2F0aW9uIiwibGF1bmNoVGltZW91dCIsImNyZWF0ZVRtcERpciIsImZpbGVzIiwicHJvbWlzZXMiLCJyZWFkZGlyIiwibGVuZ3RoIiwiZW5hYmxlQXV0aCIsImF1dGhPYmplY3RFbmFibGUiLCJjcmVhdGVBdXRoIiwibW9uZ29kT3B0aW9ucyIsImFyZ3MiLCJzcGF3biIsInVzZVNhbWVQb3J0IiwicG9ydEdlbmVyYXRpb24iLCJpbnN0YW5jZU9wdHMiLCJNb25nb0luc3RhbmNlIiwiZXh0cmFDb25uZWN0aW9uT3B0aW9ucyIsImF1dGhTb3VyY2UiLCJhdXRoTWVjaGFuaXNtIiwidXNlcm5hbWUiLCJjdXN0b21Sb290TmFtZSIsInBhc3N3b3JkIiwiY3VzdG9tUm9vdFB3ZCIsImNsZWFudXBPcHRpb25zIiwiY2xlYW51cCIsInBpZCIsIm9wdGlvbnMiLCJhc3NlcnRpb25Jc01NU1N0YXRlIiwicmVtb3ZlRGlyIiwicmVzIiwic3RhdFBhdGgiLCJpc0RpcmVjdG9yeSIsImluc3RhbmNlSW5mbyIsImVuc3VyZUluc3RhbmNlIiwiSW5zdGFuY2VJbmZvRXJyb3IiLCJQcm9taXNlIiwicmVqIiwib25jZSIsImdldFVyaSIsIm90aGVyRGIiLCJvdGhlcklwIiwiYXNzZXJ0aW9uSW5zdGFuY2VJbmZvIiwidXJpVGVtcGxhdGUiLCJjb24iLCJNb25nb0NsaWVudCIsImNvbm5lY3QiLCJkYiIsImNvbW1hbmQiLCJjcmVhdGVVc2VyIiwicHdkIiwibWVjaGFuaXNtcyIsImN1c3RvbURhdGEiLCJjcmVhdGVkQnkiLCJhcyIsInJvbGVzIiwid3JpdGVDb25jZXJuIiwidyIsImV4dHJhVXNlcnMiLCJzb3J0IiwiYSIsImIiLCJkYXRhYmFzZSIsImNsb3NlIiwidXNlciIsImRhdGFiYXNlTmFtZSIsImF1dGhlbnRpY2F0aW9uUmVzdHJpY3Rpb25zIiwiZGlnZXN0UGFzc3dvcmQiLCJTeW1ib2wiLCJhc3luY0Rpc3Bvc2UiLCJkaXNwb3NlIiwidmFsIiwid2FudGVkU3RhdGUiLCJjdXJyZW50U3RhdGUiXSwic291cmNlcyI6WyIuLi9zcmMvTW9uZ29NZW1vcnlTZXJ2ZXIudHMiXSwic291cmNlc0NvbnRlbnQiOltudWxsXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFDQSxNQUFBQSxTQUFBLEdBQUFDLE9BQUE7QUFDQSxNQUFBQyxPQUFBLEdBQUFELE9BQUE7QUFhQSxNQUFBRSxlQUFBLEdBQUFGLE9BQUE7QUFFQSxNQUFBRyxPQUFBLEdBQUFDLE9BQUEsQ0FBQUMsZUFBQSxDQUFBTCxPQUFBO0FBQ0EsTUFBQU0sUUFBQSxHQUFBTixPQUFBO0FBQ0EsTUFBQU8sSUFBQSxHQUFBUCxPQUFBO0FBQ0EsTUFBQVEsU0FBQSxHQUFBUixPQUFBO0FBQ0EsTUFBQVMsUUFBQSxHQUFBVCxPQUFBO0FBQ0EsTUFBQVUsRUFBQSxHQUFBTixPQUFBLENBQUFPLFlBQUEsQ0FBQVgsT0FBQTtBQUNBLE1BQUFZLGdCQUFBLEdBQUFaLE9BQUE7QUFDQSxNQUFBYSxNQUFBLEdBQUFULE9BQUEsQ0FBQU8sWUFBQSxDQUFBWCxPQUFBO0FBRUEsTUFBTWMsR0FBRyxHQUFHLElBQUFYLE9BQUEsQ0FBQVksT0FBSyxFQUFDLDJCQUEyQixDQUFDO0FBc0g5Qzs7O0FBR0EsSUFBWUMsdUJBRVg7QUFGRCxXQUFZQSx1QkFBdUI7RUFDakNBLHVCQUFBLCtCQUEyQjtBQUM3QixDQUFDLEVBRldBLHVCQUF1QixLQUFBQyxPQUFBLENBQUFELHVCQUFBLEdBQXZCQSx1QkFBdUI7QUFJbkM7OztBQUdBLElBQVlFLHVCQUtYO0FBTEQsV0FBWUEsdUJBQXVCO0VBQ2pDQSx1QkFBQSxlQUFXO0VBQ1hBLHVCQUFBLHlCQUFxQjtFQUNyQkEsdUJBQUEsdUJBQW1CO0VBQ25CQSx1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

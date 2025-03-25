@@ -10,7 +10,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "test": "vitest",
-    "test:watch": "jest --watch",
+    "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {

@@ -2,107 +2,74 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { ErrorBoundary } from "@/components/error-boundary";
 
-// Mock console.error to prevent test output noise
-const originalError = console.error;
+// Mock console.error to avoid noise in test output
+const consoleError = console.error;
 beforeAll(() => {
   console.error = vi.fn();
 });
+
 afterAll(() => {
-  console.error = originalError;
+  console.error = consoleError;
 });
 
-// Component that throws an error
-const ThrowError = ({ message }: { message: string }) => {
-  throw new Error(message);
+const ThrowError = () => {
+  throw new Error("Test error");
 };
 
 describe("ErrorBoundary", () => {
   it("should render children when there is no error", () => {
     render(
       <ErrorBoundary>
-        <div>Test Content</div>
-      </ErrorBoundary>,
+        <div>Test content</div>
+      </ErrorBoundary>
     );
 
-    expect(screen.getByText("Test Content")).toBeInTheDocument();
+    expect(screen.getByText("Test content")).toBeInTheDocument();
   });
 
-  it("should render error UI when child throws", () => {
+  it("should render error UI when there is an error", () => {
     render(
       <ErrorBoundary>
-        <ThrowError message="Test Error" />
-      </ErrorBoundary>,
+        <ThrowError />
+      </ErrorBoundary>
     );
 
-    expect(screen.getByText(/Something went wrong/i)).toBeInTheDocument();
-    expect(screen.getByText(/Test Error/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+    expect(screen.getByText("Something went wrong")).toBeInTheDocument();
+    expect(screen.getByText("Test error")).toBeInTheDocument();
+    expect(screen.getByText("Try again")).toBeInTheDocument();
   });
 
-  it("should render custom fallback when provided", () => {
-    const CustomFallback = ({ error }: { error: Error }) => (
-      <div>Custom Error: {error.message}</div>
+  it("should recover from error when clicking Try again", () => {
+    const { rerender } = render(
+      <ErrorBoundary>
+        <ThrowError />
+      </ErrorBoundary>
     );
 
-    render(
-      <ErrorBoundary fallback={CustomFallback}>
-        <ThrowError message="Custom Test Error" />
-      </ErrorBoundary>,
+    // Click the Try again button
+    fireEvent.click(screen.getByText("Try again"));
+
+    // Rerender with non-erroring content
+    rerender(
+      <ErrorBoundary>
+        <div>Recovered content</div>
+      </ErrorBoundary>
     );
 
-    expect(screen.getByText(/Custom Error: Custom Test Error/i)).toBeInTheDocument();
+    expect(screen.getByText("Recovered content")).toBeInTheDocument();
   });
 
-  it("should reset error state when try again is clicked", () => {
-    const TestComponent = () => {
-      const [shouldThrow, setShouldThrow] = React.useState(true);
-
-      if (shouldThrow) {
-        throw new Error("Initial Error");
-      }
-
-      return <div>Recovered Content</div>;
-    };
-
+  it("should log error details to console", () => {
     render(
       <ErrorBoundary>
-        <TestComponent />
-      </ErrorBoundary>,
+        <ThrowError />
+      </ErrorBoundary>
     );
 
-    expect(screen.getByText(/Something went wrong/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /try again/i }));
-
-    expect(screen.getByText("Recovered Content")).toBeInTheDocument();
-  });
-
-  it("should handle nested errors", () => {
-    render(
-      <ErrorBoundary>
-        <div>Outer Content</div>
-        <ErrorBoundary>
-          <ThrowError message="Nested Error" />
-        </ErrorBoundary>
-      </ErrorBoundary>,
+    expect(console.error).toHaveBeenCalledWith(
+      "Error caught by boundary:",
+      expect.any(Error),
+      expect.any(Object)
     );
-
-    expect(screen.getByText("Outer Content")).toBeInTheDocument();
-    expect(screen.getByText(/Nested Error/i)).toBeInTheDocument();
-  });
-
-  it("should log errors in development", () => {
-    const originalNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
-
-    render(
-      <ErrorBoundary>
-        <ThrowError message="Development Error" />
-      </ErrorBoundary>,
-    );
-
-    expect(console.error).toHaveBeenCalled();
-
-    process.env.NODE_ENV = originalNodeEnv;
   });
 });

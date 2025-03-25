@@ -1,78 +1,54 @@
 "use client";
 
-import { Component, ErrorInfo, ReactNode } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Props {
-  children: ReactNode;
-  fallback?: ReactNode;
+  children: React.ReactNode;
 }
 
 interface State {
   hasError: boolean;
   error: Error | null;
-  errorInfo: ErrorInfo | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-    error: null,
-    errorInfo: null,
-  };
-
-  public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error, errorInfo: null };
+export class ErrorBoundary extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false, error: null };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
-    this.setState({
-      error,
-      errorInfo,
-    });
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
   }
 
-  private handleReset = () => {
-    this.setState({
-      hasError: false,
-      error: null,
-      errorInfo: null,
-    });
-  };
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("Error caught by boundary:", error, errorInfo);
+  }
 
-  public render() {
+  render() {
     if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback;
-      }
-
       return (
-        <Card className="w-full max-w-2xl mx-auto mt-8">
-          <CardHeader>
-            <CardTitle className="text-red-600">Something went wrong</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-gray-600">
-              An error occurred while rendering this component. Please try again or contact support
-              if the problem persists.
-            </p>
-            {process.env.NODE_ENV === "development" && (
-              <div className="bg-gray-100 p-4 rounded-md">
-                <p className="font-mono text-sm text-red-600">{this.state.error?.toString()}</p>
-                {this.state.errorInfo && (
-                  <pre className="mt-2 text-xs overflow-auto">
-                    {this.state.errorInfo.componentStack}
-                  </pre>
-                )}
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Something went wrong
+              </h2>
+              <p className="text-gray-600 mb-6">
+                {this.state.error?.message || "An unexpected error occurred"}
+              </p>
+              <Button
+                onClick={() => {
+                  this.setState({ hasError: false, error: null });
+                  window.location.reload();
+                }}
+              >
+                Try again
+              </Button>
+            </div>
+          </div>
               </div>
-            )}
-          </CardContent>
-          <CardFooter>
-            <Button onClick={this.handleReset}>Try Again</Button>
-          </CardFooter>
-        </Card>
       );
     }
 

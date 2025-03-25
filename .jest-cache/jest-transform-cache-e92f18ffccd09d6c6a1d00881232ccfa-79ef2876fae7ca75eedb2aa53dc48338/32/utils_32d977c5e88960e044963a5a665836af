@@ -1,0 +1,338 @@
+0357d9a314703018a6882fcbbccbfebf
+"use strict";
+
+var _defineProperty = require("@babel/runtime/helpers/defineProperty");
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getStorageEngine = exports.lockfilePath = exports.md5FromFile = exports.md5 = exports.uuidv4 = exports.removeDir = exports.createTmpDir = exports.mkdir = exports.checkBinaryPermissions = exports.ManagerAdvanced = exports.ManagerBase = exports.tryReleaseFile = exports.pathExists = exports.statPath = exports.authDefault = exports.ensureAsync = exports.isAlive = exports.killProcess = exports.assertion = exports.isNullOrUndefined = exports.uriTemplate = exports.getHost = exports.generateDbName = exports.errorWithCode = void 0;
+const tslib_1 = require("tslib");
+const debug_1 = tslib_1.__importDefault(require("debug"));
+const fs_1 = require("fs");
+const errors_1 = require("./errors");
+const os_1 = require("os");
+const path = tslib_1.__importStar(require("path"));
+const crypto_1 = require("crypto");
+const semver = tslib_1.__importStar(require("semver"));
+const log = (0, debug_1.default)('MongoMS:utils');
+/**
+ * This is here, because NodeJS does not have a FSError type
+ * @param err Value to check agains
+ * @returns `true` if it is a error with code, `false` if not
+ */
+function errorWithCode(err) {
+  return err instanceof Error && 'code' in err;
+}
+exports.errorWithCode = errorWithCode;
+/**
+ * Return input or default database
+ * @param {string} dbName
+ */
+function generateDbName(dbName) {
+  // this is ""(empty) to make it compatible with mongodb's uri format and mongoose's uri format
+  // (in mongodb its the auth database, in mongoose its the default database for models)
+  return dbName || '';
+}
+exports.generateDbName = generateDbName;
+/**
+ * Extracts the host and port information from a mongodb URI string.
+ * @param {string} uri mongodb URI
+ */
+function getHost(uri) {
+  // this will turn "mongodb://user:pass@localhost:port/authdb?queryoptions=1" to "localhost:port"
+  return uri.replace(/(?:^mongodb:\/{2})|(?:\/.*$)|(?:.*@)/gim, '');
+}
+exports.getHost = getHost;
+/**
+ * Basic MongoDB Connection string
+ * @param host the host ip or an list of hosts
+ * @param port the host port or undefined if "host" is an list of hosts
+ * @param dbName the database to add to the uri (in mongodb its the auth database, in mongoose its the default database for models)
+ * @param query extra uri-query options (joined with "&")
+ */
+function uriTemplate(host, port, dbName, query) {
+  const hosts = !isNullOrUndefined(port) ? `${host}:${port}` : host;
+  return `mongodb://${hosts}/${dbName}` + (!isNullOrUndefined(query) ? `?${query.join('&')}` : '');
+}
+exports.uriTemplate = uriTemplate;
+/**
+ * Because since node 4.0.0 the internal util.is* functions got deprecated
+ * @param val Any value to test if null or undefined
+ */
+function isNullOrUndefined(val) {
+  return val === null || val === undefined;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+/**
+ * Assert an condition, if "false" throw error
+ * Note: it is not named "assert" to differentiate between node and jest types
+ * @param cond The Condition to throw
+ * @param error An Custom Error to throw
+ */
+function assertion(cond, error) {
+  if (!cond) {
+    throw error ?? new errors_1.AssertionFallbackError();
+  }
+}
+exports.assertion = assertion;
+/**
+ * Kill an ChildProcess
+ * @param childprocess The Process to kill
+ * @param name the name used in the logs
+ * @param mongodPort the port for the mongod process (for easier logging)
+ */
+async function killProcess(childprocess, name, mongodPort) {
+  function ilog(msg) {
+    log(`Mongo[${mongodPort || 'unknown'}] killProcess: ${msg}`);
+  }
+  // this case can somehow happen, see https://github.com/typegoose/mongodb-memory-server/issues/666
+  if (isNullOrUndefined(childprocess)) {
+    ilog('childprocess was somehow undefined');
+    return;
+  }
+  // check if the childProcess (via PID) is still alive (found thanks to https://github.com/typegoose/mongodb-memory-server/issues/411)
+  if (!isAlive(childprocess.pid)) {
+    ilog("given childProcess's PID was not alive anymore");
+    return;
+  }
+  /**
+   * Timeout before using SIGKILL
+   */
+  const timeoutTime = 1000 * 10;
+  await new Promise((res, rej) => {
+    let timeout = setTimeout(() => {
+      ilog('timeout triggered, trying SIGKILL');
+      if (!debug_1.default.enabled('MongoMS:utils')) {
+        console.warn('An Process didnt exit with signal "SIGINT" within 10 seconds, using "SIGKILL"!\n' + 'Enable debug logs for more information');
+      }
+      childprocess.kill('SIGKILL');
+      timeout = setTimeout(() => {
+        ilog('timeout triggered again, rejecting');
+        rej(new Error(`Process "${name}" didnt exit, enable debug for more information.`));
+      }, timeoutTime);
+    }, timeoutTime);
+    childprocess.once(`exit`, (code, signal) => {
+      ilog(`${name}: got exit signal, Code: ${code}, Signal: ${signal}`);
+      clearTimeout(timeout);
+      res();
+    });
+    ilog(`${name}: sending "SIGINT"`);
+    childprocess.kill('SIGINT');
+  });
+}
+exports.killProcess = killProcess;
+/**
+ * Check if the given Process is still alive
+ * @param {number} pid The Process PID
+ */
+function isAlive(pid) {
+  // This test (and allow to be undefined) is here because somewhere between nodejs 12 and 16 the types for "childprocess.pid" changed to include "| undefined"
+  if (isNullOrUndefined(pid)) {
+    return false;
+  }
+  try {
+    process.kill(pid, 0); // code "0" dosnt actually kill anything (on all supported systems)
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+exports.isAlive = isAlive;
+/**
+ * Call "process.nextTick" to ensure an function is exectued directly after all code surrounding it
+ * look at the following link to get to know on why this needed: https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/#process-nexttick (read full documentation)
+ */
+async function ensureAsync() {
+  return new Promise(res => process.nextTick(res));
+}
+exports.ensureAsync = ensureAsync;
+/**
+ * Convert Partitial input into full-defaulted output
+ * @param opts Partitial input options
+ */
+function authDefault(opts) {
+  return _objectSpread({
+    force: false,
+    enable: true,
+    customRootName: 'mongodb-memory-server-root',
+    customRootPwd: 'rootuser',
+    extraUsers: [],
+    keyfileContent: '0123456789'
+  }, opts);
+}
+exports.authDefault = authDefault;
+/**
+ * Run "fs.promises.stat", but return "undefined" if error is "ENOENT" or "EACCES"
+ * follows symlinks
+ * @param path The Path to Stat
+ * @throws if the error is not "ENOENT" or "EACCES"
+ */
+async function statPath(path) {
+  return fs_1.promises.stat(path).catch(err => {
+    // catch the error if the directory doesn't exist or permission is denied, without throwing an error
+    if (['ENOENT', 'EACCES'].includes(err.code)) {
+      return undefined;
+    }
+    throw err;
+  });
+}
+exports.statPath = statPath;
+/**
+ * Like "fs.existsSync" but async
+ * uses "utils.statPath"
+ * follows symlinks
+ * @param path The Path to check for
+ */
+async function pathExists(path) {
+  return !isNullOrUndefined(await statPath(path));
+}
+exports.pathExists = pathExists;
+/**
+ * Try to read an release file path and apply an parser to the output
+ * @param path The Path to read for an release file
+ * @param parser An function to parse the output of the file
+ */
+async function tryReleaseFile(path, parser) {
+  try {
+    const output = await fs_1.promises.readFile(path);
+    return parser(output.toString());
+  } catch (err) {
+    if (errorWithCode(err) && !['ENOENT', 'EACCES'].includes(err.code)) {
+      throw err;
+    }
+    log(`tryReleaseFile: "${path}" does not exist`);
+    return undefined;
+  }
+}
+exports.tryReleaseFile = tryReleaseFile;
+/**
+ * This Class is used to have unified types for base-manager functions
+ */
+class ManagerBase {}
+exports.ManagerBase = ManagerBase;
+/**
+ * This Class is used to have unified types for advanced-manager functions
+ */
+class ManagerAdvanced extends ManagerBase {}
+exports.ManagerAdvanced = ManagerAdvanced;
+/**
+ * Check that the Binary has sufficient Permissions to be executed
+ * @param path The Path to check
+ */
+async function checkBinaryPermissions(path) {
+  try {
+    await fs_1.promises.access(path, fs_1.constants.X_OK); // check if the provided path exists and has the execute bit for current user
+  } catch (err) {
+    if (errorWithCode(err)) {
+      if (err.code === 'EACCES') {
+        throw new errors_1.InsufficientPermissionsError(path);
+      }
+      if (err.code === 'ENOENT') {
+        throw new errors_1.BinaryNotFoundError(path);
+      }
+    }
+    throw err;
+  }
+}
+exports.checkBinaryPermissions = checkBinaryPermissions;
+/**
+ * Make Directory, wrapper for native mkdir with recursive true
+ * @param path The Path to create
+ * @returns Nothing
+ */
+async function mkdir(path) {
+  await fs_1.promises.mkdir(path, {
+    recursive: true
+  });
+}
+exports.mkdir = mkdir;
+/**
+ * Create a Temporary directory with prefix, and optionally at "atPath"
+ * @param prefix The prefix to use to create the tmpdir
+ * @param atPath Optionally set a custom path other than "os.tmpdir"
+ * @returns The created Path
+ */
+async function createTmpDir(prefix, atPath) {
+  const tmpPath = atPath ?? (0, os_1.tmpdir)();
+  return fs_1.promises.mkdtemp(path.join(tmpPath, prefix));
+}
+exports.createTmpDir = createTmpDir;
+/**
+ * Removes the given "path", if it is a directory, and does not throw a error if not existing
+ * @param dirPath The Directory Path to delete
+ * @returns "true" if deleted, otherwise "false"
+ */
+async function removeDir(dirPath) {
+  const stat = await statPath(dirPath);
+  if (isNullOrUndefined(stat)) {
+    return;
+  }
+  if (!stat.isDirectory()) {
+    throw new Error(`Given Path is not a directory! (Path: "${dirPath}")`);
+  }
+  await fs_1.promises.rm(dirPath, {
+    force: true,
+    recursive: true
+  });
+}
+exports.removeDir = removeDir;
+/**
+ * Helper function to have uuidv4 generation and definition in one place
+ * @returns a uuid-v4
+ */
+function uuidv4() {
+  return (0, crypto_1.randomUUID)();
+}
+exports.uuidv4 = uuidv4;
+/**
+ * Helper function to have md5 generation and definition in one place
+ * @param content the content to checksum
+ * @returns a md5 of the input
+ */
+function md5(content) {
+  return (0, crypto_1.createHash)('md5').update(content).digest('hex');
+}
+exports.md5 = md5;
+/**
+ * Helper function to have md5 generation and definition in one place for a file
+ * @param file the location of a file to read for a hash
+ * @returns a md5 of the input file
+ */
+async function md5FromFile(file) {
+  return md5(await fs_1.promises.readFile(file));
+}
+exports.md5FromFile = md5FromFile;
+/**
+ * Helper function to get the lockfile for the provided `version` in `downloadDir`
+ * @param downloadDir The Download directory of the binary
+ * @param version The version to be downlaoded
+ * @returns The lockfile path
+ */
+function lockfilePath(downloadDir, version) {
+  return path.resolve(downloadDir, `${version}.lock`);
+}
+exports.lockfilePath = lockfilePath;
+/**
+ * Get the storage engine for the given given binary version, and issue a warning if it needs to be changed
+ * @param storageEngine The engine that is configured
+ * @param coercedVersion The binary version as semver
+ * @returns The engine that actually will run in the given binary version
+ */
+function getStorageEngine(storageEngine, coercedVersion) {
+  // warn when storage engine "ephemeralForTest" is explicitly used and switch to "wiredTiger"
+  if (storageEngine === 'ephemeralForTest' && semver.gte(coercedVersion, '7.0.0')) {
+    console.warn('Storage Engine "ephemeralForTest" is removed since mongodb 7.0.0, automatically using "wiredTiger"!\n' + 'This warning is because the mentioned storage engine is explicitly used and mongodb version is 7.0.0 or higher');
+    return 'wiredTiger';
+  }
+  if (isNullOrUndefined(storageEngine)) {
+    if (semver.gte(coercedVersion, '7.0.0')) {
+      return 'wiredTiger';
+    }
+    return 'ephemeralForTest';
+  }
+  return storageEngine;
+}
+exports.getStorageEngine = getStorageEngine;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJkZWJ1Z18xIiwidHNsaWJfMSIsIl9faW1wb3J0RGVmYXVsdCIsInJlcXVpcmUiLCJmc18xIiwiZXJyb3JzXzEiLCJvc18xIiwicGF0aCIsIl9faW1wb3J0U3RhciIsImNyeXB0b18xIiwic2VtdmVyIiwibG9nIiwiZGVmYXVsdCIsImVycm9yV2l0aENvZGUiLCJlcnIiLCJFcnJvciIsImV4cG9ydHMiLCJnZW5lcmF0ZURiTmFtZSIsImRiTmFtZSIsImdldEhvc3QiLCJ1cmkiLCJyZXBsYWNlIiwidXJpVGVtcGxhdGUiLCJob3N0IiwicG9ydCIsInF1ZXJ5IiwiaG9zdHMiLCJpc051bGxPclVuZGVmaW5lZCIsImpvaW4iLCJ2YWwiLCJ1bmRlZmluZWQiLCJhc3NlcnRpb24iLCJjb25kIiwiZXJyb3IiLCJBc3NlcnRpb25GYWxsYmFja0Vycm9yIiwia2lsbFByb2Nlc3MiLCJjaGlsZHByb2Nlc3MiLCJuYW1lIiwibW9uZ29kUG9ydCIsImlsb2ciLCJtc2ciLCJpc0FsaXZlIiwicGlkIiwidGltZW91dFRpbWUiLCJQcm9taXNlIiwicmVzIiwicmVqIiwidGltZW91dCIsInNldFRpbWVvdXQiLCJlbmFibGVkIiwiY29uc29sZSIsIndhcm4iLCJraWxsIiwib25jZSIsImNvZGUiLCJzaWduYWwiLCJjbGVhclRpbWVvdXQiLCJwcm9jZXNzIiwiZW5zdXJlQXN5bmMiLCJuZXh0VGljayIsImF1dGhEZWZhdWx0Iiwib3B0cyIsIl9vYmplY3RTcHJlYWQiLCJmb3JjZSIsImVuYWJsZSIsImN1c3RvbVJvb3ROYW1lIiwiY3VzdG9tUm9vdFB3ZCIsImV4dHJhVXNlcnMiLCJrZXlmaWxlQ29udGVudCIsInN0YXRQYXRoIiwicHJvbWlzZXMiLCJzdGF0IiwiY2F0Y2giLCJpbmNsdWRlcyIsInBhdGhFeGlzdHMiLCJ0cnlSZWxlYXNlRmlsZSIsInBhcnNlciIsIm91dHB1dCIsInJlYWRGaWxlIiwidG9TdHJpbmciLCJNYW5hZ2VyQmFzZSIsIk1hbmFnZXJBZHZhbmNlZCIsImNoZWNrQmluYXJ5UGVybWlzc2lvbnMiLCJhY2Nlc3MiLCJjb25zdGFudHMiLCJYX09LIiwiSW5zdWZmaWNpZW50UGVybWlzc2lvbnNFcnJvciIsIkJpbmFyeU5vdEZvdW5kRXJyb3IiLCJta2RpciIsInJlY3Vyc2l2ZSIsImNyZWF0ZVRtcERpciIsInByZWZpeCIsImF0UGF0aCIsInRtcFBhdGgiLCJ0bXBkaXIiLCJta2R0ZW1wIiwicmVtb3ZlRGlyIiwiZGlyUGF0aCIsImlzRGlyZWN0b3J5Iiwicm0iLCJ1dWlkdjQiLCJyYW5kb21VVUlEIiwibWQ1IiwiY29udGVudCIsImNyZWF0ZUhhc2giLCJ1cGRhdGUiLCJkaWdlc3QiLCJtZDVGcm9tRmlsZSIsImZpbGUiLCJsb2NrZmlsZVBhdGgiLCJkb3dubG9hZERpciIsInZlcnNpb24iLCJyZXNvbHZlIiwiZ2V0U3RvcmFnZUVuZ2luZSIsInN0b3JhZ2VFbmdpbmUiLCJjb2VyY2VkVmVyc2lvbiIsImd0ZSJdLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy91dGlsL3V0aWxzLnRzIl0sInNvdXJjZXNDb250ZW50IjpbbnVsbF0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBQUEsTUFBQUEsT0FBQSxHQUFBQyxPQUFBLENBQUFDLGVBQUEsQ0FBQUMsT0FBQTtBQUdBLE1BQUFDLElBQUEsR0FBQUQsT0FBQTtBQUVBLE1BQUFFLFFBQUEsR0FBQUYsT0FBQTtBQUtBLE1BQUFHLElBQUEsR0FBQUgsT0FBQTtBQUNBLE1BQUFJLElBQUEsR0FBQU4sT0FBQSxDQUFBTyxZQUFBLENBQUFMLE9BQUE7QUFDQSxNQUFBTSxRQUFBLEdBQUFOLE9BQUE7QUFFQSxNQUFBTyxNQUFBLEdBQUFULE9BQUEsQ0FBQU8sWUFBQSxDQUFBTCxPQUFBO0FBRUEsTUFBTVEsR0FBRyxHQUFHLElBQUFYLE9BQUEsQ0FBQVksT0FBSyxFQUFDLGVBQWUsQ0FBQztBQVNsQzs7Ozs7QUFLQSxTQUFnQkMsYUFBYUEsQ0FBQ0MsR0FBWTtFQUN4QyxPQUFPQSxHQUFHLFlBQVlDLEtBQUssSUFBSSxNQUFNLElB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

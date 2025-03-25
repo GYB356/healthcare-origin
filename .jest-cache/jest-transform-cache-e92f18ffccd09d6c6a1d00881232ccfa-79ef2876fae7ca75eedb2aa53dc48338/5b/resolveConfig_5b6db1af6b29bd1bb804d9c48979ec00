@@ -1,0 +1,170 @@
+3f523cec2adc77a74fd934c93fb29c1b
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.envToBool = exports.envName = exports.packageJsonPath = exports.resolveConfig = exports.processConfigOption = exports.findPackageJson = exports.setDefaultValue = exports.defaultValues = exports.DEFAULT_VERSION = exports.ENV_CONFIG_PREFIX = exports.ResolveConfigVariables = void 0;
+const tslib_1 = require("tslib");
+const camelcase_1 = tslib_1.__importDefault(require("camelcase"));
+const new_find_package_json_1 = require("new-find-package-json");
+const debug_1 = tslib_1.__importDefault(require("debug"));
+const path = tslib_1.__importStar(require("path"));
+const fs_1 = require("fs");
+const utils_1 = require("./utils");
+// polyfills
+// @ts-expect-error they are marked "read-only", but are set-able if not implemented by the runtime
+Symbol.dispose ??= Symbol('Symbol.dispose');
+// @ts-expect-error they are marked "read-only", but are set-able if not implemented by the runtime
+Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose');
+const log = (0, debug_1.default)('MongoMS:ResolveConfig');
+/** Enum of all possible config options */
+var ResolveConfigVariables;
+(function (ResolveConfigVariables) {
+  ResolveConfigVariables["DOWNLOAD_DIR"] = "DOWNLOAD_DIR";
+  ResolveConfigVariables["PLATFORM"] = "PLATFORM";
+  ResolveConfigVariables["ARCH"] = "ARCH";
+  ResolveConfigVariables["VERSION"] = "VERSION";
+  ResolveConfigVariables["DEBUG"] = "DEBUG";
+  ResolveConfigVariables["DOWNLOAD_MIRROR"] = "DOWNLOAD_MIRROR";
+  ResolveConfigVariables["DOWNLOAD_URL"] = "DOWNLOAD_URL";
+  ResolveConfigVariables["DOWNLOAD_IGNORE_MISSING_HEADER"] = "DOWNLOAD_IGNORE_MISSING_HEADER";
+  ResolveConfigVariables["PREFER_GLOBAL_PATH"] = "PREFER_GLOBAL_PATH";
+  ResolveConfigVariables["DISABLE_POSTINSTALL"] = "DISABLE_POSTINSTALL";
+  ResolveConfigVariables["SYSTEM_BINARY"] = "SYSTEM_BINARY";
+  ResolveConfigVariables["MD5_CHECK"] = "MD5_CHECK";
+  ResolveConfigVariables["ARCHIVE_NAME"] = "ARCHIVE_NAME";
+  ResolveConfigVariables["RUNTIME_DOWNLOAD"] = "RUNTIME_DOWNLOAD";
+  ResolveConfigVariables["USE_HTTP"] = "USE_HTTP";
+  ResolveConfigVariables["SYSTEM_BINARY_VERSION_CHECK"] = "SYSTEM_BINARY_VERSION_CHECK";
+  ResolveConfigVariables["USE_ARCHIVE_NAME_FOR_BINARY_NAME"] = "USE_ARCHIVE_NAME_FOR_BINARY_NAME";
+  ResolveConfigVariables["MAX_REDIRECTS"] = "MAX_REDIRECTS";
+  ResolveConfigVariables["DISTRO"] = "DISTRO";
+})(ResolveConfigVariables || (exports.ResolveConfigVariables = ResolveConfigVariables = {}));
+/** The Prefix for Environmental values */
+exports.ENV_CONFIG_PREFIX = 'MONGOMS_';
+/** This Value exists here, because "defaultValues" can be changed with "setDefaultValue", but this property is constant */
+exports.DEFAULT_VERSION = '7.0.14';
+/** Default values for some config options that require explicit setting, it is constant so that the default values cannot be interfered with */
+exports.defaultValues = new Map([
+// apply app-default values here
+[ResolveConfigVariables.VERSION, exports.DEFAULT_VERSION], [ResolveConfigVariables.PREFER_GLOBAL_PATH, 'true'], [ResolveConfigVariables.RUNTIME_DOWNLOAD, 'true'], [ResolveConfigVariables.USE_HTTP, 'false'], [ResolveConfigVariables.SYSTEM_BINARY_VERSION_CHECK, 'true'], [ResolveConfigVariables.USE_ARCHIVE_NAME_FOR_BINARY_NAME, 'false'], [ResolveConfigVariables.MD5_CHECK, 'true'], [ResolveConfigVariables.MAX_REDIRECTS, '2']]);
+/**
+ * Set an Default value for an specific key
+ * Mostly only used internally (for the "global-x.x" packages)
+ * @param key The Key the default value should be assigned to
+ * @param value The Value what the default should be
+ */
+function setDefaultValue(key, value) {
+  exports.defaultValues.set(key, value);
+}
+exports.setDefaultValue = setDefaultValue;
+/** Cache the found package.json file */
+let packagejson = undefined;
+/**
+ * Find the nearest package.json (that has an non-empty config field) for the provided directory
+ * @param directory Set an custom directory to search the config in (default: process.cwd())
+ * @returns what "packagejson" variable is
+ */
+function findPackageJson(directory) {
+  for (const filename of (0, new_find_package_json_1.findSync)(directory || process.cwd())) {
+    log(`findPackageJson: Found package.json at "${filename}"`);
+    const readout = JSON.parse((0, fs_1.readFileSync)(filename).toString());
+    /** Shorthand for the long path */
+    const config = readout?.config?.mongodbMemoryServer;
+    if (!(0, utils_1.isNullOrUndefined)(config) && Object.keys(config ?? {}).length > 0) {
+      log(`findPackageJson: Found package with non-empty config field at "${filename}"`);
+      const filepath = path.dirname(filename);
+      packagejson = {
+        filePath: filepath,
+        config: processConfigOption(config, filepath)
+      };
+      break;
+    }
+  }
+  return packagejson;
+}
+exports.findPackageJson = findPackageJson;
+/**
+ * Apply Proccessing to input options (like resolving paths)
+ * @param input The input to process
+ * @param filepath The FilePath for the input to resolve relative paths to (needs to be a dirname and absolute)
+ * @returns always returns a object
+ */
+function processConfigOption(input, filepath) {
+  log('processConfigOption', input, filepath);
+  if (typeof input !== 'object') {
+    log('processConfigOptions: input was not a object');
+    return {};
+  }
+  // cast because it was tested before that "input" is a object and the key can only be a string in a package.json
+  const returnobj = input;
+  // These are so that "camelCase" doesnt get executed much & de-duplicate code
+  // "cc*" means "camelcase"
+  const ccDownloadDir = (0, camelcase_1.default)(ResolveConfigVariables.DOWNLOAD_DIR);
+  const ccSystemBinary = (0, camelcase_1.default)(ResolveConfigVariables.SYSTEM_BINARY);
+  if (ccDownloadDir in returnobj) {
+    returnobj[ccDownloadDir] = path.resolve(filepath, returnobj[ccDownloadDir]);
+  }
+  if (ccSystemBinary in returnobj) {
+    returnobj[ccSystemBinary] = path.resolve(filepath, returnobj[ccSystemBinary]);
+  }
+  return returnobj;
+}
+exports.processConfigOption = processConfigOption;
+/**
+ * Resolve "variableName" value (process.env | packagejson | default | undefined)
+ * @param variableName The variable to search an value for
+ */
+function resolveConfig(variableName) {
+  return (process.env[envName(variableName)] ?? packagejson?.config[(0, camelcase_1.default)(variableName)] ?? exports.defaultValues.get(variableName))?.toString();
+}
+exports.resolveConfig = resolveConfig;
+/**
+ * Get the directory path of the `package.json` with config options, if available
+ * @returns The directory of the `package.json`, otherwise `undefined`
+ */
+function packageJsonPath() {
+  return packagejson?.filePath;
+}
+exports.packageJsonPath = packageJsonPath;
+exports.default = resolveConfig;
+/**
+ * Helper Function to add the prefix for "process.env[]"
+ */
+function envName(variableName) {
+  return `${exports.ENV_CONFIG_PREFIX}${variableName}`;
+}
+exports.envName = envName;
+/**
+ * Convert "1, on, yes, true" to true (otherwise false)
+ * @param env The String / Environment Variable to check
+ */
+function envToBool(env = '') {
+  if (typeof env !== 'string') {
+    log('envToBool: input was not a string!');
+    return false;
+  }
+  return ['1', 'on', 'yes', 'true'].indexOf(env.toLowerCase()) !== -1;
+}
+exports.envToBool = envToBool;
+/**
+ * This exists because "debug.enabled('MongoMS:*')" will always return "true"
+ * This is used to not double-enable / double-print the enablement message
+ */
+let debug_enabled = false;
+// enable debug if "MONGOMS_DEBUG" is true
+if (envToBool(resolveConfig(ResolveConfigVariables.DEBUG))) {
+  debug_1.default.enable('MongoMS:*');
+  log('Debug Mode Enabled, through Environment Variable');
+  debug_enabled = true;
+}
+// run this after env debug enable to be able to debug this function too
+findPackageJson();
+// enable debug if "config.mongodbMemoryServer.debug" is true
+if (envToBool(resolveConfig(ResolveConfigVariables.DEBUG)) && !debug_enabled) {
+  debug_1.default.enable('MongoMS:*');
+  log('Debug Mode Enabled, through package.json');
+  debug_enabled = true;
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjYW1lbGNhc2VfMSIsInRzbGliXzEiLCJfX2ltcG9ydERlZmF1bHQiLCJyZXF1aXJlIiwibmV3X2ZpbmRfcGFja2FnZV9qc29uXzEiLCJkZWJ1Z18xIiwicGF0aCIsIl9faW1wb3J0U3RhciIsImZzXzEiLCJ1dGlsc18xIiwiU3ltYm9sIiwiZGlzcG9zZSIsImFzeW5jRGlzcG9zZSIsImxvZyIsImRlZmF1bHQiLCJSZXNvbHZlQ29uZmlnVmFyaWFibGVzIiwiZXhwb3J0cyIsIkVOVl9DT05GSUdfUFJFRklYIiwiREVGQVVMVF9WRVJTSU9OIiwiZGVmYXVsdFZhbHVlcyIsIk1hcCIsIlZFUlNJT04iLCJQUkVGRVJfR0xPQkFMX1BBVEgiLCJSVU5USU1FX0RPV05MT0FEIiwiVVNFX0hUVFAiLCJTWVNURU1fQklOQVJZX1ZFUlNJT05fQ0hFQ0siLCJVU0VfQVJDSElWRV9OQU1FX0ZPUl9CSU5BUllfTkFNRSIsIk1ENV9DSEVDSyIsIk1BWF9SRURJUkVDVFMiLCJzZXREZWZhdWx0VmFsdWUiLCJrZXkiLCJ2YWx1ZSIsInNldCIsInBhY2thZ2Vqc29uIiwidW5kZWZpbmVkIiwiZmluZFBhY2thZ2VKc29uIiwiZGlyZWN0b3J5IiwiZmlsZW5hbWUiLCJmaW5kU3luYyIsInByb2Nlc3MiLCJjd2QiLCJyZWFkb3V0IiwiSlNPTiIsInBhcnNlIiwicmVhZEZpbGVTeW5jIiwidG9TdHJpbmciLCJjb25maWciLCJtb25nb2RiTWVtb3J5U2VydmVyIiwiaXNOdWxsT3JVbmRlZmluZWQiLCJPYmplY3QiLCJrZXlzIiwibGVuZ3RoIiwiZmlsZXBhdGgiLCJkaXJuYW1lIiwiZmlsZVBhdGgiLCJwcm9jZXNzQ29uZmlnT3B0aW9uIiwiaW5wdXQiLCJyZXR1cm5vYmoiLCJjY0Rvd25sb2FkRGlyIiwiRE9XTkxPQURfRElSIiwiY2NTeXN0ZW1CaW5hcnkiLCJTWVNURU1fQklOQVJZIiwicmVzb2x2ZSIsInJlc29sdmVDb25maWciLCJ2YXJpYWJsZU5hbWUiLCJlbnYiLCJlbnZOYW1lIiwiZ2V0IiwicGFja2FnZUpzb25QYXRoIiwiZW52VG9Cb29sIiwiaW5kZXhPZiIsInRvTG93ZXJDYXNlIiwiZGVidWdfZW5hYmxlZCIsIkRFQlVHIiwiZW5hYmxlIl0sInNvdXJjZXMiOlsiLi4vLi4vc3JjL3V0aWwvcmVzb2x2ZUNvbmZpZy50cyJdLCJzb3VyY2VzQ29udGVudCI6W251bGxdLCJtYXBwaW5ncyI6Ijs7Ozs7OztBQUFBLE1BQUFBLFdBQUEsR0FBQUMsT0FBQSxDQUFBQyxlQUFBLENBQUFDLE9BQUE7QUFDQSxNQUFBQyx1QkFBQSxHQUFBRCxPQUFBO0FBQ0EsTUFBQUUsT0FBQSxHQUFBSixPQUFBLENBQUFDLGVBQUEsQ0FBQUMsT0FBQTtBQUNBLE1BQUFHLElBQUEsR0FBQUwsT0FBQSxDQUFBTSxZQUFBLENBQUFKLE9BQUE7QUFDQSxNQUFBSyxJQUFBLEdBQUFMLE9BQUE7QUFDQSxNQUFBTSxPQUFBLEdBQUFOLE9BQUE7QUFFQTtBQUNBO0FBQ0FPLE1BQU0sQ0FBQ0MsT0FBTyxLQUFLRCxNQUFNLENBQUMsZ0JBQWdCLENBQUM7QUFDM0M7QUFDQUEsTUFBTSxDQUFDRSxZQUFZLEtBQUtGLE1BQU0sQ0FBQyxxQkFBcUIsQ0FBQztBQUVyRCxNQUFNRyxHQUFHLEdBQUcsSUFBQVIsT0FBQSxDQUFBUyxPQUFLLEVBQUMsdUJBQXVCLENBQUM7QUFFMUM7QUFDQSxJQUFZQyxzQkFvQlg7QUFwQkQsV0FBWUEsc0JBQXNCO0VBQ2hDQSxzQkFBQSxpQ0FBNkI7RUFDN0JBLHNCQUFBLHlCQUFxQjtFQUNyQkEsc0JBQUEsaUJBQWE7RUFDYkEsc0JBQUEsdUJBQW1CO0VBQ25CQSxzQkFBQSxtQkFBZTtFQUNmQSxzQkFBQSx1Q0FBbUM7RUFDbkNBLHNCQUFBLGlDQUE2QjtFQUM3QkEsc0JBQUEscUVBQWlFO0VBQ2pFQSxzQkFBQSw2Q0FBeUM7RUFDekNBLHNCQUFBLCtDQUEyQztFQUMzQ0Esc0JBQUEsbUNBQStCO0VBQy9CQSxzQkFBQSwyQkFBdUI7RUFDdkJBLHNCQUFBLGlDQUE2QjtFQUM3QkEsc0JB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
