@@ -29,21 +29,25 @@ const AuthProvider = ({ children, value = mockAuthState }) => {
 const useAuth = () => React.useContext(AuthContext);
 
 // Handle both ESM and CommonJS
-const exports = {
-  AuthContext,
-  AuthProvider,
-  useAuth,
-  mockAuthState,
-  default: {
-    AuthContext,
-    AuthProvider,
-    useAuth,
-    mockAuthState,
-  },
-};
+// const exports = {
+//   AuthContext,
+//   AuthProvider,
+//   useAuth,
+//   mockAuthState,
+//   default: {
+//     AuthContext,
+//     AuthProvider,
+//     useAuth,
+//     mockAuthState,
+//   },
+// };
 
 // For default export patterns
+exports.AuthContext = AuthContext;
+exports.AuthProvider = AuthProvider;
+exports.useAuth = useAuth;
+exports.mockAuthState = mockAuthState;
 exports.__esModule = true;
 exports.default = useAuth;
 
-module.exports = exports;
+// module.exports = exports;

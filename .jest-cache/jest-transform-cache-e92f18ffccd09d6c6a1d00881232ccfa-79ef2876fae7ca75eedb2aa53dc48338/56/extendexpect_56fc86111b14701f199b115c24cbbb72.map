@@ -1,0 +1,1 @@
+{"version":3,"names":[],"sources":["extend-expect.js"],"sourcesContent":["// This is a mock for @testing-library/jest-dom/extend-expect\r\n// It's empty since we already include @testing-library/jest-dom in jest.setup.js\r\n"],"mappings":"AAAA;AACA","ignoreList":[]}

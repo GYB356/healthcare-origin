@@ -1,0 +1,4 @@
+20c7f8f0dd9c1c8e2d81f120f69ccefc
+// This is a mock for @testing-library/jest-dom/extend-expect
+// It's empty since we already include @testing-library/jest-dom in jest.setup.js
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6W10sInNvdXJjZXMiOlsiZXh0ZW5kLWV4cGVjdC5qcyJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyBUaGlzIGlzIGEgbW9jayBmb3IgQHRlc3RpbmctbGlicmFyeS9qZXN0LWRvbS9leHRlbmQtZXhwZWN0XHJcbi8vIEl0J3MgZW1wdHkgc2luY2Ugd2UgYWxyZWFkeSBpbmNsdWRlIEB0ZXN0aW5nLWxpYnJhcnkvamVzdC1kb20gaW4gamVzdC5zZXR1cC5qc1xyXG4iXSwibWFwcGluZ3MiOiJBQUFBO0FBQ0EiLCJpZ25vcmVMaXN0IjpbXX0=
