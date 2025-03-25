@@ -1,27 +1,11 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import PaymentMethods from "../PaymentMethods";
 
 const mockPaymentMethods = [
-  {
-    _id: "1",
-    cardType: "Visa",
-    lastFour: "1234",
-    expiryMonth: "12",
-    expiryYear: "2025",
-    billingName: "John Doe",
-    isDefault: true,
-  },
-  {
-    _id: "2",
-    cardType: "MasterCard",
-    lastFour: "5678",
-    expiryMonth: "11",
-    expiryYear: "2024",
-    billingName: "Jane Doe",
-    isDefault: false,
-  },
+  { id: '1', cardType: 'Visa', last4: '1234', expiry: '12/2025', cardholderName: 'John Doe', isDefault: true },
+  { id: '2', cardType: 'MasterCard', last4: '5678', expiry: '11/2024', cardholderName: 'Jane Doe', isDefault: false },
 ];
 
 describe("PaymentMethods Component", () => {
@@ -38,7 +22,9 @@ describe("PaymentMethods Component", () => {
   test("displays payment method details correctly", () => {
     render(<PaymentMethods paymentMethods={mockPaymentMethods} />);
     expect(screen.getByText("Visa •••• 1234")).toBeInTheDocument();
+    expect(screen.getByText("Expires: 12/2025")).toBeInTheDocument();
     expect(screen.getByText("John Doe")).toBeInTheDocument();
+    expect(screen.getByText("Default")).toBeInTheDocument();
   });
 
   test("handles set default payment method", () => {
@@ -77,4 +63,41 @@ it("renders payment methods correctly", () => {
   render(<PaymentMethods paymentMethods={paymentMethods} />);
   expect(screen.getByText(/visa/i)).toBeInTheDocument();
   expect(screen.getByText(/mastercard/i)).toBeInTheDocument();
+});
+
+// Test to check if PaymentMethods renders correctly
+it('renders the payment methods list correctly', async () => {
+  render(<PaymentMethods paymentMethods={mockPaymentMethods} />);
+
+  // Check if the list exists
+  await waitFor(() => expect(screen.getByRole('list')).toBeInTheDocument());
+
+  // Query list items
+  const items = await waitFor(() => screen.getAllByRole('listitem'));
+  expect(items).toHaveLength(mockPaymentMethods.length);
+
+  // Check payment method details
+  expect(screen.getByText('Visa •••• 1234')).toBeInTheDocument();
+  expect(screen.getByText('Expires: 12/2025')).toBeInTheDocument();
+  expect(screen.getByText('John Doe')).toBeInTheDocument();
+  expect(screen.getByText('Default')).toBeInTheDocument();
+});
+
+// Test to check if no payment methods message is displayed
+it('displays no payment methods message when list is empty', async () => {
+  render(<PaymentMethods paymentMethods={[]} />);
+
+  // Check for no payment methods message
+  await waitFor(() => expect(screen.getAllByText(/no payment methods/i)).toHaveLength(1));
+});
+
+// Test to check if the default payment method can be set
+it('handles set default payment method', async () => {
+  render(<PaymentMethods paymentMethods={mockPaymentMethods} />);
+
+  // Click the set default button
+  fireEvent.click(screen.getByText(/Set as Default/i));
+
+  // Check if the default method is updated
+  await waitFor(() => expect(screen.getByText('Default')).toBeInTheDocument());
 });

@@ -1,11 +1,11 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import InvoiceList from "../InvoiceList";
 
 const mockInvoices = [
-  { _id: "1", amount: 100, status: "paid", date: "2023-01-01" },
-  { _id: "2", amount: 200, status: "unpaid", date: "2023-02-01" },
+  { id: '1', number: 'INV-001', patient: 'John Doe', amount: 100, status: 'Paid' },
+  { id: '2', number: 'INV-002', patient: 'Jane Smith', amount: 200, status: 'Pending' },
 ];
 
 describe("InvoiceList Component", () => {
@@ -16,20 +16,31 @@ describe("InvoiceList Component", () => {
 
   test("displays the correct number of invoices", () => {
     render(<InvoiceList invoices={mockInvoices} />);
-    expect(screen.getAllByRole("listitem")).toHaveLength(mockInvoices.length);
+    expect(screen.getAllByRole("row")).toHaveLength(mockInvoices.length + 1); // +1 for the header row
   });
 
-  test("displays invoice details correctly", () => {
+  test("renders invoice list correctly", async () => {
     render(<InvoiceList invoices={mockInvoices} />);
-    expect(screen.getByText("$100")).toBeInTheDocument();
-    expect(screen.getByText("paid")).toBeInTheDocument();
+    
+    // Check if the table exists
+    await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument());
+
+    // Query table rows
+    const rows = await waitFor(() => screen.getAllByRole('row'));
+    expect(rows).toHaveLength(mockInvoices.length + 1); // +1 for the header row
+
+    // Check invoice details
+    expect(screen.getByText('INV-001')).toBeInTheDocument();
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    expect(screen.getByText('$100')).toBeInTheDocument();
+    expect(screen.getByText('Paid')).toBeInTheDocument();
   });
 });
 
 // Test to check if InvoiceList renders correctly with no invoices
-it("renders no invoices message when invoice list is empty", () => {
+it("renders no invoices message when invoice list is empty", async () => {
   render(<InvoiceList invoices={[]} />);
-  expect(screen.getByText(/no invoices available/i)).toBeInTheDocument();
+  expect(screen.getByText('No invoices found')).toBeInTheDocument();
 });
 
 // Test to check if InvoiceList renders invoices correctly

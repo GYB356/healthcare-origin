@@ -185,89 +185,24 @@ const PaymentMethods = ({
         </button>
       </div>
 
-      {paymentMethods && paymentMethods.length > 0 ? (
-        <div className="divide-y divide-gray-200">
-          {paymentMethods.map((method) => (
-            <div key={method.id} className="p-4 hover:bg-gray-50">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <div className="mr-4">
-                    {method.type === "credit_card" && (
-                      <div className="w-12 h-8 bg-gray-200 rounded flex items-center justify-center">
-                        {getCardTypeIcon(method.cardNumber) === "visa" && (
-                          <span className="text-blue-600 font-bold text-sm">VISA</span>
-                        )}
-                        {getCardTypeIcon(method.cardNumber) === "mastercard" && (
-                          <span className="text-red-600 font-bold text-sm">MC</span>
-                        )}
-                        {getCardTypeIcon(method.cardNumber) === "amex" && (
-                          <span className="text-blue-800 font-bold text-sm">AMEX</span>
-                        )}
-                        {getCardTypeIcon(method.cardNumber) === "discover" && (
-                          <span className="text-orange-600 font-bold text-sm">DISC</span>
-                        )}
-                        {getCardTypeIcon(method.cardNumber) === "generic" && (
-                          <span className="text-gray-600 font-bold text-sm">CARD</span>
-                        )}
-                      </div>
-                    )}
-                    {method.type === "bank_account" && (
-                      <div className="w-12 h-8 bg-gray-200 rounded flex items-center justify-center">
-                        <span className="text-gray-600 font-bold text-sm">BANK</span>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {method.type === "credit_card" ? "Credit Card" : "Bank Account"}
-                      {method.isDefault && (
-                        <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                          Default
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {method.cardholderName} • {method.cardNumber}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      Expires: {method.expiryMonth}/{method.expiryYear}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => {
-                      onSelectPaymentMethod(method);
-                      logHIPAAEvent(`User ${user.id} selected payment method ${method.id}`);
-                    }}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    Select
-                  </button>
-                  <button
-                    onClick={() => handleEditClick(method)}
-                    className="text-indigo-600 hover:text-indigo-900"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(method)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
-                </div>
+      <ul role="list">
+        {paymentMethods.length > 0 ? (
+          paymentMethods.map((method) => (
+            <li key={method.id} role="listitem">
+              <div className="payment-method">
+                <span>{method.cardType} •••• {method.last4}</span>
+                <span>Expires: {method.expiry}</span>
+                <span>{method.cardholderName}</span>
+                {method.isDefault && <span>Default</span>}
               </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="p-6 text-center">
-          <p className="text-gray-500">
-            No payment methods found. Add a payment method to get started.
-          </p>
-        </div>
-      )}
+            </li>
+          ))
+        ) : (
+          <li role="listitem">
+            <p>No payment methods available.</p>
+          </li>
+        )}
+      </ul>
 
       {/* Add Payment Method Form */}
       {showAddForm && (
